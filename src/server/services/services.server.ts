@@ -3,10 +3,12 @@ import { AnimationServiceInstance } from "./animation-service";
 import { Players } from "@rbxts/services";
 import { AbilityKey } from "shared/keys";
 import { SSEntity } from "shared/types";
+import { DataServiceInstance } from "./data-service";
 
 const Services = {
 	AbilityService: AbilityServiceInstance,
 	AnimationService: AnimationServiceInstance,
+	DataService: DataServiceInstance,
 };
 
 Players.PlayerAdded.Connect((player) => {

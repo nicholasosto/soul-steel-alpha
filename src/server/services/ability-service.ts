@@ -20,6 +20,7 @@ import { AbilityRemotes } from "shared/network";
 import { SSEntity } from "shared/types/SSEntity";
 import { isSSEntity } from "shared/helpers/type-guards";
 import { AbilityCatalog } from "shared/catalogs";
+import { DataServiceInstance } from "./data-service";
 
 /**
  * Server-side ability management service.
@@ -43,6 +44,7 @@ import { AbilityCatalog } from "shared/catalogs";
 class AbilityService {
 	/** Singleton instance of the AbilityService */
 	private static instance: AbilityService | undefined;
+	private dataService = DataServiceInstance;
 
 	/** Map storing registered abilities for each entity */
 	private characterAbilityMap: Map<SSEntity, AbilityKey[]> = new Map();
@@ -166,6 +168,15 @@ class AbilityService {
 	private validateAbility(player: Player, abilityKey: AbilityKey): boolean {
 		// Get player's character
 		const character = player.Character;
+		const profile = this.dataService.GetProfile(player);
+		if (!profile) {
+			warn(`Player ${player.Name} does not have a valid profile`);
+			return false;
+		}
+		if (profile.Data.Abilities[abilityKey] === undefined || !profile.Data.Abilities[abilityKey]) {
+			warn(`Ability ${abilityKey} is not defined in player profile`);
+			return false;
+		}
 		if (!character || !isSSEntity(character)) {
 			warn(`Player ${player.Name} does not have a valid SSEntity character`);
 			return false;
