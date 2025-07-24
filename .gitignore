@@ -2,3 +2,6 @@
 /out
 /include
 *.tsbuildinfo
+
+# MCP Server build output
+/mcp-build

@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "soul-steel-alpha-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["mcp-build/mcp-server.js"]
+    }
+  }
+}
