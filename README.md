@@ -2,13 +2,33 @@
 
 A Roblox TypeScript project with Model Context Protocol (MCP) server integration.
 
+## Documentation
+
+- **[📁 PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)** - Comprehensive project structure overview (MCP-generated)
+- **[🔧 DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md)** - Development guidelines and best practices
+- **[📚 SHARED_MODULE_REFERENCE.md](SHARED_MODULE_REFERENCE.md)** - Shared module architecture guide
+- **[⚡ QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Common pitfalls and quick fixes
+
 ## Project Structure
 
 - `src/client/` - Client-side TypeScript code (runs on player devices)
+  - `input.client.ts` - Input handling and user interactions
+  - `main.client.ts` - Main client initialization and setup
 - `src/server/` - Server-side TypeScript code (runs on Roblox servers)
+  - `main.server.ts` - Main server initialization
+  - `services/` - Server-side service modules (ability, animation, data management)
+  - `network/` - Server network handlers (currently empty, reserved for future use)
 - `src/shared/` - Shared TypeScript code (accessible by both client and server)
-- `include/` - Lua files included directly in the build
-- `mcp-server.ts` - MCP server for AI assistant integration
+  - `asset-ids/` - Centralized Roblox asset ID constants
+  - `catalogs/` - Game content definitions and metadata
+  - `helpers/` - Utility functions and helper classes
+  - `keys/` - Type-safe string identifiers for entities
+  - `meta/` - Entity metadata and configuration schemas
+  - `network/` - Client-server communication definitions
+  - `types/` - Shared TypeScript type definitions
+- `include/` - Lua files included directly in the build (Promise.lua, RuntimeLib.lua)
+- `mcp-build/` - Built MCP server output
+- `mcp-server.ts` - MCP server source for AI assistant integration
 
 ## Development
 
@@ -81,6 +101,24 @@ The project includes a `.vscode/mcp.json` configuration file for VS Code MCP int
 - **ESLint**: Code linting with TypeScript and Roblox-specific rules
 - **Prettier**: Code formatting
 - **MCP SDK**: Model Context Protocol for AI assistant integration
+
+## Key Dependencies
+
+### Roblox Development
+- `roblox-ts`: TypeScript to Lua compiler for Roblox
+- `@rbxts/types`: TypeScript definitions for Roblox APIs
+- `@rbxts/services`: Type-safe Roblox service access
+- `@rbxts/net`: Type-safe client-server networking
+- `@rbxts/fusion`: Modern reactive UI framework for Roblox
+- `@rbxts/maid`: Memory management and cleanup utilities
+- `@rbxts/profileservice`: Player data management system
+
+### Development Tools
+- `typescript`: TypeScript compiler
+- `eslint`: Code linting with Roblox-TS specific rules
+- `prettier`: Code formatting
+- `@modelcontextprotocol/sdk`: MCP server development
+- `zod`: Runtime type validation
 
 ## SDK Reference
 

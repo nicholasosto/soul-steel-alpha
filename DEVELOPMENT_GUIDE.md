@@ -224,7 +224,37 @@ processData(largeDataStructure);
 largeDataStructure = undefined; // Allow garbage collection
 ```
 
-## Shared Module Architecture
+## Project Architecture
+
+### Server-Side Architecture (`src/server/`)
+
+The server-side code follows a service-oriented architecture:
+
+#### Main Server (`main.server.ts`)
+- Central server initialization and setup
+- Coordinates all server services and systems
+
+#### Services Directory (`services/`)
+- **`ability-service.ts`**: Manages player abilities, validation, and execution
+- **`animation-service.ts`**: Handles character animations and animation state
+- **`data-service.ts`**: Player data management using ProfileService
+- **`services.server.ts`**: Service registration and dependency injection
+
+#### Network Directory (`network/`)
+- Reserved for server-side network request handlers
+- Currently empty - future expansion for dedicated server networking logic
+
+### Client-Side Architecture (`src/client/`)
+
+#### Main Client (`main.client.ts`)
+- Client initialization and setup
+- UI and local systems coordination
+
+#### Input Handler (`input.client.ts`)
+- User input processing and validation
+- Client-side input event handling
+
+### Shared Module Architecture
 
 The `src/shared/` directory follows a structured organization pattern:
 

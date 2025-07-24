@@ -11,9 +11,21 @@ This is a Roblox TypeScript project that compiles TypeScript code to Lua for Rob
 ## Key Directories
 
 - `src/client/` - Client-side code (LocalScripts in Roblox)
-- `src/server/` - Server-side code (ServerScripts in Roblox)  
+  - `input.client.ts` - Input handling and user interactions
+  - `main.client.ts` - Main client initialization
+- `src/server/` - Server-side code (ServerScripts in Roblox)
+  - `main.server.ts` - Server initialization and setup
+  - `services/` - Service modules (ability, animation, data management)
+  - `network/` - Server network handlers (reserved for future use)
 - `src/shared/` - Shared modules (ModuleScripts in Roblox)
-- `include/` - Direct Lua includes
+  - `asset-ids/` - Centralized asset ID constants
+  - `catalogs/` - Game content definitions and metadata
+  - `helpers/` - Utility functions and helper classes
+  - `keys/` - Type-safe string identifiers
+  - `meta/` - Entity metadata and configuration
+  - `network/` - Client-server communication definitions
+  - `types/` - Shared TypeScript type definitions
+- `include/` - Direct Lua includes (Promise.lua, RuntimeLib.lua)
 
 ## Development Guidelines
 
