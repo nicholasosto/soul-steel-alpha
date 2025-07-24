@@ -59,6 +59,52 @@ export const AbilityRemotes = Definitions.Create({
 
 **Why:** `@rbxts/net` ServerAsyncFunction automatically wraps return values in Promises. Manually adding `Promise<T>` creates a `Promise<Promise<T>>` which causes type errors.
 
+## Shared Module Organization
+
+The `src/shared/` directory is organized into specialized folders with specific purposes:
+
+### Asset IDs (`shared/asset-ids/`)
+- **Purpose**: Centralized Roblox asset ID constants (animations, images, sounds)
+- **Pattern**: Group by category, use `as const`, provide type unions
+- **Review**: Check for placeholder IDs, validate asset availability
+- **Guidelines**: Use rbxassetid://[number] format, include helper functions
+
+### Catalogs (`shared/catalogs/`)
+- **Purpose**: Game content configuration and metadata collections
+- **Pattern**: Strongly typed interfaces, const assertions, validation functions
+- **Review**: Verify data integrity, check for missing entries
+- **Guidelines**: Define clear interfaces, include factory functions
+
+### Helpers (`shared/helpers/`)
+- **Purpose**: Reusable utility functions and helper classes
+- **Pattern**: Pure functions, comprehensive type annotations, error handling
+- **Review**: Test complex logic, ensure performance for frequent calls
+- **Guidelines**: Descriptive names, avoid side effects, proper validation
+
+### Keys (`shared/keys/`)
+- **Purpose**: String literal constants for entity identification
+- **Pattern**: `const` assertions, union types, validation functions
+- **Review**: Check for duplicates, ensure consistent naming
+- **Guidelines**: Use kebab-case, SCREAMING_SNAKE_CASE for arrays
+
+### Meta (`shared/meta/`)
+- **Purpose**: Entity metadata and configuration data
+- **Pattern**: Readonly properties, builder patterns, default values
+- **Review**: Validate structure integrity, check completeness
+- **Guidelines**: Strong typing, factory functions, version compatibility
+
+### Network (`shared/network/`)
+- **Purpose**: Client-server communication definitions
+- **Pattern**: @rbxts/net Definitions, server validation, security focus
+- **Review**: Check parameter types, validate security measures
+- **Guidelines**: Never trust client data, use descriptive names
+
+### Types (`shared/types/`)
+- **Purpose**: Shared TypeScript type definitions and interfaces
+- **Pattern**: PascalCase, interfaces over types, comprehensive docs
+- **Review**: Check inheritance hierarchies, ensure backwards compatibility
+- **Guidelines**: Generic types for reusability, proper extends relationships
+
 ### Additional Best Practices
 
 - **Type Safety**: Always use explicit types for function parameters and return values

@@ -1,0 +1,1 @@
+import { AbilityMeta } from "shared/meta";

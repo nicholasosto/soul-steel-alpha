@@ -224,9 +224,84 @@ processData(largeDataStructure);
 largeDataStructure = undefined; // Allow garbage collection
 ```
 
+## Shared Module Architecture
+
+The `src/shared/` directory follows a structured organization pattern:
+
+### Asset IDs (`shared/asset-ids/`)
+
+**Purpose**: Centralized Roblox asset ID constants and utilities
+
+- Contains animation, image, and sound asset IDs
+- Uses `const` assertions for type safety
+- Provides validation functions for asset availability
+- **Review Checklist**: Verify no placeholder IDs in production, check asset availability
+- **Creation Pattern**: Constants → Types → Helper Functions
+
+### Catalogs (`shared/catalogs/`)
+
+**Purpose**: Game content configuration and metadata collections
+
+- Structured data for game mechanics and content
+- Strongly typed interfaces with validation
+- Centralized configuration systems
+- **Review Checklist**: Validate data integrity, check for missing entries, verify type safety
+- **Creation Pattern**: Interfaces → Catalog Data → Helper Functions
+
+### Helpers (`shared/helpers/`)
+
+**Purpose**: Reusable utility functions and helper classes
+
+- Pure functions with comprehensive type annotations
+- Common operations and data transformations
+- Type guards and validation utilities
+- **Review Checklist**: Test complex logic, ensure performance, verify error handling
+- **Creation Pattern**: Imports → Types → Helper Functions → Exports
+
+### Keys (`shared/keys/`)
+
+**Purpose**: String literal constants for entity identification
+
+- Type-safe key definitions using `const` assertions
+- Prevents typos and inconsistencies in entity references
+- Includes validation and manipulation functions
+- **Review Checklist**: Check for duplicates, ensure consistent naming conventions
+- **Creation Pattern**: Key Arrays → Type Definitions → Helper Functions
+
+### Meta (`shared/meta/`)
+
+**Purpose**: Entity metadata and configuration data
+
+- Readonly properties with builder patterns
+- Default values and factory functions
+- Configuration data for game mechanics
+- **Review Checklist**: Validate structure integrity, check completeness, verify versioning
+- **Creation Pattern**: Interfaces → Default Values → Factory Functions → Utilities
+
+### Network (`shared/network/`)
+
+**Purpose**: Client-server communication definitions
+
+- @rbxts/net remote definitions with proper typing
+- Security-focused with server-side validation
+- Type-safe communication channels
+- **Review Checklist**: Verify parameter types, validate security measures, check rate limiting
+- **Creation Pattern**: Imports → Type Definitions → Remote Definitions
+
+### Types (`shared/types/`)
+
+**Purpose**: Shared TypeScript type definitions and interfaces
+
+- PascalCase naming with comprehensive documentation
+- Proper inheritance hierarchies
+- Generic types for enhanced reusability
+- **Review Checklist**: Check type relationships, ensure backwards compatibility, verify documentation
+- **Creation Pattern**: Imports → Base Types → Complex Types → Utility Types
+
 ## Debugging Tips
 
 ### Console Logging
+
 ```typescript
 // Use structured logging
 print(`[${player.Name}] Ability ${abilityKey} started successfully`);
@@ -240,6 +315,7 @@ if (DEBUG) {
 ```
 
 ### Error Context
+
 ```typescript
 // Provide context in error messages
 if (abilityData === undefined) {

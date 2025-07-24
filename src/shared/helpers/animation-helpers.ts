@@ -1,4 +1,3 @@
-/// <reference types="@rbxts/types" />
 /**
  * @file        animation-helpers.ts
  * @module      AnimationHelpers
@@ -10,16 +9,42 @@
  * @since        0.1.0
  * @lastUpdated  2025-07-24 by Trembus
  */
+import { Players } from "@rbxts/services";
 import { AnimationConstants, AnimationKey, getAnimationID } from "shared/asset-ids";
+
 export const AnimationTracks: Map<Model, Map<string, AnimationTrack>> = new Map();
 
+// Cleanup animation tracks when player leaves
+Players.PlayerRemoving.Connect((player) => {
+	player.CharacterRemoving.Connect((character) => {
+		cleanupCharacterAnimations(character);
+	});
+});
+
+/**
+ * Cleanup all animation tracks for a character to prevent memory leaks
+ * @param character The character to cleanup animations for
+ */
+export function cleanupCharacterAnimations(character: Model): void {
+	const characterTracks = AnimationTracks.get(character);
+	if (characterTracks) {
+		for (const [key, track] of characterTracks) {
+			track.Stop();
+			track.Destroy();
+		}
+		AnimationTracks.delete(character);
+		warn(`Cleaned up animation tracks for character ${character.Name}`);
+	}
+}
+
 function createAnimation(key: AnimationKey): Animation | undefined {
-	const animation = new Instance("Animation");
 	const animationId = getAnimationID(key);
 	if (animationId === undefined) {
-		warn(`Animation ID not found for ${key}`);
+		warn(`Animation ID not found or invalid for ${key}`);
 		return undefined;
 	}
+
+	const animation = new Instance("Animation");
 	animation.Name = key;
 	animation.AnimationId = animationId;
 	return animation;
@@ -41,13 +66,22 @@ function getAnimator(character: Model): Animator | undefined {
 
 function loadAnimationTrack(character: Model, key: AnimationKey): AnimationTrack | undefined {
 	const animation = createAnimation(key);
-	const animationKey = animation?.Name as AnimationKey;
-	const animator = getAnimator(character) as Animator;
-	if (!animationKey || !animation || !animator) return undefined;
+	if (!animation) {
+		return undefined;
+	}
 
-	const track = animator?.LoadAnimation(animation);
+	const animator = getAnimator(character);
+	if (!animator) {
+		return undefined;
+	}
 
-	return track;
+	try {
+		const track = animator.LoadAnimation(animation);
+		return track;
+	} catch (error) {
+		warn(`Failed to load animation track for ${key} on character ${character.Name}: ${error}`);
+		return undefined;
+	}
 }
 function registerAnimationTrack(character: Model, key: AnimationKey): AnimationTrack | undefined {
 	const track = loadAnimationTrack(character, key);
@@ -76,18 +110,24 @@ export function LoadCharacterAnimations(character: Model, keys: AnimationKey[]):
 	}
 }
 
-export function PlayAnimation(character: Model, key: AnimationKey): void {
+export function PlayAnimation(character: Model, key: AnimationKey): boolean {
 	const track = AnimationTracks.get(character)?.get(key) as AnimationTrack;
 	if (!track) {
 		warn(`Animation track for ${key} not found on character ${character.Name}`);
-		return;
+		return false;
 	}
 
 	if (track.IsPlaying) {
 		warn(`Animation ${key} is already playing on character ${character.Name}`);
-		return;
+		return false;
 	}
 
-	track.Play();
-	warn(`Playing animation ${key} on character ${character.Name}`);
+	try {
+		track.Play();
+		warn(`Playing animation ${key} on character ${character.Name}`);
+		return true;
+	} catch (error) {
+		warn(`Failed to play animation ${key} on character ${character.Name}: ${error}`);
+		return false;
+	}
 }
