@@ -31,7 +31,14 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.16.0",
+    "@rbxts/fusion": "^0.2.0",
+    "@rbxts/maid": "^1.1.0",
+    "@rbxts/net": "^3.0.10",
+    "@rbxts/profileservice": "^1.4.2",
     "@rbxts/services": "^1.5.5",
     "zod": "^3.25.76"
+  },
+  "volta": {
+    "node": "20.19.4"
   }
 }
