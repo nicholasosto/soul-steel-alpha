@@ -22,6 +22,50 @@ This is a Roblox TypeScript project that compiles TypeScript code to Lua for Rob
 3. **Security**: Never trust client input on the server
 4. **Performance**: Be mindful of script performance in Roblox
 
+## Common Pitfalls & Best Practices
+
+### Undefined/Null Validation
+
+**✅ CORRECT - Explicit undefined checks:**
+```typescript
+if (variableToCheck === undefined) return;
+if (variableCheck !== undefined) {
+    // Safe to use variableCheck
+}
+```
+
+**❌ INCORRECT - Truthy/falsy checks:**
+```typescript
+if (!variableCheck) return; // Avoids this - can give false positives for 0, "", false
+```
+
+**Why:** In Roblox-TS, explicit undefined checks are more reliable than truthy/falsy checks because valid values like `0`, `""`, or `false` would incorrectly trigger falsy conditions.
+
+### @rbxts/net ServerAsyncFunction Types
+
+**✅ CORRECT - Return type without Promise wrapper:**
+```typescript
+export const AbilityRemotes = Definitions.Create({
+    START_ABILITY: Definitions.ServerAsyncFunction<(abilityKey: AbilityKey) => boolean>(),
+});
+```
+
+**❌ INCORRECT - Don't manually wrap in Promise:**
+```typescript
+export const AbilityRemotes = Definitions.Create({
+    START_ABILITY: Definitions.ServerAsyncFunction<(abilityKey: AbilityKey) => Promise<boolean>>(),
+});
+```
+
+**Why:** `@rbxts/net` ServerAsyncFunction automatically wraps return values in Promises. Manually adding `Promise<T>` creates a `Promise<Promise<T>>` which causes type errors.
+
+### Additional Best Practices
+
+- **Type Safety**: Always use explicit types for function parameters and return values
+- **Asset References**: Use the shared asset ID system instead of hardcoded strings
+- **Network Events**: Always validate data received from remotes on the server side
+- **Error Handling**: Use proper error boundaries and logging for debugging
+
 ## MCP Server Integration
 
 This project includes an MCP server (`mcp-server.ts`) that provides AI assistants with:

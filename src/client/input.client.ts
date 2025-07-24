@@ -1,4 +1,14 @@
 import { UserInputService } from "@rbxts/services";
+import { ABILITY_KEYS, AbilityKey } from "shared/keys";
+import { AbilityRemotes } from "shared/network/ability-remotes";
+
+function StartAbility(abilityKey: AbilityKey) {
+	const success = AbilityRemotes.Client.Get("START_ABILITY")
+		.CallServerAsync(abilityKey)
+		.then((result) => {
+			print(`Ability ${abilityKey} started: ${result}`);
+		});
+}
 
 UserInputService.InputBegan.Connect((input, gameProcessedEvent) => {
 	if (gameProcessedEvent) {
@@ -9,10 +19,13 @@ UserInputService.InputBegan.Connect((input, gameProcessedEvent) => {
 		const keyCode = input.KeyCode;
 		switch (keyCode) {
 			case Enum.KeyCode.Q:
-				print(`${keyCode.Name} pressed - Action: Quick Attack`);
+				StartAbility("Melee");
 				break;
 			case Enum.KeyCode.E:
-				print(`${keyCode.Name} pressed - Action: Heavy Attack`);
+				StartAbility("Ice-Rain");
+				break;
+			case Enum.KeyCode.R:
+				StartAbility("Earthquake");
 				break;
 			default:
 				print(`Key pressed: ${keyCode.Name}`);
