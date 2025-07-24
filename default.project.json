@@ -41,12 +41,6 @@
 			"$className": "Workspace",
 			"$properties": {
 				"FilteringEnabled": true
-			},
-			"ThreePartWeld": {
-				"$path": "three-part-weld.model.json"
-			},
-			"IceRain": {
-				"$path": "ice-rain.model.json"
 			}
 		},
 		"HttpService": {

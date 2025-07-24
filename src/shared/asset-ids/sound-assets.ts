@@ -12,6 +12,10 @@
  */
 
 export const SoundConstants = {
+	Validation: {
+		CastSuccess: "rbxassetid://6874710483",
+		CastFail: "rbxassetid://2390695935",
+	},
 	Combat: {
 		Hurt: "rbxassetid://124168040156203",
 	},
@@ -47,4 +51,8 @@ export const SoundConstants = {
 } as const;
 
 export type SoundKey = keyof typeof SoundConstants;
-export type SoundSubKey = keyof (typeof SoundConstants)[SoundKey];
+export type ValidationSound = keyof typeof SoundConstants.Validation;
+export type CombatSound = keyof typeof SoundConstants.Combat;
+export type RobotThemeSound = keyof typeof SoundConstants.RobotTheme;
+export type FatelessThemeSound = keyof typeof SoundConstants.FatelessTheme;
+export type ZombieThemeSound = keyof typeof SoundConstants.ZombieTheme;

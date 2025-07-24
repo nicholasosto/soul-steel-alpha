@@ -95,7 +95,7 @@ export interface AbilityMeta {
 	 * @param entity - The entity holding the ability
 	 * @param holdTime - Time in seconds the ability has been held
 	 */
-	OnHold?: (entity: SSEntity, holdTime: number) => void;
+	OnHold?: (entity: SSEntity, holdTime: number, target?: SSEntity) => void;
 
 	/**
 	 * Optional callback executed when the ability effect ends naturally.

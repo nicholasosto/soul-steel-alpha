@@ -19,6 +19,7 @@ import { AbilityKey } from "shared/keys";
 import { AbilityRemotes } from "shared/network";
 import { SSEntity } from "shared/types/SSEntity";
 import { isSSEntity } from "shared/helpers/type-guards";
+import { AbilityCatalog } from "shared/catalogs";
 
 /**
  * Server-side ability management service.
@@ -197,13 +198,29 @@ class AbilityService {
 	 * @private
 	 */
 	private handleAbilityStart(player: Player, abilityKey: AbilityKey): boolean {
+		const abilityMeta = AbilityCatalog[abilityKey];
+		if (!abilityMeta) {
+			warn(`Ability ${abilityKey} does not exist in the catalog`);
+			return false;
+		}
+
 		try {
 			if (!this.validateAbility(player, abilityKey)) {
+				abilityMeta.OnStartFailure?.(player.Character as SSEntity);
 				return false;
 			}
 
 			// Execute ability logic here
-			print(`Player ${player.Name} successfully started ability: ${abilityKey}`);
+			const character = player.Character as SSEntity;
+			// Play Success Effects
+			abilityMeta.OnStartSuccess?.(character, undefined);
+			abilityMeta.OnHold?.(character, 0, undefined);
+			task.spawn(() => {
+				// Simulate ability duration
+				wait(abilityMeta.duration);
+				abilityMeta.OnEnd?.(character);
+			});
+
 			return true;
 		} catch (error) {
 			warn(`Error handling ability start for ${player.Name}: ${error}`);
