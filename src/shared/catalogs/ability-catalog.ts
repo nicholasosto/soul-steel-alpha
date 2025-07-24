@@ -1,20 +1,33 @@
 import { SoundService } from "@rbxts/services";
 import { ImageConstants } from "shared/asset-ids";
-import { isSSEntity } from "shared/helpers";
+import { isSSEntity, PlayAnimation } from "shared/helpers";
 import { playSound } from "shared/helpers/audio-helpers";
 import { AbilityKey } from "shared/keys";
 import { AbilityMeta } from "shared/meta";
+import { SSEntity } from "shared/types";
 const CastSuccessSound = SoundService.FindFirstChild("CastSuccess") as Sound;
 const CastFailSound = SoundService.FindFirstChild("CastFail") as Sound;
 
 // Internal Helpers
 
-function runCastSuccessEffects() {
+function runCastSuccessEffects(character: Model) {
+	const entity = character as SSEntity;
+	if (entity === undefined || !isSSEntity(entity)) {
+		warn("INVALID: Character model is not a valid SSEntity");
+		return;
+	}
 	CastSuccessSound.Play();
+	PlayAnimation(entity, "Taunt");
 }
 
-function runCastFailEffects() {
+function runCastFailEffects(character: Model) {
+	const entity = character as SSEntity;
+	if (entity === undefined || !isSSEntity(entity)) {
+		warn("INVALID: Character model is not a valid SSEntity");
+		return;
+	}
 	CastFailSound.Play();
+	PlayAnimation(entity, "TakeDamage");
 }
 
 export const AbilityCatalog: Record<AbilityKey, AbilityMeta> = {
@@ -27,11 +40,11 @@ export const AbilityCatalog: Record<AbilityKey, AbilityMeta> = {
 		cost: 5,
 		icon: ImageConstants.Ability.Melee,
 		OnStartSuccess: (entity, target) => {
-			runCastSuccessEffects();
+			runCastSuccessEffects(entity);
 			print(`Catalog: ${entity.Name} used Melee on: ${target?.Name}`);
 		},
 		OnStartFailure: (entity) => {
-			runCastFailEffects();
+			runCastFailEffects(entity);
 			print(`Catalog: ${entity.Name} failed to use Melee`);
 		},
 	},
@@ -44,11 +57,11 @@ export const AbilityCatalog: Record<AbilityKey, AbilityMeta> = {
 		cost: 20,
 		icon: ImageConstants.Ability.Ice_Rain,
 		OnStartSuccess: (entity, target) => {
-			runCastSuccessEffects();
+			runCastSuccessEffects(entity);
 			print(`Catalog: ${entity.Name} used Ice Rain on: ${target?.Name}`);
 		},
 		OnStartFailure: (entity) => {
-			runCastFailEffects();
+			runCastFailEffects(entity);
 			print(`Catalog: ${entity.Name} failed to use Ice Rain`);
 		},
 	},
@@ -61,11 +74,11 @@ export const AbilityCatalog: Record<AbilityKey, AbilityMeta> = {
 		cost: 30,
 		icon: ImageConstants.Ability.Earthquake,
 		OnStartSuccess: (entity, target) => {
-			runCastSuccessEffects();
+			runCastSuccessEffects(entity);
 			print(`Catalog: ${entity?.Name} used Earthquake on: ${target?.Name}`);
 		},
 		OnStartFailure: (entity) => {
-			runCastFailEffects();
+			runCastFailEffects(entity);
 			print(`Catalog: ${entity?.Name} failed to use Earthquake`);
 		},
 	},
@@ -78,18 +91,18 @@ export const AbilityCatalog: Record<AbilityKey, AbilityMeta> = {
 		cost: 25,
 		icon: ImageConstants.Ability.Soul_Drain,
 		OnInterrupt: (entity) => {
-			runCastFailEffects();
+			runCastFailEffects(entity);
 			print(`Catalog: ${entity.Name} interrupted Soul Drain`);
 		},
 		OnHold: (entity, holdTime, target) => {
 			print(`Catalog: ${entity.Name} is holding ${holdTime} Soul Drain on: ${target?.Name}`);
 		},
 		OnStartSuccess: (entity, target) => {
-			runCastSuccessEffects();
+			runCastSuccessEffects(entity);
 			print(`Catalog: ${entity.Name} used Soul Drain on: ${target?.Name}`);
 		},
 		OnStartFailure: (entity) => {
-			runCastFailEffects();
+			runCastFailEffects(entity);
 			print(`Catalog: ${entity.Name} failed to use Soul Drain`);
 		},
 	},
