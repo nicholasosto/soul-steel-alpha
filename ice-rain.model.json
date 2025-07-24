@@ -1,0 +1,118 @@
+{
+  "ClassName": "Model",
+  "Properties": {
+    "Name": "Ice Rain"
+  },
+  "Children": [
+    {
+      "Name": "IcePart1",
+      "ClassName": "Part",
+      "Properties": {
+        "Size": [1, 2, 1],
+        "Position": [10, 0, 1000],
+        "Material": "Neon",
+        "Color": [0, 0.5, 1],
+        "Shape": "Cylinder"
+      }
+    },
+    {
+      "Name": "IcePart2",
+      "ClassName": "Part",
+      "Properties": {
+        "Size": [1, 2, 1],
+        "Position": [8.090169943749475, 5.877852522924731, 1000],
+        "Material": "Neon",
+        "Color": [0, 0.5, 1],
+        "Shape": "Cylinder"
+      }
+    },
+    {
+      "Name": "IcePart3",
+      "ClassName": "Part",
+      "Properties": {
+        "Size": [1, 2, 1],
+        "Position": [3.0901699437494742, 9.510565162951536, 1000],
+        "Material": "Neon",
+        "Color": [0, 0.5, 1],
+        "Shape": "Cylinder"
+      }
+    },
+    {
+      "Name": "IcePart4",
+      "ClassName": "Part",
+      "Properties": {
+        "Size": [1, 2, 1],
+        "Position": [-3.0901699437494734, 9.510565162951536, 1000],
+        "Material": "Neon",
+        "Color": [0, 0.5, 1],
+        "Shape": "Cylinder"
+      }
+    },
+    {
+      "Name": "IcePart5",
+      "ClassName": "Part",
+      "Properties": {
+        "Size": [1, 2, 1],
+        "Position": [-8.090169943749473, 5.877852522924732, 1000],
+        "Material": "Neon",
+        "Color": [0, 0.5, 1],
+        "Shape": "Cylinder"
+      }
+    },
+    {
+      "Name": "IcePart6",
+      "ClassName": "Part",
+      "Properties": {
+        "Size": [1, 2, 1],
+        "Position": [-10, 1.2246467991473532e-15, 1000],
+        "Material": "Neon",
+        "Color": [0, 0.5, 1],
+        "Shape": "Cylinder"
+      }
+    },
+    {
+      "Name": "IcePart7",
+      "ClassName": "Part",
+      "Properties": {
+        "Size": [1, 2, 1],
+        "Position": [-8.090169943749475, -5.877852522924731, 1000],
+        "Material": "Neon",
+        "Color": [0, 0.5, 1],
+        "Shape": "Cylinder"
+      }
+    },
+    {
+      "Name": "IcePart8",
+      "ClassName": "Part",
+      "Properties": {
+        "Size": [1, 2, 1],
+        "Position": [-3.0901699437494754, -9.510565162951535, 1000],
+        "Material": "Neon",
+        "Color": [0, 0.5, 1],
+        "Shape": "Cylinder"
+      }
+    },
+    {
+      "Name": "IcePart9",
+      "ClassName": "Part",
+      "Properties": {
+        "Size": [1, 2, 1],
+        "Position": [3.090169943749473, -9.510565162951536, 1000],
+        "Material": "Neon",
+        "Color": [0, 0.5, 1],
+        "Shape": "Cylinder"
+      }
+    },
+    {
+      "Name": "IcePart10",
+      "ClassName": "Part",
+      "Properties": {
+        "Size": [1, 2, 1],
+        "Position": [8.090169943749473, -5.877852522924734, 1000],
+        "Material": "Neon",
+        "Color": [0, 0.5, 1],
+        "Shape": "Cylinder"
+      }
+    }
+  ]
+}

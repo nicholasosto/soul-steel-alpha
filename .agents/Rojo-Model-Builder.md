@@ -1,11 +1,11 @@
-# Agent - Model Builder - Rojo v7 LLM Starter Kit
+# Agent - Model Builder - Rojo v7 LLM Starter Kit
 
 This file contains a quick‑reference, a strict instruction set for generator agents, and a reusable Codex request template.  
-Hand it to any language‑model‑powered “builder‑bot” so it can emit Rojo‑compatible JSON that Roblox Studio will accept.
+Hand it to any language‑model‑powered "builder‑bot" so it can emit Rojo‑compatible JSON that Roblox Studio will accept.
 
 ---
 
-## A. Quick‑reference (“cheat‑sheet”)
+## A. Quick‑reference ("cheat‑sheet")
 
 ### 1. Project file skeleton
 
@@ -31,10 +31,10 @@ Key points:
 
 | Field | Purpose | Required? | Notes |
 |-------|---------|-----------|-------|
-| `$className` | Roblox `ClassName` to instantiate | ✓ unless `$path` provided | Accepts service names (e.g. **`ReplicatedStorage`**) |
-| `$path` | Filesystem path to import | ✓ unless `$className` provided | Relative to the project file folder. |
-| `$properties` | Map of property → value | optional | Values follow implicit / explicit rules (see §3). |
-| `$ignoreUnknownInstances` | Bool | optional (default = `false` when `$path` set, else `true`) | Tells Rojo to delete or keep stray children. |
+| `$className` | Roblox `ClassName` to instantiate | ✓ unless `$path` provided | Accepts service names (e.g. **`ReplicatedStorage`**) |
+| `$path` | Filesystem path to import | ✓ unless `$className` provided | Relative to the project file folder. |
+| `$properties` | Map of property → value | optional | Values follow implicit / explicit rules (see §3). |
+| `$ignoreUnknownInstances` | Bool | optional (default = `false` when `$path` set, else `true`) | Tells Rojo to delete or keep stray children. |
 | *any other key* | Child Instance‑Description | — | The key becomes the instance **Name**. |
 
 Example (purely in‑memory tree):
@@ -65,7 +65,7 @@ Example (purely in‑memory tree):
 }
 ```
 
-Supported types (all can be implicit unless noted “explicit only”): Bool, String, Float32/64, Int32/64, Vector2/3, Color3, CFrame, Enum, Tags, UDim/UDim2, NumberSequence, ColorSequence, PhysicalProperties, Attributes.
+Supported types (all can be implicit unless noted "explicit only"): Bool, String, Float32/64, Int32/64, Vector2/3, Color3, CFrame, Enum, Tags, UDim/UDim2, NumberSequence, ColorSequence, PhysicalProperties, Attributes.
 
 ---
 
@@ -96,13 +96,48 @@ Simpler than a full project file when you need a self‑contained model:
 }
 ```
 
+#### Important Notes for `.model.json` Files
+
+**Object References:**
+
+* **AVOID** object references between instances in the same model (e.g., WeldConstraint.Part0/Part1, ObjectValue.Value)
+* Rojo's JSON parser has strict requirements for reference formats that are error-prone
+* **RECOMMENDED**: Create references programmatically via scripts after the model loads
+
+**Common Reference Errors:**
+
+```jsonc
+// ❌ AVOID - These formats cause parsing errors:
+"Part0": "Part1"                    // String references don't work
+"Part0": {"$ref": "Part1"}          // Wrong reference syntax
+"Part0": {"Ref": "Part1"}           // Also problematic
+
+// ✅ RECOMMENDED - Use scripts instead:
+// Create a ServerScript or LocalScript that finds and connects parts at runtime
+```
+
+**Safe Properties for JSON Models:**
+
+* Primitive values: strings, numbers, booleans
+* Arrays for Vector3, Color3, etc.: `[x, y, z]`
+* Enum strings: `"SmoothPlastic"`, `"Neon"`
+* Simple object properties without references
+
+**Color Properties - Important:**
+
+* Use `"Color": [r, g, b]` with RGB values 0-1, NOT `"BrickColor"`
+* Example: `"Color": [0, 0.5, 1]` for blue instead of `"BrickColor": "Bright blue"`
+
+**Best Practice:**
+Start with a basic model containing only parts/objects with simple properties, then add complex relationships via scripts.
+
 ---
 
 ## B. Instruction set for the generator agent
 
 1. **Validate first**  
    * Fail fast if mandatory fields (`name`, root `tree`, `$className` *or* `$path`) are missing.  
-2. **Prefer implicit properties**; switch to explicit only when the type is “explicit‑only” or unknown.  
+2. **Prefer implicit properties**; switch to explicit only when the type is "explicit‑only" or unknown.  
 3. **Vectors & colours**  
    * Represent `Vector2/3`, `CFrame`, `Color3` as number arrays; clamp Color3 values to 0‑1 floats.  
 4. **Enums**  
@@ -113,11 +148,15 @@ Simpler than a full project file when you need a self‑contained model:
    * Default to `false` if `$path` is present (keep Studio‑created children), else `true` (strict mirroring).  
 7. **No side effects**  
    * Never write to disk; just emit JSON text blocks.  
-8. **Output format**  
+8. **Object References - CRITICAL**  
+   * **NEVER** include object references in `.model.json` files (WeldConstraint.Part0/Part1, ObjectValue.Value, etc.)
+   * Reference formats like `{"Ref": "PartName"}` or `{"$ref": "PartName"}` cause parsing errors
+   * Instead, create basic models and handle connections via scripts at runtime
+9. **Output format**  
    * Deliver either (a) one `.project.json` string, or (b) `.project.json` plus any `.model.json` files, clearly delimited by triple‑back‑tick code fences and labelled with filenames.  
-9. **Comments**  
-   * JSON does not permit comments; if examples need explanation, place it *outside* the code fence.  
-10. **Follow Roblox naming rules** – instance names cannot contain “.”, “/”, or null characters.  
+10. **Comments**  
+    * JSON does not permit comments; if examples need explanation, place it *outside* the code fence.  
+11. **Follow Roblox naming rules** – instance names cannot contain ".", "/", or null characters.  
 
 ---
 
@@ -168,7 +207,8 @@ Copy‑paste, replace bracketed sections, and send to the agent:
 }
 ```
 
-**Global options**
+### Global options
+
 ```json
 {
   "globIgnorePaths": ["**/*.spec.lua"],
@@ -176,7 +216,8 @@ Copy‑paste, replace bracketed sections, and send to the agent:
 }
 ```
 
-**Deliverables wanted**
+### Deliverables wanted
+
 1. `weapon-kit.project.json` (full tree above)  
 2. If useful: separate `.model.json` for the Sword tool  
 
@@ -185,7 +226,7 @@ Copy‑paste, replace bracketed sections, and send to the agent:
 ### How to use the template
 
 1. List or sketch **only** the instances you want; the agent will wrap them under the root `tree`.  
-2. Provide any real file paths under “Filesystem layout” so `$path` entries won’t break.  
-3. Omit sections you don’t need—the agent must supply sensible defaults as per the instruction set.  
+2. Provide any real file paths under "Filesystem layout" so `$path` entries won't break.  
+3. Omit sections you don't need—the agent must supply sensible defaults as per the instruction set.  
 
 ---
