@@ -23,12 +23,7 @@
 					}
 				}
 			},
-			"Constants": {
-				"$className": "Folder",
-				"TS": {
-					"$path": "out/constants"
-				}
-			},
+
 			"TS": {
 				"$path": "out/shared"
 			}
