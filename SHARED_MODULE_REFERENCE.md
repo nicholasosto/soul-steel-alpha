@@ -20,7 +20,6 @@ The `src/shared/` directory contains all code that is accessible by both client 
 - **Key Files**: `ability-catalog.ts`
 - **Current Files**: `ability-catalog.ts`, `index.ts`
 - **Review Focus**: Data integrity, missing entries, type completeness
-- **Note**: Contains temporary files (`.tmp`) during development - these should be cleaned up
 
 ### 📁 `helpers/` - Utility Functions
 **Purpose**: Reusable utility functions and helper classes
