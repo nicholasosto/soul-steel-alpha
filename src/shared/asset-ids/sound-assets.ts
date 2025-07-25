@@ -52,7 +52,3 @@ export const SoundConstants = {
 
 export type SoundKey = keyof typeof SoundConstants;
 export type ValidationSound = keyof typeof SoundConstants.Validation;
-export type CombatSound = keyof typeof SoundConstants.Combat;
-export type RobotThemeSound = keyof typeof SoundConstants.RobotTheme;
-export type FatelessThemeSound = keyof typeof SoundConstants.FatelessTheme;
-export type ZombieThemeSound = keyof typeof SoundConstants.ZombieTheme;

@@ -1,7 +1,6 @@
 import { SoundService } from "@rbxts/services";
 import { ImageConstants } from "shared/asset-ids";
 import { isSSEntity, PlayAnimation } from "shared/helpers";
-import { playSound } from "shared/helpers/audio-helpers";
 import { AbilityKey } from "shared/keys";
 import { AbilityMeta } from "shared/meta";
 import { SSEntity } from "shared/types";

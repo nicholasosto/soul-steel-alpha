@@ -59,14 +59,14 @@ const LIMB_FALLBACK_MAP = {
  */
 function findRigPart(rig: Model, partName: string): Part | undefined {
 	const fallbacks = LIMB_FALLBACK_MAP[partName as keyof typeof LIMB_FALLBACK_MAP];
-	
+
 	if (fallbacks) {
 		for (const fallback of fallbacks) {
 			const part = rig.FindFirstChild(fallback) as Part;
 			if (part) return part;
 		}
 	}
-	
+
 	// Direct lookup if no fallbacks defined
 	return rig.FindFirstChild(partName) as Part;
 }
@@ -76,7 +76,7 @@ function findRigPart(rig: Model, partName: string): Part | undefined {
  */
 function parentEffectChildToRig(child: Instance, rig: Model): void {
 	const childName = child.Name;
-	
+
 	// Handle special cases
 	if (childName === "Floor") {
 		child.GetChildren().forEach((floorChild) => {
@@ -89,11 +89,11 @@ function parentEffectChildToRig(child: Instance, rig: Model): void {
 		});
 		return;
 	}
-	
+
 	// Use data-driven approach for limb mapping
 	const targetPart = findRigPart(rig, childName);
 	const finalParent = targetPart || rig;
-	
+
 	child.GetChildren().forEach((grandChild) => {
 		grandChild.Parent = finalParent;
 	});
@@ -233,10 +233,10 @@ function loadEffectToRig(key: VFXKey, rig: Model): Instance[] | undefined {
 	/* Clone the effect template to avoid modifying the original */
 	const templateClone = effectTemplate.Clone();
 	if (templateClone === undefined) return undefined;
-	
+
 	const templateChildren = templateClone.GetChildren();
 	const resultInstances: Instance[] = [];
-	
+
 	// Use data-driven approach instead of massive switch statement
 	templateChildren.forEach((child) => {
 		parentEffectChildToRig(child, rig);
@@ -245,10 +245,10 @@ function loadEffectToRig(key: VFXKey, rig: Model): Instance[] | undefined {
 			resultInstances.push(grandChild);
 		});
 	});
-	
+
 	// Clean up the temporary template
 	templateClone.Destroy();
-	
+
 	return resultInstances;
 }
 
@@ -273,6 +273,3 @@ export function RunEffect(key: VFXKey, rig: Model) {
 export function getEffectMeta(key: VFXKey): EffectMeta | undefined {
 	return EffectCatalog[key];
 }
-
-// Export transform utilities for reuse across the codebase
-export { applyPositionOffset, applyRotationTransform, applyScaleTransform };

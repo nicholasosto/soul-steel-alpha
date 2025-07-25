@@ -110,6 +110,3 @@ export const ImageConstants = {
 		GameTitle: "rbxassetid://83079804672155",
 	},
 } as const;
-
-export type ImageKey = keyof typeof ImageConstants;
-export type ImageSubKey = keyof (typeof ImageConstants)[ImageKey];

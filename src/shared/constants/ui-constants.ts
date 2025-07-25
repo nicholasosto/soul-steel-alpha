@@ -14,21 +14,21 @@ export const UI_SIZES = {
 	BUTTON_MEDIUM: UDim2.fromOffset(120, 50),
 	BUTTON_LARGE: UDim2.fromOffset(150, 60),
 	BUTTON_EXTRA_LARGE: UDim2.fromOffset(200, 60),
-	
+
 	// Icon Button Sizes
 	ICON_SMALL: UDim2.fromOffset(50, 50),
 	ICON_LARGE: UDim2.fromOffset(90, 90),
 	ICON_EXTRA_LARGE: UDim2.fromOffset(132, 132),
-	
+
 	// Panel Sizes
 	PANEL_COMPACT: UDim2.fromOffset(180, 30),
 	PANEL_STANDARD: UDim2.fromOffset(200, 150),
 	PANEL_WIDE: UDim2.fromOffset(200, 100),
-	
+
 	// Text Sizes
 	TEXT_LINE: UDim2.fromOffset(180, 20),
 	TEXT_FIELD: UDim2.fromOffset(180, 35),
-	
+
 	// Common Specific Sizes (from frequent patterns)
 	SIZE_100_40: UDim2.fromOffset(100, 40),
 	SIZE_140_50: UDim2.fromOffset(140, 50),
@@ -52,22 +52,3 @@ export const UI_SPACING = {
 	LARGE: 20,
 	EXTRA_LARGE: 30,
 } as const;
-
-/**
- * Helper function to create custom UDim2 sizes with validation
- */
-export function createUISize(width: number, height: number): UDim2 {
-	if (width <= 0 || height <= 0) {
-		warn(`Invalid UI size: ${width}x${height}. Using default size.`);
-		return UI_SIZES.BUTTON_MEDIUM;
-	}
-	return UDim2.fromOffset(width, height);
-}
-
-/**
- * Helper function to create spacing-based positions
- */
-export function createUIPosition(x: number, y: number, spacing: keyof typeof UI_SPACING = "MEDIUM"): UDim2 {
-	const spaceValue = UI_SPACING[spacing];
-	return UDim2.fromOffset(x + spaceValue, y + spaceValue);
-}
