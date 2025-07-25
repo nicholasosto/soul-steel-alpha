@@ -16,6 +16,7 @@
 
 import { Players } from "@rbxts/services";
 import { AbilityKey } from "shared/keys";
+import { VFXConfigOption, VFXKey, RunEffect } from "shared/packages";
 import { AbilityRemotes } from "shared/network";
 import { SSEntity } from "shared/types/SSEntity";
 import { isSSEntity } from "shared/helpers/type-guards";
@@ -210,6 +211,7 @@ class AbilityService {
 	 */
 	private handleAbilityStart(player: Player, abilityKey: AbilityKey): boolean {
 		const abilityMeta = AbilityCatalog[abilityKey];
+		RunEffect("FrostCast", player.Character as Model);
 		if (!abilityMeta) {
 			warn(`Ability ${abilityKey} does not exist in the catalog`);
 			return false;
@@ -218,6 +220,7 @@ class AbilityService {
 		try {
 			if (!this.validateAbility(player, abilityKey)) {
 				abilityMeta.OnStartFailure?.(player.Character as SSEntity);
+				RunEffect("Slow", player.Character as Model);
 				return false;
 			}
 
