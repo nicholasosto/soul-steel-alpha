@@ -75,7 +75,7 @@ export const EffectCatalog: Record<VFXKey, EffectMeta> = {
 		effectTemplate: EffectPartsFolder.WaitForChild("Frost_Cast") as Part,
 		displayName: "Frost Cast",
 		description: "Effect triggered when a frost cast is applied.",
-		defaultDuration: 5,
+		defaultDuration: 55,
 		defaultImmunityDuration: 2,
 	},
 };
