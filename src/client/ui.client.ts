@@ -2,7 +2,8 @@ import { Players } from "@rbxts/services";
 import { IconButton, TestButtonProps } from "client/client-ui";
 import Fusion, { Children, New, OnEvent } from "@rbxts/fusion";
 import { ImageConstants } from "shared/asset-ids";
-import { createMainGameUI } from "./MainUIExample";
+
+import { ServerFunction } from "./event-dispatcher";
 
 const playerGui = Players.LocalPlayer.WaitForChild("PlayerGui");
 const testButton = IconButton(TestButtonProps.MenuItem);
@@ -17,6 +18,7 @@ const testButton2 = IconButton({
 	Name: "TestButton2",
 	onClick: () => {
 		print("Test button clicked, selected state:", isSelectedTest.get());
+		ServerFunction("ABILITY_ACTIVATE", "Melee");
 	},
 });
 const testScreen = New("ScreenGui")({
@@ -30,4 +32,3 @@ const testScreen = New("ScreenGui")({
 });
 
 print("UI Client initialized with test button:", testScreen.FindFirstChild("IconButton"));
-createMainGameUI().Parent = playerGui;
