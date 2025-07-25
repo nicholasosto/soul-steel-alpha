@@ -24,7 +24,7 @@ export const MenuButtonImageMap: Record<string, string> = {
 } as const;
 
 export const ImageConstants = {
-	MenuButtonImage: "rbxassetid://79163709624038",
+	IconButtonBackground: "rbxassetid://79163709624038",
 	DefaultUnassigned: "rbxassetid://117838504772569",
 	Ability: {
 		Background: "rbxassetid://91419725020401",

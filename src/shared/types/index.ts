@@ -39,3 +39,12 @@
  */
 
 export * from "./SSEntity";
+
+// Player Data Interface
+export interface PlayerData {
+	health: number;
+	mana: number;
+	stamina: number;
+	experience: number;
+	level: number;
+}

@@ -27,7 +27,7 @@ The `src/shared/` directory contains all code that is accessible by both client 
 - **Contains**: Pure functions, data transformers, common operations
 - **Pattern**: Typed utility functions with comprehensive error handling
 - **Key Files**: `animation-helpers.ts`, `type-guards.ts`
-- **Review Focus**: Performance, error handling, side effects
+- **Review Focus**: Performanceerr handling, side effects
 
 ### 📁 `keys/` - String Identifiers
 **Purpose**: Type-safe string literal constants for entity identification

@@ -38,4 +38,5 @@
  */
 
 export * from "./ability-keys";
+export * from "./event-keys";
 export * from "./player-data-keys";

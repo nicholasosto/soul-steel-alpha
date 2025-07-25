@@ -89,7 +89,7 @@ The `src/shared/` directory is organized into specialized folders with specific 
 
 ### Helpers (`shared/helpers/`)
 - **Purpose**: Reusable utility functions and helper classes
-- **Pattern**: Pure functions, comprehensive type annotations, error handling
+- **Pattern**: Pure functions, comprehensive type annotationserr handling
 - **Review**: Test complex logic, ensure performance for frequent calls
 - **Guidelines**: Descriptive names, avoid side effects, proper validation
 

@@ -8,7 +8,7 @@
 import { EffectCatalog, EffectMeta } from "./effect-catalog";
 import { VFXConfigOption, VFXKey } from "./effect-keys";
 
-// R15 Limb mapping for better organization
+// R15 Limb mapping for better organization with fallbacks
 const R15_LIMB_MAP = {
 	Head: "Head",
 	Torso: "UpperTorso",
@@ -31,6 +31,73 @@ const R15_LIMB_MAP = {
 	RightUpperLeg: "RightUpperLeg",
 	RightLowerLeg: "RightLowerLeg",
 } as const;
+
+// Enhanced mapping with R6 fallbacks for better compatibility
+const LIMB_FALLBACK_MAP = {
+	Head: ["Head", "UpperTorso"],
+	UpperTorso: ["UpperTorso", "Torso"],
+	Torso: ["UpperTorso", "Torso"],
+	LowerTorso: ["LowerTorso", "Torso"],
+	LeftUpperArm: ["LeftUpperArm", "LeftArm"],
+	LeftLowerArm: ["LeftLowerArm", "LeftArm"],
+	LeftArm: ["LeftLowerArm", "LeftArm"],
+	LeftHand: ["LeftHand", "LeftArm"],
+	RightUpperArm: ["RightUpperArm", "RightArm"],
+	RightLowerArm: ["RightLowerArm", "RightArm"],
+	RightArm: ["RightLowerArm", "RightArm"],
+	RightHand: ["RightHand", "RightArm"],
+	LeftUpperLeg: ["LeftUpperLeg", "LeftLeg"],
+	LeftLowerLeg: ["LeftLowerLeg", "LeftLeg"],
+	LeftFoot: ["LeftFoot", "LeftLeg"],
+	RightUpperLeg: ["RightUpperLeg", "RightLeg"],
+	RightLowerLeg: ["RightLowerLeg", "RightLeg"],
+	RightFoot: ["RightFoot", "RightLeg"],
+} as const;
+
+/**
+ * Find the appropriate rig part with fallback support for R6/R15 compatibility
+ */
+function findRigPart(rig: Model, partName: string): Part | undefined {
+	const fallbacks = LIMB_FALLBACK_MAP[partName as keyof typeof LIMB_FALLBACK_MAP];
+	
+	if (fallbacks) {
+		for (const fallback of fallbacks) {
+			const part = rig.FindFirstChild(fallback) as Part;
+			if (part) return part;
+		}
+	}
+	
+	// Direct lookup if no fallbacks defined
+	return rig.FindFirstChild(partName) as Part;
+}
+
+/**
+ * Parent effect children to appropriate rig parts using data-driven approach
+ */
+function parentEffectChildToRig(child: Instance, rig: Model): void {
+	const childName = child.Name;
+	
+	// Handle special cases
+	if (childName === "Floor") {
+		child.GetChildren().forEach((floorChild) => {
+			floorChild.Parent = rig.FindFirstChild("HumanoidRootPart") || rig;
+			const hipHeight = rig.FindFirstChildOfClass("Humanoid")?.HipHeight || 0;
+			const attachment = floorChild as Attachment;
+			if (attachment && attachment.IsA("Attachment")) {
+				attachment.CFrame = new CFrame(0, -hipHeight, 0);
+			}
+		});
+		return;
+	}
+	
+	// Use data-driven approach for limb mapping
+	const targetPart = findRigPart(rig, childName);
+	const finalParent = targetPart || rig;
+	
+	child.GetChildren().forEach((grandChild) => {
+		grandChild.Parent = finalParent;
+	});
+}
 
 function getTargetParent(rig: Model, effectPart: Part): { part: Part | undefined; attachment?: Attachment } {
 	// Check for TargetLimb attribute
@@ -97,6 +164,28 @@ function handleBeamParenting(beam: Beam, rigPart: Part, attachment?: Attachment)
 	beam.Parent = rigPart;
 }
 
+/**
+ * Apply positional offset to a BasePart
+ */
+function applyPositionOffset(instance: BasePart, offset: Vector3): void {
+	instance.CFrame = instance.CFrame.mul(new CFrame(offset));
+}
+
+/**
+ * Apply rotational transform to a BasePart
+ */
+function applyRotationTransform(instance: BasePart, rotation: Vector3): void {
+	const rotCFrame = CFrame.Angles(math.rad(rotation.X), math.rad(rotation.Y), math.rad(rotation.Z));
+	instance.CFrame = instance.CFrame.mul(rotCFrame);
+}
+
+/**
+ * Apply scale transform to a BasePart
+ */
+function applyScaleTransform(instance: BasePart, scale: number): void {
+	instance.Size = instance.Size.mul(scale);
+}
+
 function applyEffectTransforms(instance: Instance, effectPart: Part) {
 	// Apply any offset, rotation, or scale attributes
 	const offset = effectPart.GetAttribute("Offset") as Vector3;
@@ -105,14 +194,13 @@ function applyEffectTransforms(instance: Instance, effectPart: Part) {
 
 	if (instance.IsA("BasePart")) {
 		if (offset) {
-			instance.CFrame = instance.CFrame.mul(new CFrame(offset));
+			applyPositionOffset(instance, offset);
 		}
 		if (rotation) {
-			const rotCFrame = CFrame.Angles(math.rad(rotation.X), math.rad(rotation.Y), math.rad(rotation.Z));
-			instance.CFrame = instance.CFrame.mul(rotCFrame);
+			applyRotationTransform(instance, rotation);
 		}
 		if (scale !== undefined && typeIs(scale, "number")) {
-			instance.Size = instance.Size.mul(scale);
+			applyScaleTransform(instance, scale);
 		}
 	}
 }
@@ -145,96 +233,23 @@ function loadEffectToRig(key: VFXKey, rig: Model): Instance[] | undefined {
 	/* Clone the effect template to avoid modifying the original */
 	const templateClone = effectTemplate.Clone();
 	if (templateClone === undefined) return undefined;
+	
 	const templateChildren = templateClone.GetChildren();
+	const resultInstances: Instance[] = [];
+	
+	// Use data-driven approach instead of massive switch statement
 	templateChildren.forEach((child) => {
-		switch (child.Name) {
-			case "Head":
-				child.GetChildren().forEach((headChild) => {
-					child.Parent = rig.FindFirstChild("Head") || rig.FindFirstChild("UpperTorso");
-				});
-				break;
-			case "UpperTorso":
-			case "Torso":
-				child.GetChildren().forEach((upperTorsoChild) => {
-					child.Parent = rig.FindFirstChild("UpperTorso") || rig.FindFirstChild("Torso");
-				});
-				break;
-			case "LowerTorso":
-				child.GetChildren().forEach((lowerTorsoChild) => {
-					child.Parent = rig.FindFirstChild("LowerTorso") || rig.FindFirstChild("Torso");
-				});
-				break;
-			case "LeftUpperArm":
-				child.GetChildren().forEach((leftArmChild) => {
-					child.Parent = rig.FindFirstChild("LeftUpperArm") || rig.FindFirstChild("LeftArm");
-				});
-				break;
-			case "LeftLowerArm":
-			case "LeftArm":
-				child.GetChildren().forEach((leftLowerArmChild) => {
-					child.Parent = rig.FindFirstChild("LeftLowerArm") || rig.FindFirstChild("LeftArm");
-				});
-				break;
-			case "RightUpperArm":
-				child.GetChildren().forEach((rightArmChild) => {
-					child.Parent = rig.FindFirstChild("RightUpperArm") || rig.FindFirstChild("RightArm");
-				});
-				break;
-			case "RightLowerArm":
-			case "RightArm":
-				child.GetChildren().forEach((rightLowerArmChild) => {
-					child.Parent = rig.FindFirstChild("RightLowerArm") || rig.FindFirstChild("RightArm");
-				});
-				break;
-			case "LeftUpperLeg":
-				child.GetChildren().forEach((leftLegChild) => {
-					child.Parent = rig.FindFirstChild("LeftUpperLeg") || rig.FindFirstChild("LeftLeg");
-				});
-				break;
-			case "LeftLowerLeg":
-				child.GetChildren().forEach((leftLowerLegChild) => {
-					child.Parent = rig.FindFirstChild("LeftLowerLeg") || rig.FindFirstChild("LeftLeg");
-				});
-				break;
-			case "RightUpperLeg":
-				child.GetChildren().forEach((rightLegChild) => {
-					child.Parent = rig.FindFirstChild("RightUpperLeg") || rig.FindFirstChild("RightLeg");
-				});
-				break;
-			case "RightLowerLeg":
-				child.GetChildren().forEach((rightLowerLegChild) => {
-					child.Parent = rig.FindFirstChild("RightLowerLeg") || rig.FindFirstChild("RightLeg");
-				});
-				break;
-			case "LeftHand":
-				child.GetChildren().forEach((leftHandChild) => {
-					child.Parent = rig.FindFirstChild("LeftHand") || rig.FindFirstChild("LeftArm");
-				});
-				break;
-			case "RightHand":
-				child.GetChildren().forEach((rightHandChild) => {
-					child.Parent = rig.FindFirstChild("RightHand") || rig.FindFirstChild("RightArm");
-				});
-				break;
-			case "Floor":
-				// For floor effects, parent to the HumanoidRootPart or the rig itself
-				child.GetChildren().forEach((floorChild) => {
-					floorChild.Parent = rig.FindFirstChild("HumanoidRootPart") || rig;
-					const hipHeight = rig.FindFirstChildOfClass("Humanoid")?.HipHeight || 0;
-					const attachment = floorChild as Attachment;
-					if (attachment) {
-						attachment.CFrame = new CFrame(0, -hipHeight, 0);
-					}
-				});
-				break;
-			default:
-				// For other parts, just parent to the rig
-				child.GetChildren().forEach((childChild) => {
-					childChild.Parent = rig.FindFirstChild(child.Name) || rig;
-				});
-				break;
-		}
+		parentEffectChildToRig(child, rig);
+		// Collect all children that were parented for tracking
+		child.GetChildren().forEach((grandChild) => {
+			resultInstances.push(grandChild);
+		});
 	});
+	
+	// Clean up the temporary template
+	templateClone.Destroy();
+	
+	return resultInstances;
 }
 
 export function RunEffect(key: VFXKey, rig: Model) {
@@ -258,3 +273,6 @@ export function RunEffect(key: VFXKey, rig: Model) {
 export function getEffectMeta(key: VFXKey): EffectMeta | undefined {
 	return EffectCatalog[key];
 }
+
+// Export transform utilities for reuse across the codebase
+export { applyPositionOffset, applyRotationTransform, applyScaleTransform };

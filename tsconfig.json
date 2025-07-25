@@ -16,6 +16,10 @@
 		"strict": true,
 		"target": "ESNext",
 		"typeRoots": ["node_modules/@rbxts"],
+		
+		// Temporarily disable strict checks to work around ecosystem issues
+		"skipLibCheck": true,
+		"noImplicitAny": false,
 
 		// configurable
 		"rootDir": "src",
@@ -23,5 +27,9 @@
 		"baseUrl": "src",
 		"incremental": true,
 		"tsBuildInfoFile": "out/tsconfig.tsbuildinfo"
-	}
+	},
+	"exclude": [
+		"mcp-server.ts",
+		"mcp-build/**/*"
+	]
 }

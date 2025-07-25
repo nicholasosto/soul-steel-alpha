@@ -3,11 +3,16 @@ import { ABILITY_KEYS, AbilityKey } from "shared/keys";
 import { AbilityRemotes } from "shared/network/ability-remotes";
 
 function StartAbility(abilityKey: AbilityKey) {
-	const success = AbilityRemotes.Client.Get("START_ABILITY")
-		.CallServerAsync(abilityKey)
-		.then((result) => {
-			print(`Ability ${abilityKey} started: ${result}`);
-		});
+	const success = AbilityRemotes.Client.Get("ABILITY_ACTIVATE").CallServerAsync(abilityKey).andThen((result: boolean) => {
+		if (result) {
+			print(`Ability ${abilityKey} activated successfully!`);
+		} else {
+			warn(`Failed to activate ability ${abilityKey}`);
+		}
+	}).catch((err: string) => {
+		warn(`,error activating ability ${abilityKey}: ${err}`);
+	});
+	return success;
 }
 
 UserInputService.InputBegan.Connect((input, gameProcessedEvent) => {

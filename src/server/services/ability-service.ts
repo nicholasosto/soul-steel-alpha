@@ -15,7 +15,7 @@
  */
 
 import { Players } from "@rbxts/services";
-import { AbilityKey } from "shared/keys";
+import { AbilityKey, SIGNAL_KEYS } from "shared/keys";
 import { VFXConfigOption, VFXKey, RunEffect } from "shared/packages";
 import { AbilityRemotes } from "shared/network";
 import { SSEntity } from "shared/types/SSEntity";
@@ -84,7 +84,7 @@ class AbilityService {
 	 */
 	private initializeRemotes(): void {
 		try {
-			AbilityRemotes.Server.Get("START_ABILITY").SetCallback((player, abilityKey) => {
+			AbilityRemotes.Server.Get(SIGNAL_KEYS.ABILITY_ACTIVATE).SetCallback((player, abilityKey) => {
 				return this.handleAbilityStart(player, abilityKey);
 			});
 		} catch (error) {
@@ -237,7 +237,7 @@ class AbilityService {
 
 			return true;
 		} catch (error) {
-			warn(`Error handling ability start for ${player.Name}: ${error}`);
+			warn(`,error handling ability start for ${player.Name}: ${error}`);
 			return false;
 		}
 	}
