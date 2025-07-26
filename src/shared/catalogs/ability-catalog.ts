@@ -34,6 +34,7 @@ export const AbilityCatalog: Record<AbilityKey, AbilityMeta> = {
 		abilityKey: "Melee",
 		displayName: "Melee Attack",
 		description: "A basic melee attack ability.",
+		castEffectKey: "Animal_Cast",
 		cooldown: 0.5,
 		duration: 0.5,
 		cost: 5,
@@ -54,6 +55,7 @@ export const AbilityCatalog: Record<AbilityKey, AbilityMeta> = {
 		cooldown: 10,
 		duration: 3,
 		cost: 20,
+		castEffectKey: "Animal_Cast",
 		icon: ImageConstants.Ability.Ice_Rain,
 		OnStartSuccess: (entity, target) => {
 			runCastSuccessEffects(entity);
@@ -71,6 +73,7 @@ export const AbilityCatalog: Record<AbilityKey, AbilityMeta> = {
 		cooldown: 15,
 		duration: 4,
 		cost: 30,
+		castEffectKey: "Animal_Cast",
 		icon: ImageConstants.Ability.Earthquake,
 		OnStartSuccess: (entity, target) => {
 			runCastSuccessEffects(entity);

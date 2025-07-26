@@ -11,7 +11,12 @@ export const VFX_KEYS = [
 	"Slow",
 	"Poisoned",
 	"Stunned",
-	"FrostCast",
+	"Frost_Cast",
+	"Animal_Cast",
+	"Shrine_Cast",
+	"Shadow_Cast",
+	"Void_Cast",
+	"Shadow_Cast",
 ] as const;
 export type VFXKey = (typeof VFX_KEYS)[number];
 

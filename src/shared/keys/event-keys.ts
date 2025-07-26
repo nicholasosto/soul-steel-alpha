@@ -2,6 +2,7 @@ export const SIGNAL_KEYS = {
 	ABILITY_ACTIVATE: "ABILITY_ACTIVATE",
 	GET_PLAYER_DATA: "GET_PLAYER_DATA",
 	SET_PLAYER_DATA: "SET_PLAYER_DATA",
+	RUN_EVENT: "RUN_EVENT",
 } as const;
 
 export type SignalKey = (typeof SIGNAL_KEYS)[keyof typeof SIGNAL_KEYS];

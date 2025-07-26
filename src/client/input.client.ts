@@ -1,10 +1,14 @@
 import { UserInputService } from "@rbxts/services";
 import { ABILITY_KEYS, AbilityKey } from "shared/keys";
-import { AbilityRemotes } from "shared/network/ability-remotes";
+import { AbilityRemotes, EffectRemotes } from "shared/network";
+
+const Remotes = {
+	ABILITY_ACTIVATE: AbilityRemotes.Client.Get("ABILITY_ACTIVATE"),
+	RUN_EVENT: EffectRemotes.Client.Get("RUN_EVENT"),
+};
 
 function StartAbility(abilityKey: AbilityKey) {
-	const success = AbilityRemotes.Client.Get("ABILITY_ACTIVATE")
-		.CallServerAsync(abilityKey)
+	const success = Remotes.ABILITY_ACTIVATE.CallServerAsync(abilityKey)
 		.andThen((result: boolean) => {
 			if (result) {
 				print(`Ability ${abilityKey} activated successfully!`);
@@ -34,6 +38,21 @@ UserInputService.InputBegan.Connect((input, gameProcessedEvent) => {
 				break;
 			case Enum.KeyCode.R:
 				StartAbility("Earthquake");
+				break;
+			case Enum.KeyCode.KeypadOne:
+				Remotes.RUN_EVENT.CallServerAsync("Animal_Cast");
+				break;
+			case Enum.KeyCode.KeypadTwo:
+				Remotes.RUN_EVENT.CallServerAsync("Frost_Cast");
+				break;
+			case Enum.KeyCode.KeypadThree:
+				Remotes.RUN_EVENT.CallServerAsync("Shadow_Cast");
+				break;
+			case Enum.KeyCode.KeypadFour:
+				Remotes.RUN_EVENT.CallServerAsync("Void_Cast");
+				break;
+			case Enum.KeyCode.KeypadFive:
+				Remotes.RUN_EVENT.CallServerAsync("Shrine_Cast");
 				break;
 			default:
 				print(`Key pressed: ${keyCode.Name}`);

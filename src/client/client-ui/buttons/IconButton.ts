@@ -6,14 +6,12 @@ import { UI_SIZES } from "shared/constants/ui-constants";
 export interface IconButtonProps extends Fusion.PropertyTable<ImageButton> {
 	icon: string;
 	BackgroundImageId?: string;
-	isSelected?: Value<boolean>;
-	isHovered?: Value<boolean>;
 	onClick?: () => void;
 }
 
 export function IconButton(props: IconButtonProps) {
-	const isHovered = props.isHovered ?? Value(false);
-	const isSelected = props.isSelected ?? Value(false);
+	const isSelected = Value(false);
+	const isHovered = Value(false);
 
 	/* Background Image for IconButtons */
 	const IconImage = New("ImageLabel")({
@@ -28,7 +26,7 @@ export function IconButton(props: IconButtonProps) {
 
 	/* Main Button Component */
 	const buttonComponent = New("ImageButton")({
-		Name: props.Name || "IconButton",
+		Name: props.Name ?? "IconButton",
 		Size: props.Size ?? UI_SIZES.ICON_SMALL, // Default size, can be overridden
 		Image: props.BackgroundImageId ?? ImageConstants.IconButtonBackground,
 		BackgroundTransparency: Computed(() => {

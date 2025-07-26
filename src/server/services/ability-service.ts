@@ -211,11 +211,14 @@ class AbilityService {
 	 */
 	private handleAbilityStart(player: Player, abilityKey: AbilityKey): boolean {
 		const abilityMeta = AbilityCatalog[abilityKey];
-		RunEffect("FrostCast", player.Character as Model);
-		if (!abilityMeta) {
-			warn(`Ability ${abilityKey} does not exist in the catalog`);
-			return false;
+		const castEffectKey = abilityMeta?.castEffectKey as VFXKey | undefined;
+		if (castEffectKey) {
+			// Run the cast effect for visual feedback
+			print(`Running cast effect for ${abilityKey} on ${player.Name}`);
+			RunEffect(castEffectKey, player.Character as Model);
 		}
+
+		RunEffect("CastFailInterupt", player.Character as Model);
 
 		try {
 			if (!this.validateAbility(player, abilityKey)) {
@@ -236,8 +239,8 @@ class AbilityService {
 			});
 
 			return true;
-		} catch (error) {
-			warn(`,error handling ability start for ${player.Name}: ${error}`);
+		} catch (err) {
+			warn(`,error handling ability start for ${player.Name}: ${err}`);
 			return false;
 		}
 	}

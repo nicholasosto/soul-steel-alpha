@@ -63,6 +63,9 @@ export interface AbilityMeta {
 	/** Roblox asset ID for the ability's icon image */
 	icon: string;
 
+	/** Cast Effect String Key */
+	castEffectKey?: string;
+
 	/**
 	 * Optional callback executed when the ability starts successfully.
 	 * Will be implemented in the ability catalog using the effect system.

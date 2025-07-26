@@ -9,15 +9,13 @@ const playerGui = Players.LocalPlayer.WaitForChild("PlayerGui");
 const testButton = IconButton(TestButtonProps.MenuItem);
 const isSelectedTest = Fusion.Value(false);
 const isHoveredTest = Fusion.Value(false);
-const testButton2 = IconButton({
+const meleeButton = IconButton({
 	icon: ImageConstants.Gems.Colorable,
 	Size: UDim2.fromOffset(132, 132),
-	BackgroundImageId: ImageConstants.TextureImage.BoneDoily,
-	isSelected: isSelectedTest,
-	isHovered: isHoveredTest,
-	Name: "TestButton2",
+	BackgroundImageId: ImageConstants.TextureImage.WavyMetal,
+	Name: "MeleeButton",
 	onClick: () => {
-		print("Test button clicked, selected state:", isSelectedTest.get());
+		print("Melee button clicked");
 		ServerFunction("ABILITY_ACTIVATE", "Melee");
 	},
 });
@@ -27,8 +25,8 @@ const testScreen = New("ScreenGui")({
 	Name: "TestScreen",
 	DisplayOrder: 1,
 	[Children]: {
-		IconButton2: testButton2,
+		MeleeButton: meleeButton,
 	},
 });
 
-print("UI Client initialized with test button:", testScreen.FindFirstChild("IconButton"));
+print("UI Client initialized with melee button:", testScreen.FindFirstChild("MeleeButton") !== undefined);
