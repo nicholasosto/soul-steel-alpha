@@ -50,30 +50,43 @@ function findRigPart(rig: Model, partName: string): Part | undefined {
 /**
  * Parent effect children to appropriate rig parts using data-driven approach
  */
-function parentEffectChildToRig(child: Instance, rig: Model): void {
-	const childName = child.Name;
+function parentEffectChildToRig(child: Instance, rig: Model): Instance[] {
+        const childName = child.Name;
+        const attached: Instance[] = [];
 
 	// Handle special cases
-	if (childName === "Floor") {
-		child.GetChildren().forEach((floorChild) => {
-			floorChild.Parent = rig.FindFirstChild("HumanoidRootPart") || rig;
-			const humanoid = rig.FindFirstChildOfClass("Humanoid");
-			const hipHeight = humanoid ? humanoid.HipHeight : 0;
-			const attachment = floorChild as Attachment;
-			if (attachment && attachment.IsA("Attachment")) {
-				attachment.CFrame = new CFrame(0, -hipHeight, 0);
-			}
-		});
-		return;
-	}
+        if (childName === "Floor") {
+                child.GetChildren().forEach((floorChild) => {
+                        floorChild.Parent = rig.FindFirstChild("HumanoidRootPart") || rig;
+                        const humanoid = rig.FindFirstChildOfClass("Humanoid");
+                        const hipHeight = humanoid ? humanoid.HipHeight : 0;
+                        const attachment = floorChild as Attachment;
+                        if (attachment && attachment.IsA("Attachment")) {
+                                attachment.CFrame = new CFrame(0, -hipHeight, 0);
+                        }
+                        attached.push(floorChild);
+                });
+                return attached;
+        }
 
 	// Use data-driven approach for limb mapping
-	const targetPart = findRigPart(rig, childName);
-	const finalParent = targetPart || rig;
+        const targetPart = findRigPart(rig, childName);
+        const finalParent = targetPart || rig.FindFirstChild("HumanoidRootPart") || rig;
 
-	child.GetChildren().forEach((grandChild) => {
-		grandChild.Parent = finalParent;
-	});
+        child.GetChildren().forEach((grandChild) => {
+                const attachment = grandChild as Attachment;
+                const worldCFrame = attachment.IsA("Attachment") ? attachment.WorldCFrame : undefined;
+
+                grandChild.Parent = finalParent;
+
+                if (worldCFrame && attachment.IsA("Attachment") && finalParent.IsA("BasePart")) {
+                        attachment.CFrame = finalParent.CFrame.ToObjectSpace(worldCFrame);
+                }
+
+                attached.push(grandChild);
+        });
+
+        return attached;
 }
 
 function loadEffectToRig(key: VFXKey, rig: Model): Instance[] | undefined {
@@ -92,11 +105,10 @@ function loadEffectToRig(key: VFXKey, rig: Model): Instance[] | undefined {
 	const resultInstances: Instance[] = [];
 
 	// Use data-driven approach instead of massive switch statement
-	templateChildren.forEach((child) => {
-		parentEffectChildToRig(child, rig);
-		// Collect all children that were parented for tracking
-		resultInstances.push(child);
-	});
+        templateChildren.forEach((child) => {
+                const attached = parentEffectChildToRig(child, rig);
+                attached.forEach((inst) => resultInstances.push(inst));
+        });
 
 	// Clean up the temporary template
 	templateClone.Destroy();
