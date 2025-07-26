@@ -61,9 +61,13 @@ function parentEffectChildToRig(child: Instance, rig: Model): Instance[] {
 			const humanoid = rig.FindFirstChildOfClass("Humanoid");
 			const hipHeight = humanoid ? humanoid.HipHeight : 0;
 			const attachment = floorChild as Attachment;
+			const adjustedHipHeight = hipHeight + 0.7; // Adjust for attachment position if needed
 			if (attachment && attachment.IsA("Attachment")) {
-				attachment.CFrame = new CFrame(0, -hipHeight, 0);
+				attachment.CFrame = new CFrame(0, -adjustedHipHeight, 0);
 			}
+			warn(
+				`Parenting floor child ${floorChild.Name} to HumanoidRootPart with hip height: ${adjustedHipHeight} for ${rig.Name}`,
+			);
 			attached.push(floorChild);
 		});
 		return attached;
@@ -78,10 +82,6 @@ function parentEffectChildToRig(child: Instance, rig: Model): Instance[] {
 		const worldCFrame = attachment.IsA("Attachment") ? attachment.WorldCFrame : undefined;
 
 		grandChild.Parent = finalParent;
-
-		if (worldCFrame && attachment.IsA("Attachment") && finalParent.IsA("BasePart")) {
-			attachment.CFrame = finalParent.CFrame.ToObjectSpace(worldCFrame);
-		}
 
 		attached.push(grandChild);
 	});

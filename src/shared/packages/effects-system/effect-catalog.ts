@@ -5,7 +5,7 @@ const EffectPartsFolder = ReplicatedStorage.WaitForChild("SS Game Package").Wait
 const DefaultTemplate = EffectPartsFolder.WaitForChild("Time_Aura") as Part;
 
 export interface EffectMeta {
-	key: VFXKey;
+	//key: VFXKey;
 	effectTemplate: Part | Model;
 	displayName: string;
 	description: string;
@@ -15,7 +15,7 @@ export interface EffectMeta {
 
 export const EffectCatalog: Record<VFXKey, EffectMeta> = {
 	CastFailInterupt: {
-		key: "CastFailInterupt",
+		//key: "CastFailInterupt",
 		effectTemplate: EffectPartsFolder.WaitForChild("Beam_Air") as Part,
 		displayName: "Cast Fail Interruption",
 		description: "Effect triggered when a cast is interrupted.",
@@ -23,7 +23,7 @@ export const EffectCatalog: Record<VFXKey, EffectMeta> = {
 		defaultImmunityDuration: 0.5,
 	},
 	CastStart: {
-		key: "CastStart",
+		//key: "CastStart",
 		effectTemplate: EffectPartsFolder.WaitForChild("Beam_Lava") as Part,
 		displayName: "Cast Start",
 		description: "Effect triggered when a cast starts.",
@@ -31,7 +31,7 @@ export const EffectCatalog: Record<VFXKey, EffectMeta> = {
 		defaultImmunityDuration: 0.5,
 	},
 	Damage: {
-		key: "Damage",
+		//key: "Damage",
 		effectTemplate: EffectPartsFolder.WaitForChild("Beam_Water") as Part,
 		displayName: "Damage",
 		description: "Effect triggered when damage is dealt.",
@@ -39,7 +39,7 @@ export const EffectCatalog: Record<VFXKey, EffectMeta> = {
 		defaultImmunityDuration: 0.5,
 	},
 	Heal: {
-		key: "Heal",
+		//key: "Heal",
 		effectTemplate: EffectPartsFolder.WaitForChild("Time_Aura") as Part,
 		displayName: "Heal",
 		description: "Effect triggered when healing occurs.",
@@ -47,7 +47,7 @@ export const EffectCatalog: Record<VFXKey, EffectMeta> = {
 		defaultImmunityDuration: 0.5,
 	},
 	Slow: {
-		key: "Slow",
+		//key: "Slow",
 		effectTemplate: EffectPartsFolder.WaitForChild("Time_Aura") as Part,
 		displayName: "Slow",
 		description: "Effect triggered when a slow effect is applied.",
@@ -55,7 +55,7 @@ export const EffectCatalog: Record<VFXKey, EffectMeta> = {
 		defaultImmunityDuration: 1,
 	},
 	Poisoned: {
-		key: "Poisoned",
+		//key: "Poisoned",
 		effectTemplate: EffectPartsFolder.WaitForChild("Toxic_Cloud") as Part,
 		displayName: "Poisoned",
 		description: "Effect triggered when a poison effect is applied.",
@@ -63,7 +63,7 @@ export const EffectCatalog: Record<VFXKey, EffectMeta> = {
 		defaultImmunityDuration: 2,
 	},
 	Stunned: {
-		key: "Stunned",
+		//key: "Stunned",
 		effectTemplate: EffectPartsFolder.WaitForChild("Evil_Emination") as Part,
 		displayName: "Stunned",
 		description: "Effect triggered when a stun effect is applied.",
@@ -71,7 +71,7 @@ export const EffectCatalog: Record<VFXKey, EffectMeta> = {
 		defaultImmunityDuration: 1.5,
 	},
 	Frost_Cast: {
-		key: "Frost_Cast",
+		//key: "Frost_Cast",
 		effectTemplate: EffectPartsFolder.WaitForChild("Frost_Cast") as Part,
 		displayName: "Frost Cast",
 		description: "Effect triggered when a frost cast is applied.",
@@ -79,7 +79,7 @@ export const EffectCatalog: Record<VFXKey, EffectMeta> = {
 		defaultImmunityDuration: 2,
 	},
 	Animal_Cast: {
-		key: "Animal_Cast",
+		//key: "Animal_Cast",
 		effectTemplate: EffectPartsFolder.WaitForChild("Animal_Cast") as Part,
 		displayName: "Animal Cast",
 		description: "Effect triggered when an animal cast is applied.",
@@ -87,7 +87,7 @@ export const EffectCatalog: Record<VFXKey, EffectMeta> = {
 		defaultImmunityDuration: 2,
 	},
 	Void_Cast: {
-		key: "Void_Cast",
+		//key: "Void_Cast",
 		effectTemplate: EffectPartsFolder.WaitForChild("Void_Cast") as Part,
 		displayName: "Void Cast",
 		description: "Effect triggered when a void cast is applied.",
@@ -95,7 +95,7 @@ export const EffectCatalog: Record<VFXKey, EffectMeta> = {
 		defaultImmunityDuration: 2,
 	},
 	Shrine_Cast: {
-		key: "Shrine_Cast",
+		//key: "Shrine_Cast",
 		effectTemplate: EffectPartsFolder.WaitForChild("Shrine_Cast") as Part,
 		displayName: "Shrine Cast",
 		description: "Effect triggered when a shrine cast is applied.",
@@ -103,7 +103,7 @@ export const EffectCatalog: Record<VFXKey, EffectMeta> = {
 		defaultImmunityDuration: 2,
 	},
 	Shadow_Cast: {
-		key: "Shadow_Cast",
+		//key: "Shadow_Cast",
 		effectTemplate: EffectPartsFolder.WaitForChild("Shadow_Cast") as Part,
 		displayName: "Shadow Cast",
 		description: "Effect triggered when a shadow cast is applied.",
