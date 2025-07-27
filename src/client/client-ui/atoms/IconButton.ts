@@ -27,7 +27,7 @@ export function IconButton(props: IconButtonProps) {
 	/* Main Button Component */
 	const buttonComponent = New("ImageButton")({
 		Name: props.Name ?? "IconButton",
-		Size: props.Size ?? UI_SIZES.ICON_SMALL, // Default size, can be overridden
+		Size: props.Size ?? UI_SIZES.ICON_LARGE, // Default size, can be overridden
 		Image: props.BackgroundImageId ?? ImageConstants.IconButtonBackground,
 		BackgroundTransparency: Computed(() => {
 			if (isSelected.get()) {
@@ -52,17 +52,5 @@ export function IconButton(props: IconButtonProps) {
 		},
 	});
 
-	Observer(isSelected).onChange(() => {
-		print("Observer: IconButton selected state changed to", isSelected.get());
-		buttonComponent.SetAttribute("IsSelected", isSelected.get());
-	});
 	return buttonComponent;
 }
-
-export const TestButtonProps = {
-	MenuItem: {
-		icon: MenuButtonImageMap.Settings,
-		Size: UI_SIZES.ICON_LARGE,
-		onClick: () => print("Settings clicked"),
-	},
-};

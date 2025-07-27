@@ -1,6 +1,5 @@
 import { Players } from "@rbxts/services";
-import { IconButton, TestButtonProps } from "client/client-ui";
-import { MenuButtonBar } from "./client-ui/buttons/ButtonBar";
+import { AbilityButtonBar, MenuButtonBar } from "./client-ui/organisms";
 import { New, Children } from "@rbxts/fusion";
 
 const playerGui = Players.LocalPlayer.WaitForChild("PlayerGui");
@@ -13,5 +12,8 @@ New("ScreenGui")({
 	DisplayOrder: 10,
 	[Children]: {
 		MenuBar: MenuButtonBar,
+		AbilityBar: AbilityButtonBar({
+			abilities: ["Earthquake", "Ice-Rain", "Melee", "Soul-Drain"], // Example abilities, replace with actual game abilities
+		}),
 	},
 }) as ScreenGui;
