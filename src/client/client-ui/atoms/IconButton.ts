@@ -22,12 +22,13 @@ export function IconButton(props: IconButtonProps) {
 		Image: props.icon,
 		ImageColor3: Computed(() => (isHovered.get() ? Color3.fromRGB(255, 255, 255) : Color3.fromRGB(200, 200, 200))),
 		BackgroundTransparency: 1,
+		ZIndex: 2, // Ensure the icon is above the background
 	});
 
 	/* Main Button Component */
 	const buttonComponent = New("ImageButton")({
 		Name: props.Name ?? "IconButton",
-		Size: props.Size ?? UI_SIZES.ICON_LARGE, // Default size, can be overridden
+		Size: props.Size ?? UI_SIZES.ICON_SMALL, // Default size, can be overridden
 		Image: props.BackgroundImageId ?? ImageConstants.IconButtonBackground,
 		BackgroundTransparency: Computed(() => {
 			if (isSelected.get()) {

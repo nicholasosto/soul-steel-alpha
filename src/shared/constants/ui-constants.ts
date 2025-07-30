@@ -17,6 +17,7 @@ export const UI_SIZES = {
 
 	// Icon Button Sizes
 	ICON_SMALL: UDim2.fromOffset(50, 50),
+	ICON_ABILITY: UDim2.fromOffset(60, 60),
 	ICON_LARGE: UDim2.fromOffset(90, 90),
 	ICON_EXTRA_LARGE: UDim2.fromOffset(132, 132),
 

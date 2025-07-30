@@ -1,4 +1,4 @@
-import { UserInputService } from "@rbxts/services";
+import { Players, UserInputService } from "@rbxts/services";
 import { ABILITY_KEYS, AbilityKey } from "shared/keys";
 import { AbilityRemotes, EffectRemotes } from "shared/network";
 
@@ -61,5 +61,20 @@ UserInputService.InputBegan.Connect((input, gameProcessedEvent) => {
 		print("Left mouse button clicked");
 	} else if (input.UserInputType === Enum.UserInputType.MouseButton2) {
 		print("Right mouse button clicked");
+		const humanoid = Players.LocalPlayer.Character?.FindFirstChildOfClass("Humanoid");
+		const RocketForce = new Instance("VectorForce");
+		RocketForce.Name = "RocketForce";
+
+		RocketForce.Parent = Players.LocalPlayer.Character?.PrimaryPart;
+		RocketForce.Force = new Vector3(0, 4000, 0); // Example force vector
+		RocketForce.Attachment0 = Players.LocalPlayer.Character?.PrimaryPart?.FindFirstChildWhichIsA("Attachment");
+		RocketForce.RelativeTo = Enum.ActuatorRelativeTo.World;
+		RocketForce.Enabled = true;
+		task.delay(0.5, () => {
+			if (RocketForce) {
+				RocketForce.Enabled = false;
+				RocketForce.Destroy();
+			}
+		});
 	}
 });

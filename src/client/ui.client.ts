@@ -13,7 +13,7 @@ New("ScreenGui")({
 	[Children]: {
 		MenuBar: MenuButtonBar,
 		AbilityBar: AbilityButtonBar({
-			abilities: ["Earthquake", "Ice-Rain", "Melee", "Soul-Drain"], // Example abilities, replace with actual game abilities
+			keys: ["Earthquake", "Ice-Rain", "Melee", "Soul-Drain"], // Example abilities, replace with actual game abilities
 		}),
 	},
 }) as ScreenGui;

@@ -27,6 +27,7 @@ const MenuButtons = {
 };
 
 export const MenuButtonBar = HorizontalButtonBar({
-	Position: new UDim2(0.5, 0, 1, -50),
+	Position: new UDim2(0, 0, 0, 250),
+	AnchorPoint: new Vector2(0, 0),
 	buttons: [MenuButtons.Character, MenuButtons.Inventory, MenuButtons.Settings],
 });
