@@ -56,7 +56,7 @@
 
 - **✅ Data Service Structure**: ProfileService integration framework
 - **🚧 Data Persistence**: Basic structure exists, needs expansion
-- **❌ Player Stats**: Health, mana, level systems not yet implemented
+- **🚧 Player Stats**: Health, mana, level systems partially implemented via ResourceService
 
 #### 2. Animation System
 
@@ -71,14 +71,31 @@
 - **🚧 Ability Activation**: Network calls defined but not fully implemented
 - **❌ Security Validation**: Server-side validation needs implementation
 
-### ❌ Not Yet Implemented
+### ✅ Recently Implemented (Phase 2)
 
-#### 1. Gameplay Mechanics
+#### 1. Enhanced NPC System
 
-- **❌ Combat System**: Damage calculation, health management
-- **❌ Resource Management**: Mana/stamina systems
-- **❌ Targeting System**: Target selection for abilities
-- **❌ Cooldown Tracking**: Ability usage limitations
+- **✅ Enhanced NPC Service**: Full SSEntity compatibility with combat integration
+- **✅ Combat-Ready NPCs**: NPCs can participate in combat with players
+- **✅ Resource Management**: Health, mana, stamina tracking for NPCs
+- **✅ Advanced AI**: State machine with idle, patrol, combat, pursuit, retreat behaviors
+- **✅ Ability Usage**: NPCs can use abilities (Melee, Soul-Drain) against players
+- **✅ Template System**: Configurable NPC types (goblin, skeleton, guard) with distinct roles
+
+#### 2. Basic Combat System
+
+- **✅ Combat Integration**: Basic damage calculation and health management
+- **✅ Resource Management**: Mana/stamina systems via ResourceService
+- **✅ NPC Targeting**: NPCs can target and attack players
+- **✅ Player-NPC Combat**: Player abilities now work on NPCs
+- **✅ Basic Attacks**: Melee combat through CombatService
+
+### ❌ Still Not Yet Implemented
+
+#### 1. Advanced Gameplay Mechanics
+
+- **❌ Advanced Targeting System**: Complex target selection for abilities
+- **❌ Cooldown Tracking**: Comprehensive ability usage limitations
 - **❌ Area of Effect**: Radius-based ability interactions
 
 #### 2. Player Progression

@@ -2,13 +2,45 @@
 
 A Roblox TypeScript project with Model Context Protocol (MCP) server integration.
 
+## Features
+
+### 🎮 Game Systems
+- **Ability System**: Server-side ability management with cooldowns and validation
+- **Enhanced NPC System**: Combat-ready NPCs with full SSEntity compatibility and AI behaviors
+- **Combat System**: Basic weapon-based combat with NPC integration
+- **Animation System**: Automatic character animation loading and management
+- **Resource Management**: Health, mana, stamina tracking with regeneration for players and NPCs
+- **Message System**: Type-safe client-server communication
+
+### 🤖 Enhanced NPC Features
+- **Combat Integration**: NPCs can fight players and vice versa using the full ability system
+- **Advanced AI**: Intelligent behaviors including idle, patrol, combat, pursuit, and retreat states
+- **Ability Usage**: NPCs can use abilities (Melee, Soul-Drain) against players with proper resource management
+- **Template System**: Configurable NPC types (goblin, skeleton, guard) with distinct combat roles
+- **Full SSEntity Compatibility**: NPCs work seamlessly with all player abilities and targeting systems
+
+### ⚔️ Combat Features
+- **Weapon Types**: Swords, Staves, Bows, Daggers, Hammers, Shields, Fists
+- **Combat Calculations**: Hit chance, critical hits, damage modifiers
+- **Combo System**: Skill chains with bonus damage multipliers
+- **Status Effects**: Buffs, debuffs, and damage over time effects
+- **Combat Sessions**: PvP, PvE, training, and duel modes
+
+### 🏗️ Architecture
+- **Service-Oriented**: Modular server services with dependency injection
+- **Type-Safe**: Full TypeScript with runtime validation
+- **Reactive UI**: Fusion-based reactive components
+- **MCP Integration**: AI assistant support for development
+
 ## Documentation
 
-- **[📁 PROJECT_STRUCTURE.md](.documentation/PROJECT_STRUCTURE.md)** - Comprehensive project structure overview (MCP-generated)
-- **[🔧 DEVELOPMENT_GUIDE.md](.documentation/DEVELOPMENT_GUIDE.md)** - Development guidelines and best practices
-- **[📚 SHARED_MODULE_REFERENCE.md](.documentation/SHARED_MODULE_REFERENCE.md)** - Shared module architecture guide
-- **[🎨 UI_SYSTEM_GUIDE.md](.documentation/UI_SYSTEM_GUIDE.md)** - UI system architecture and patterns
-- **[⚡ QUICK_REFERENCE.md](.documentation/QUICK_REFERENCE.md)** - Common pitfalls and quick fixes
+- **[� Documentation Index](.documentation/README.md)** - Complete documentation navigation guide
+- **[🚀 Getting Started](.documentation/guides/development-guide.md)** - Setup and development practices
+- **[🤖 NPC Integration](.documentation/guides/npc-integration.md)** - How to use Enhanced NPCs with combat
+- **[🔧 Enhanced NPC API](.documentation/api/enhanced-npc-service.md)** - Complete NPC Service API reference
+- **[⚔️ Combat System API](.documentation/api/combat-service.md)** - Combat system documentation
+- **[📊 Current Status](.documentation/status/current-status.md)** - What's implemented vs planned
+- **[⚡ Quick Reference](.documentation/reference/quick-reference.md)** - Common patterns and solutions
 
 ## Project Structure
 

@@ -74,9 +74,27 @@ soul-steel-alpha/
 #### Service Architecture (`src/server/services/`)
 
 - `ability-service.ts` - Player abilities management and validation
+  - Ability registration and client-server communication
+  - Cooldown management and validation
+  - Player cleanup systems
 - `animation-service.ts` - Character animation handling
+  - Automatic animation loading for SSEntity characters
+  - Default and custom animation registration
+  - Memory management and cleanup
+- `combat-service.ts` - Comprehensive combat system management
+  - Weapon system with stat requirements and special effects
+  - Combat calculations (hit chance, damage, critical hits)
+  - Combo chains and skill sequences
+  - Combat sessions for different game modes (PvP/PvE/training)
+  - Status effect application and tracking
 - `data-service.ts` - Player data management (ProfileService integration)
+- `health-service.ts` - Entity health and damage processing (deprecated - see resource-service)
 - `message-service.ts` - Server-side message broadcasting and management
+- `resource-service.ts` - Health, mana, stamina, and combat stat management
+  - Damage and healing calculations with modifiers
+  - Resource regeneration systems
+  - Combat statistics and status effects
+  - Entity lifecycle management
 - `index.ts` - Service exports and coordination
 
 #### Network Handlers (`src/server/network/`)
@@ -100,6 +118,8 @@ soul-steel-alpha/
 
 - `catalogs/` - Structured game content definitions
   - `ability-catalog.ts` - Ability definitions and metadata
+  - `animation-catalog.ts` - Animation asset organization and sets
+  - `weapon-catalog.ts` - Weapon definitions with stats, requirements, and special effects
   - `index.ts` - Catalog exports and utilities
 
 #### Utilities
@@ -107,6 +127,7 @@ soul-steel-alpha/
 - `helpers/` - Reusable utility functions
   - `animation-helpers.ts` - Animation utility functions
   - `audio-helpers.ts` - Audio processing utilities
+  - `health-helpers.ts` - Health and combat calculation utilities
   - `type-guards.ts` - Runtime type validation functions
   - `index.ts` - Helper function exports
 
@@ -114,6 +135,8 @@ soul-steel-alpha/
 
 - `keys/` - Type-safe string identifiers
   - `ability-keys.ts` - Ability identifier constants
+  - `combat-keys.ts` - Combat action, weapon, and damage type identifiers
+  - `event-keys.ts` - Event system signal and message keys
   - `player-data-keys.ts` - Player data key constants
   - `index.ts` - Key exports and validation
 
@@ -127,8 +150,10 @@ soul-steel-alpha/
 
 - `network/` - Client-server communication definitions
   - `ability-remotes.ts` - Ability-related remote events/functions
+  - `combat-remotes.ts` - Combat action and weapon system remotes
   - `effect-remotes.ts` - Visual/audio effect remotes
   - `game-cycle-remotes.ts` - Game lifecycle remotes
+  - `health-remotes.ts` - Health, damage, and resource management remotes
   - `message-remotes.ts` - Message system remotes
   - `index.ts` - Network definition exports
 
@@ -136,6 +161,7 @@ soul-steel-alpha/
 
 - `types/` - Shared TypeScript interfaces and types
   - `SSEntity.ts` - Core entity type definitions
+  - `health-types.ts` - Health, combat, damage, and status effect type definitions
   - `message-type.ts` - Message system type definitions
   - `index.ts` - Type exports
 
