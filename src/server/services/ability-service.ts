@@ -22,6 +22,7 @@ import { SSEntity } from "shared/types/SSEntity";
 import { isSSEntity } from "shared/helpers/type-guards";
 import { AbilityCatalog } from "shared/catalogs";
 import { DataServiceInstance } from "./data-service";
+import MessageService, { MessageServiceInstance } from "./message-service";
 
 /**
  * Server-side ability management service.
@@ -219,7 +220,7 @@ class AbilityService {
 		}
 
 		RunEffect("CastFailInterupt", player.Character as Model);
-
+		MessageServiceInstance.SendSuccessToPlayer(player, `MSG SUCCESS: Starting ability: ${abilityKey}`);
 		try {
 			if (!this.validateAbility(player, abilityKey)) {
 				abilityMeta.OnStartFailure?.(player.Character as SSEntity);

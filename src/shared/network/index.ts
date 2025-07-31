@@ -41,4 +41,5 @@
 export * from "./ability-remotes";
 export * from "./effect-remotes";
 export * from "./game-cycle-remotes";
+export * from "./message-remotes";
 // export * from "./game-cycle-remotes"; // Currently unused - uncomment when needed

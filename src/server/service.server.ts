@@ -1,14 +1,18 @@
-import { AbilityServiceInstance } from "./ability-service";
-import { AnimationServiceInstance } from "./animation-service";
+import {
+	AbilityServiceInstance,
+	AnimationServiceInstance,
+	DataServiceInstance,
+	MessageServiceInstance,
+} from "./services";
 import { Players } from "@rbxts/services";
 import { AbilityKey } from "shared/keys";
 import { SSEntity } from "shared/types";
-import { DataServiceInstance } from "./data-service";
 
 const Services = {
 	AbilityService: AbilityServiceInstance,
 	AnimationService: AnimationServiceInstance,
 	DataService: DataServiceInstance,
+	MessageService: MessageServiceInstance,
 };
 
 Players.PlayerAdded.Connect((player) => {
@@ -21,3 +25,7 @@ Players.PlayerAdded.Connect((player) => {
 });
 
 warn("Services initialized:", Services);
+Players.GetPlayers().forEach((player) => {
+	const character = player.Character || player.CharacterAdded.Wait()[0];
+	MessageServiceInstance.SendInfoToPlayer(player, `Welcome ${player.Name}! Your character is ready.`);
+});
