@@ -6,7 +6,7 @@ import { HorizontalLayout, makePadding } from "../../helpers";
 const { Value } = Fusion;
 
 export interface ButtonBarProps extends Fusion.PropertyTable<Frame> {
-	buttons: Array<GuiButton>;
+	buttons: Array<GuiButton | Frame>;
 }
 
 export function HorizontalButtonBar(props: ButtonBarProps) {

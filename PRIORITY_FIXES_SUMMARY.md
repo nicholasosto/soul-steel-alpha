@@ -63,8 +63,19 @@
 
 ## Next Steps
 
-1. Replace placeholder asset IDs (`rbxassetid://0`) with real animation assets
-2. Add unit tests for type guards and validation functions
-3. Implement ability cooldown system
-4. Add metrics/telemetry for error tracking
-5. Consider implementing a proper logging system
+**Latest TODO Analysis (MCP Server)**: 16 outstanding items identified
+
+### High Priority TODOs
+
+1. **Replace placeholder asset IDs** (`rbxassetid://0`) with real animation assets
+   - `animation-assets.ts`: 3 placeholder items requiring real asset IDs
+2. **Complete type definitions** in `message-type.ts` (marked with `#TODO`)
+3. **Remove debugging remotes** like `RequestSuicide` in health remotes
+
+### Development Priorities
+
+1. Add unit tests for type guards and validation functions
+2. Implement ability cooldown system
+3. Add metrics/telemetry for error tracking
+4. Consider implementing a proper logging system
+5. Update MCP server documentation to remove placeholder examples

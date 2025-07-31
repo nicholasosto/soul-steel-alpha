@@ -36,6 +36,7 @@
     "@rbxts/net": "^3.0.10",
     "@rbxts/profileservice": "^1.4.2",
     "@rbxts/services": "^1.5.5",
+    "@rbxts/signal": "^1.1.1",
     "zod": "^3.25.76"
   },
   "volta": {

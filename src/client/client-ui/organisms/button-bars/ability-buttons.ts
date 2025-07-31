@@ -5,6 +5,8 @@ import { AbilityKey } from "shared/keys";
 import { ServerFunction } from "client/event-dispatcher";
 import { UI_SIZES } from "shared/constants/ui-constants";
 import { AbilityCatalog } from "shared/catalogs";
+import { AbilityButton } from "client/client-ui/molecules";
+import Fusion from "@rbxts/fusion";
 
 interface AbilityBarProps {
 	keys: Array<AbilityKey>;
@@ -13,13 +15,11 @@ interface AbilityBarProps {
 export function AbilityButtonBar(props: AbilityBarProps) {
 	const buttons = props.keys.map((ability) => {
 		const abilityCatalogItem = AbilityCatalog[ability];
-		return IconButton({
-			Name: `${ability}Button`,
-			icon: abilityCatalogItem.icon,
-			Size: UI_SIZES.ICON_ABILITY,
-			onClick: () => {
-				print(`${ability} button clicked`);
-				ServerFunction("ABILITY_ACTIVATE", ability); // Call server function to activate the ability
+		return AbilityButton({
+			abilityKey: ability,
+			onAbilityClick: (key) => {
+				print(`${key} button clicked`);
+				ServerFunction("ABILITY_ACTIVATE", key); // Call server function to activate the ability
 			},
 		});
 	});
