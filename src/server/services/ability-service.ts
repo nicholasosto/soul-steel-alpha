@@ -23,6 +23,7 @@ import { isSSEntity } from "shared/helpers/type-guards";
 import { AbilityCatalog } from "shared/catalogs";
 import { DataServiceInstance } from "./data-service";
 import MessageService, { MessageServiceInstance } from "./message-service";
+import { ResourceServiceInstance } from "./resource-service";
 
 /**
  * Server-side ability management service.
@@ -196,6 +197,14 @@ class AbilityService {
 			return false;
 		}
 
+		// Modify resource checks and cooldowns here
+		const manaCost = AbilityCatalog[abilityKey]?.cost ?? 0;
+		const currentMana = ResourceServiceInstance.getEntityResources(character as SSEntity)?.mana ?? 0;
+		if (currentMana < manaCost) {
+			warn(`Player ${player.Name} does not have enough mana for ability ${abilityKey}`);
+			return false;
+		}
+
 		// Add additional validation logic here (cooldowns, resources, etc.)
 		return true;
 	}
@@ -220,11 +229,10 @@ class AbilityService {
 		}
 
 		RunEffect("CastFailInterupt", player.Character as Model);
-		MessageServiceInstance.SendSuccessToPlayer(player, `MSG SUCCESS: Starting ability: ${abilityKey}`);
+
 		try {
 			if (!this.validateAbility(player, abilityKey)) {
 				abilityMeta.OnStartFailure?.(player.Character as SSEntity);
-				RunEffect("Slow", player.Character as Model);
 				return false;
 			}
 
@@ -238,6 +246,7 @@ class AbilityService {
 				wait(abilityMeta.duration);
 				abilityMeta.OnEnd?.(character);
 			});
+			ResourceServiceInstance.modifyResource(character as SSEntity, "mana", -abilityMeta["cost"]);
 
 			return true;
 		} catch (err) {

@@ -3,6 +3,7 @@ import {
 	AnimationServiceInstance,
 	DataServiceInstance,
 	MessageServiceInstance,
+	ResourceServiceInstance,
 } from "./services";
 import { Players } from "@rbxts/services";
 import { AbilityKey } from "shared/keys";
@@ -13,6 +14,7 @@ const Services = {
 	AnimationService: AnimationServiceInstance,
 	DataService: DataServiceInstance,
 	MessageService: MessageServiceInstance,
+	ResourceService: ResourceServiceInstance,
 };
 
 Players.PlayerAdded.Connect((player) => {
@@ -21,6 +23,7 @@ Players.PlayerAdded.Connect((player) => {
 		const testAbilityKeys: AbilityKey[] = ["Melee", "Ice-Rain"]; // Example ability keys
 		print(`Player ${player.Name} added character ${entity.Name}. Registering abilities...`);
 		Services.AbilityService.RegisterModel(entity, testAbilityKeys); // Register the character with the AbilityService
+		Services.ResourceService.initializeEntityHealth(entity); // Initialize health for the entity
 	});
 });
 

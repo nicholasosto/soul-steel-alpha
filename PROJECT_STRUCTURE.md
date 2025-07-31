@@ -30,8 +30,33 @@ soul-steel-alpha/
 **Purpose**: Code that runs on the player's device
 **Compilation Target**: LocalScripts in Roblox
 
-- `input.client.ts` - User input processing and validation
 - `main.client.ts` - Client initialization and main entry point
+- `input.client.ts` - User input processing and validation
+- `ui.client.ts` - UI management and initialization
+- `network.client.ts` - Client-side network communication
+- `event-dispatcher.ts` - Client-side event coordination and dispatch
+
+#### Client State Management (`src/client/states/`)
+- `message-state.ts` - Message display state using Fusion reactive programming
+- `movement-state.ts` - Player movement and input state management
+
+#### Client UI System (`src/client/client-ui/`)
+**Architecture**: Atomic Design Pattern with Fusion reactive UI framework
+
+**Atoms** (`client-ui/atoms/`):
+- `MessageBox.ts` - Reactive message display component with type-based styling
+- `IconButton.ts` - Reusable icon button component with click handlers
+- `index.ts` - Atomic component exports
+
+**Organisms** (`client-ui/organisms/`):
+- `button-bars/ButtonBar.ts` - Horizontal button bar layout component
+- `button-bars/ability-buttons.ts` - Ability activation button bar
+- `button-bars/menu-buttons.ts` - Menu navigation button bar
+- `button-bars/index.ts` - Button bar exports
+
+**Helpers** (`client-ui/helpers/`):
+- `decorator-helpers.ts` - UI layout and styling utility functions
+- `index.ts` - Helper function exports
 
 ### Server Directory (`src/server/`)
 
@@ -39,12 +64,17 @@ soul-steel-alpha/
 **Compilation Target**: ServerScripts in Roblox
 
 - `main.server.ts` - Server initialization and main entry point
-- `services/` - Service-oriented architecture modules
-  - `ability-service.ts` - Player abilities management and validation
-  - `animation-service.ts` - Character animation handling
-  - `data-service.ts` - Player data management (ProfileService integration)
-  - `services.server.ts` - Service registration and coordination
-- `network/` - Server-side network handlers (currently empty, reserved)
+- `service.server.ts` - Service orchestration and initialization
+
+#### Service Architecture (`src/server/services/`)
+- `ability-service.ts` - Player abilities management and validation
+- `animation-service.ts` - Character animation handling
+- `data-service.ts` - Player data management (ProfileService integration)
+- `message-service.ts` - Server-side message broadcasting and management
+- `index.ts` - Service exports and coordination
+
+#### Network Handlers (`src/server/network/`)
+- `vfx.server.ts` - Visual effects and particle system management
 
 ### Shared Directory (`src/shared/`)
 
@@ -84,12 +114,15 @@ soul-steel-alpha/
 #### Networking
 - `network/` - Client-server communication definitions
   - `ability-remotes.ts` - Ability-related remote events/functions
+  - `effect-remotes.ts` - Visual/audio effect remotes
   - `game-cycle-remotes.ts` - Game lifecycle remotes
+  - `message-remotes.ts` - Message system remotes
   - `index.ts` - Network definition exports
 
 #### Type Definitions
 - `types/` - Shared TypeScript interfaces and types
   - `SSEntity.ts` - Core entity type definitions
+  - `message-type.ts` - Message system type definitions
   - `index.ts` - Type exports
 
 - `module.ts` - Main shared module entry point
@@ -163,6 +196,18 @@ soul-steel-alpha/
 - Consistent index file exports
 - Type-safe constants and validation functions
 
+### Messaging System
+- **Client State**: Fusion reactive state management for message display
+- **Network Layer**: Type-safe server-to-client message broadcasting  
+- **UI Components**: Reactive MessageBox component with severity-based styling
+- **Features**: Auto-hiding messages, type-based color coding (error, warning, info)
+
+### UI Architecture (Fusion + Atomic Design)
+- **Atomic Components**: Reusable button and display components
+- **Organism Components**: Complex layouts like button bars and menus
+- **Reactive State**: Fusion-based reactive programming for real-time updates
+- **Layout Helpers**: Utility functions for consistent spacing and arrangement
+
 ### Type Safety
 - Comprehensive TypeScript typing throughout
 - Runtime validation using type guards and Zod
@@ -179,4 +224,4 @@ soul-steel-alpha/
 
 ---
 
-*This document was generated using the project's MCP server to ensure accuracy and completeness. Last updated: July 24, 2025*
+*This document was generated using the project's MCP server to ensure accuracy and completeness. Last updated: July 31, 2025*

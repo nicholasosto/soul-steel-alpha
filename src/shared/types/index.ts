@@ -40,6 +40,7 @@
 
 export * from "./SSEntity";
 export * from "./message-type";
+export * from "./health-types";
 // Player Data Interface
 export interface PlayerData {
 	health: number;
