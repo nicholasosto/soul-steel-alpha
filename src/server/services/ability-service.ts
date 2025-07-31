@@ -16,9 +16,10 @@
 
 import { Players } from "@rbxts/services";
 import { AbilityKey, SIGNAL_KEYS } from "shared/keys";
-import { VFXConfigOption, VFXKey, RunEffect } from "shared/packages";
+import { VFXConfigOption, VFXKey, RunEffect, CooldownTimer } from "shared/packages";
 import { AbilityRemotes } from "shared/network";
 import { SSEntity } from "shared/types/SSEntity";
+import { MessageLibrary } from "shared/types";
 import { isSSEntity } from "shared/helpers/type-guards";
 import { AbilityCatalog } from "shared/catalogs";
 import { DataServiceInstance } from "./data-service";
@@ -51,6 +52,9 @@ class AbilityService {
 
 	/** Map storing registered abilities for each entity */
 	private characterAbilityMap: Map<SSEntity, AbilityKey[]> = new Map();
+
+	/** Map storing cooldown timers for each entity's abilities */
+	private abilityCooldowns: Map<string, CooldownTimer> = new Map();
 
 	/**
 	 * Gets or creates the singleton instance of AbilityService.
@@ -139,8 +143,62 @@ class AbilityService {
 	}
 
 	/**
+	 * Generates a unique key for entity-ability combination cooldown tracking.
+	 * @param entity - The SSEntity
+	 * @param abilityKey - The ability key
+	 * @returns Unique string key for cooldown mapping
+	 * @private
+	 */
+	private getCooldownKey(entity: SSEntity, abilityKey: AbilityKey): string {
+		return `${entity.Name}_${abilityKey}`;
+	}
+
+	/**
+	 * Checks if an ability is currently on cooldown for a specific entity.
+	 * @param entity - The SSEntity to check
+	 * @param abilityKey - The ability to check
+	 * @returns True if the ability is on cooldown, false if ready to use
+	 * @public
+	 */
+	public isAbilityOnCooldown(entity: SSEntity, abilityKey: AbilityKey): boolean {
+		const cooldownKey = this.getCooldownKey(entity, abilityKey);
+		const timer = this.abilityCooldowns.get(cooldownKey);
+		return timer !== undefined && !timer.isReady();
+	}
+
+	/**
+	 * Starts a cooldown timer for a specific entity-ability combination.
+	 * @param entity - The SSEntity that used the ability
+	 * @param abilityKey - The ability that was used
+	 * @private
+	 */
+	private startAbilityCooldown(entity: SSEntity, abilityKey: AbilityKey): void {
+		const cooldownKey = this.getCooldownKey(entity, abilityKey);
+		const abilityMeta = AbilityCatalog[abilityKey];
+
+		// Clean up any existing timer
+		const existingTimer = this.abilityCooldowns.get(cooldownKey);
+		if (existingTimer) {
+			existingTimer.destroy();
+		}
+
+		// Create and start new cooldown timer
+		const timer = new CooldownTimer(abilityMeta.cooldown);
+		this.abilityCooldowns.set(cooldownKey, timer);
+
+		// Auto-cleanup when cooldown completes
+		timer.onComplete(() => {
+			this.abilityCooldowns.delete(cooldownKey);
+			timer.destroy();
+		});
+
+		timer.start();
+		print(`Started ${abilityMeta.cooldown}s cooldown for ${abilityKey} on ${entity.Name}`);
+	}
+
+	/**
 	 * Unregisters an entity from the ability system.
-	 * Removes all ability mappings for the specified entity.
+	 * Removes all ability mappings and cooldown timers for the specified entity.
 	 *
 	 * @param entity - The SSEntity to unregister
 	 * @returns True if entity was found and unregistered, false if entity was not registered
@@ -148,8 +206,19 @@ class AbilityService {
 	 */
 	public unregisterModel(entity: SSEntity): boolean {
 		if (this.characterAbilityMap.has(entity)) {
+			// Clean up all cooldown timers for this entity
+			const registeredAbilities = this.characterAbilityMap.get(entity)!;
+			for (const abilityKey of registeredAbilities) {
+				const cooldownKey = this.getCooldownKey(entity, abilityKey);
+				const timer = this.abilityCooldowns.get(cooldownKey);
+				if (timer) {
+					timer.destroy();
+					this.abilityCooldowns.delete(cooldownKey);
+				}
+			}
+
 			this.characterAbilityMap.delete(entity);
-			print(`Unregistered entity ${entity.Name}`);
+			print(`Unregistered entity ${entity.Name} and cleaned up cooldowns`);
 			return true;
 		}
 		return false;
@@ -197,7 +266,14 @@ class AbilityService {
 			return false;
 		}
 
-		// Modify resource checks and cooldowns here
+		// Check if ability is on cooldown
+		if (this.isAbilityOnCooldown(character, abilityKey)) {
+			warn(`Ability ${abilityKey} is on cooldown for player ${player.Name}`);
+			MessageServiceInstance.SendMessageToPlayer(player, MessageLibrary.AbilityOnCooldown);
+			return false;
+		}
+
+		// Check resource costs
 		const manaCost = AbilityCatalog[abilityKey]?.cost ?? 0;
 		const currentMana = ResourceServiceInstance.getEntityResources(character as SSEntity)?.mana ?? 0;
 		if (currentMana < manaCost) {
@@ -238,6 +314,10 @@ class AbilityService {
 
 			// Execute ability logic here
 			const character = player.Character as SSEntity;
+
+			// Start cooldown timer
+			this.startAbilityCooldown(character, abilityKey);
+
 			// Play Success Effects
 			abilityMeta.OnStartSuccess?.(character, undefined);
 			abilityMeta.OnHold?.(character, 0, undefined);

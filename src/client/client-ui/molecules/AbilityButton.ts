@@ -1,4 +1,4 @@
-import { IconButton, IconButtonProps } from "../atoms";
+import { IconButton, IconButtonProps, ProgressBar } from "../atoms";
 import Fusion, { Value, New, Computed, OnEvent, Children } from "@rbxts/fusion";
 import { AbilityKey, ABILITY_KEYS } from "shared/keys";
 import { AbilityCatalog } from "shared/catalogs";
@@ -16,12 +16,6 @@ export function AbilityButton(props: AbilityButtonProps) {
 	const ability = AbilityCatalog[props.abilityKey];
 	const cooldownProgress = props.cooldownProgress ?? Value(0);
 	const isOnCooldown = Computed(() => cooldownProgress.get() > 0);
-
-	// Calculate cooldown bar size based on progress
-	const cooldownBarSize = Computed(() => {
-		const progress = cooldownProgress.get();
-		return new UDim2(progress, 0, 0, 4); // 4 pixel height cooldown bar
-	});
 
 	// Cooldown text showing remaining time
 	const cooldownText = Computed(() => {
@@ -47,47 +41,18 @@ export function AbilityButton(props: AbilityButtonProps) {
 		ZIndex: 3,
 	});
 
-	// Cooldown background bar (full width)
-	const cooldownBackground = New("Frame")({
-		Name: "CooldownBackground",
+	// Cooldown progress bar using ProgressBar atom
+	const cooldownProgressBar = ProgressBar({
+		Name: "CooldownProgressBar",
 		Size: new UDim2(1, 0, 0, 4),
 		Position: new UDim2(0, 0, 1, 24), // Below ability name with spacing
-		AnchorPoint: new Vector2(0, 0),
+		progress: cooldownProgress,
+		fillColor: Color3.fromRGB(255, 100, 100), // Red cooldown color
 		BackgroundColor3: Color3.fromRGB(40, 40, 40),
-		BackgroundTransparency: Computed(() => (isOnCooldown.get() ? 0.3 : 1)),
-		BorderSizePixel: 0,
-		ZIndex: 2,
-	});
-
-	// Cooldown progress bar (fills from left to right)
-	const cooldownBar = New("Frame")({
-		Name: "CooldownBar",
-		Size: cooldownBarSize,
-		Position: new UDim2(0, 0, 0, 0),
-		AnchorPoint: new Vector2(0, 0),
-		BackgroundColor3: Color3.fromRGB(255, 100, 100), // Red cooldown color
-		BackgroundTransparency: 0,
-		BorderSizePixel: 0,
-		ZIndex: 3,
-		Visible: isOnCooldown,
-		Parent: cooldownBackground,
-	});
-
-	// Cooldown timer text overlay
-	const cooldownTimerLabel = New("TextLabel")({
-		Name: "CooldownTimer",
-		Size: new UDim2(1, 0, 1, 0),
-		Position: new UDim2(0, 0, 0, 0),
-		BackgroundTransparency: 1,
-		Text: cooldownText,
-		TextColor3: Color3.fromRGB(255, 255, 255),
-		TextScaled: true,
-		TextStrokeTransparency: 0.3,
-		TextStrokeColor3: Color3.fromRGB(0, 0, 0),
-		Font: Enum.Font.GothamBold,
-		ZIndex: 4,
-		Visible: isOnCooldown,
-		Parent: cooldownBackground,
+		BorderColor3: Color3.fromRGB(60, 60, 60),
+		showLabel: true,
+		labelText: cooldownText,
+		labelColor: Color3.fromRGB(255, 255, 255),
 	});
 
 	// Main ability icon button
@@ -118,10 +83,9 @@ export function AbilityButton(props: AbilityButtonProps) {
 		BackgroundTransparency: 1,
 		ZIndex: props.ZIndex ?? 1,
 		[Children]: {
-			Layout: VerticalLayout(UI_SPACING.SMALL),
 			AbilityButton: abilityIconButton,
 			AbilityNameLabel: abilityNameLabel,
-			CooldownBackground: cooldownBackground,
+			CooldownProgressBar: cooldownProgressBar,
 		},
 	});
 

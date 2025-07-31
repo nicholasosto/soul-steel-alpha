@@ -10,6 +10,7 @@
  */
 
 import Fusion, { Children, Computed, New, Value } from "@rbxts/fusion";
+import { ProgressBar } from "../../atoms";
 import { PlayerResources } from "shared/types/health-types";
 
 export interface HealthBarProps {
@@ -25,7 +26,7 @@ export function HealthBar(props: HealthBarProps): Frame {
 	const size = props.size || new UDim2(0, 300, 0, 80);
 	const position = props.position || new UDim2(0, 20, 0, 20);
 
-	// Individual bar creation helper
+	// Individual bar creation helper using ProgressBar atom
 	const createResourceBar = (
 		name: string,
 		color: Color3,
@@ -33,55 +34,19 @@ export function HealthBar(props: HealthBarProps): Frame {
 		maxValue: Fusion.Computed<number>,
 		yOffset: number,
 	): Frame => {
-		return New("Frame")({
+		return ProgressBar({
 			Name: `${name}Bar`,
 			Size: new UDim2(1, -20, 0, 20),
 			Position: new UDim2(0, 10, 0, yOffset),
-			BackgroundColor3: Color3.fromRGB(40, 40, 40),
-			BorderSizePixel: 1,
-			BorderColor3: Color3.fromRGB(100, 100, 100),
-
-			[Children]: {
-				// Background
-				Background: New("Frame")({
-					Name: "Background",
-					Size: new UDim2(1, 0, 1, 0),
-					BackgroundColor3: Color3.fromRGB(20, 20, 20),
-					BorderSizePixel: 0,
-				}),
-
-				// Fill bar
-				Fill: New("Frame")({
-					Name: "Fill",
-					Size: Computed(() => {
-						const current = currentValue.get();
-						const max = maxValue.get();
-						const percentage = max > 0 ? current / max : 0;
-						return new UDim2(percentage, 0, 1, 0);
-					}),
-					Position: new UDim2(0, 0, 0, 0),
-					BackgroundColor3: color,
-					BorderSizePixel: 0,
-				}),
-
-				// Text label
-				Label: New("TextLabel")({
-					Name: "Label",
-					Size: new UDim2(1, 0, 1, 0),
-					Position: new UDim2(0, 0, 0, 0),
-					BackgroundTransparency: 1,
-					Text: Computed(() => {
-						const current = math.floor(currentValue.get());
-						const max = math.floor(maxValue.get());
-						return `${name}: ${current}/${max}`;
-					}),
-					TextColor3: Color3.fromRGB(255, 255, 255),
-					TextScaled: true,
-					TextStrokeTransparency: 0,
-					TextStrokeColor3: Color3.fromRGB(0, 0, 0),
-					Font: Enum.Font.GothamBold,
-				}),
-			},
+			progress: currentValue,
+			maxValue: maxValue,
+			fillColor: color,
+			showLabel: true,
+			labelText: Computed(() => {
+				const current = math.floor(currentValue.get());
+				const max = math.floor(maxValue.get());
+				return `${name}: ${current}/${max}`;
+			}),
 		});
 	};
 
