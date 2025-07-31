@@ -16,14 +16,14 @@
 
 import { Players } from "@rbxts/services";
 import { AbilityKey, SIGNAL_KEYS } from "shared/keys";
-import { VFXConfigOption, VFXKey, RunEffect, CooldownTimer } from "shared/packages";
+import { CooldownTimer } from "shared/packages";
 import { AbilityRemotes } from "shared/network";
 import { SSEntity } from "shared/types/SSEntity";
 import { MessageLibrary } from "shared/types";
 import { isSSEntity } from "shared/helpers/type-guards";
 import { AbilityCatalog } from "shared/catalogs";
 import { DataServiceInstance } from "./data-service";
-import MessageService, { MessageServiceInstance } from "./message-service";
+import { MessageServiceInstance } from "./message-service";
 import { ResourceServiceInstance } from "./resource-service";
 
 /**

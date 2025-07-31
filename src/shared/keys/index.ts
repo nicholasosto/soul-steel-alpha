@@ -38,5 +38,6 @@
  */
 
 export * from "./ability-keys";
+export * from "./combat-keys";
 export * from "./event-keys";
 export * from "./player-data-keys";

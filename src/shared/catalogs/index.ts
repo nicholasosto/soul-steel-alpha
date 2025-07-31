@@ -38,3 +38,4 @@
 
 export * from "./ability-catalog";
 export * from "./animation-catalog";
+export * from "./weapon-catalog";
