@@ -63,6 +63,9 @@ export interface AbilityMeta {
 	/** Roblox asset ID for the ability's icon image */
 	icon: string;
 
+	/** Array of animation IDs that can be randomly selected when the ability is cast */
+	animationSet?: readonly string[];
+
 	/** Cast Effect String Key */
 	castEffectKey?: string;
 

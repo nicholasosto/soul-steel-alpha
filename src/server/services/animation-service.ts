@@ -18,7 +18,11 @@ import { Players } from "@rbxts/services";
 import { AnimationKey } from "shared/asset-ids";
 import { SSEntity } from "shared/types/SSEntity";
 import { isSSEntity, validateSSEntity } from "shared/helpers/type-guards";
-import { LoadCharacterAnimations, cleanupCharacterAnimations } from "shared/helpers/animation-helpers";
+import {
+	LoadAllCharacterAnimations,
+	LoadCharacterAnimations,
+	cleanupCharacterAnimations,
+} from "shared/helpers/animation-helpers";
 
 /**
  * Server-side animation management service.
@@ -86,6 +90,7 @@ class AnimationService {
 		try {
 			Players.PlayerAdded.Connect((player) => {
 				player.CharacterAdded.Connect((characterModel) => {
+					print(`Character added for player ${player.Name}: ${characterModel.Name}`);
 					this.handleCharacterAdded(characterModel, player);
 				});
 			});
@@ -138,7 +143,7 @@ class AnimationService {
 
 	/**
 	 * Handles character addition events.
-	 * Validates the character as an SSEntity and loads appropriate animations.
+	 * Validates the character as an SSEntity and loads all available animations.
 	 *
 	 * @param characterModel - The character model that was added
 	 * @param player - The player who owns the character
@@ -151,16 +156,10 @@ class AnimationService {
 			return;
 		}
 
-		// Load default animations
-		this.loadDefaultAnimations(ssEntity);
+		// Load all animations (emotes, ability animations, and combat animations)
+		LoadAllCharacterAnimations(ssEntity);
 
-		// Load any custom animations registered for this entity
-		const customAnimations = this.entityAnimationMap.get(ssEntity);
-		if (customAnimations) {
-			this.loadAnimationsForEntity(ssEntity, customAnimations);
-		}
-
-		print(`Loaded animations for player ${player.Name}'s character ${ssEntity.Name}`);
+		print(`Loaded all animations for player ${player.Name}'s character ${ssEntity.Name}`);
 	}
 
 	/**

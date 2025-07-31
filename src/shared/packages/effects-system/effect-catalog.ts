@@ -1,4 +1,4 @@
-import { VFX_KEYS, VFXKey } from "./effect-keys";
+import { CombatVFXKey, VFX_KEYS, VFXKey } from "./effect-keys";
 import { ReplicatedStorage } from "@rbxts/services";
 
 const EffectPartsFolder = ReplicatedStorage.WaitForChild("SS Game Package").WaitForChild("VFXParts");
@@ -12,8 +12,23 @@ export interface EffectMeta {
 	defaultDuration: number;
 	defaultImmunityDuration: number;
 }
-
-export const EffectCatalog: Record<VFXKey, EffectMeta> = {
+export const CombatVFXCatalog: Record<CombatVFXKey, EffectMeta> = {
+	SpeedBoost: {
+		//key: "SpeedBoost",
+		effectTemplate: EffectPartsFolder.WaitForChild("Speed_Boost") as Part,
+		displayName: "Speed Boost",
+		description: "Effect triggered when a speed boost is applied.",
+		defaultDuration: 5,
+		defaultImmunityDuration: 5,
+	},
+	DamageTaken: {
+		//key: "DamageTaken",
+		effectTemplate: EffectPartsFolder.WaitForChild("Damage_Taken") as Part,
+		displayName: "Damage Taken",
+		description: "Effect triggered when damage is taken.",
+		defaultDuration: 1,
+		defaultImmunityDuration: 1,
+	},
 	CastFailInterupt: {
 		//key: "CastFailInterupt",
 		effectTemplate: EffectPartsFolder.WaitForChild("Beam_Air") as Part,
@@ -22,54 +37,32 @@ export const EffectCatalog: Record<VFXKey, EffectMeta> = {
 		defaultDuration: 0.5,
 		defaultImmunityDuration: 0.5,
 	},
-	CastStart: {
-		//key: "CastStart",
-		effectTemplate: EffectPartsFolder.WaitForChild("Beam_Lava") as Part,
-		displayName: "Cast Start",
-		description: "Effect triggered when a cast starts.",
-		defaultDuration: 0.5,
-		defaultImmunityDuration: 0.5,
-	},
-	Damage: {
-		//key: "Damage",
-		effectTemplate: EffectPartsFolder.WaitForChild("Beam_Water") as Part,
-		displayName: "Damage",
-		description: "Effect triggered when damage is dealt.",
-		defaultDuration: 0.5,
-		defaultImmunityDuration: 0.5,
-	},
-	Heal: {
-		//key: "Heal",
-		effectTemplate: EffectPartsFolder.WaitForChild("Time_Aura") as Part,
-		displayName: "Heal",
-		description: "Effect triggered when healing occurs.",
-		defaultDuration: 0.5,
-		defaultImmunityDuration: 0.5,
-	},
-	Slow: {
-		//key: "Slow",
-		effectTemplate: EffectPartsFolder.WaitForChild("Time_Aura") as Part,
-		displayName: "Slow",
-		description: "Effect triggered when a slow effect is applied.",
-		defaultDuration: 1,
-		defaultImmunityDuration: 1,
-	},
-	Poisoned: {
-		//key: "Poisoned",
-		effectTemplate: EffectPartsFolder.WaitForChild("Toxic_Cloud") as Part,
-		displayName: "Poisoned",
-		description: "Effect triggered when a poison effect is applied.",
+	RegenerateHealth: {
+		//key: "RegenerateHealth",
+		effectTemplate: EffectPartsFolder.WaitForChild("Heal_Aura") as Part,
+		displayName: "Regenerate Health",
+		description: "Effect triggered when health is regenerated.",
 		defaultDuration: 2,
 		defaultImmunityDuration: 2,
 	},
-	Stunned: {
-		//key: "Stunned",
-		effectTemplate: EffectPartsFolder.WaitForChild("Evil_Emination") as Part,
-		displayName: "Stunned",
-		description: "Effect triggered when a stun effect is applied.",
-		defaultDuration: 1.5,
-		defaultImmunityDuration: 1.5,
+	RegenerateStamina: {
+		//key: "RegenerateStamina",
+		effectTemplate: EffectPartsFolder.WaitForChild("Stamina_Aura") as Part,
+		displayName: "Regenerate Stamina",
+		description: "Effect triggered when stamina is regenerated.",
+		defaultDuration: 2,
+		defaultImmunityDuration: 2,
 	},
+	RegenerateMana: {
+		//key: "RegenerateMana",
+		effectTemplate: EffectPartsFolder.WaitForChild("Mana_Aura") as Part,
+		displayName: "Regenerate Mana",
+		description: "Effect triggered when mana is regenerated.",
+		defaultDuration: 2,
+		defaultImmunityDuration: 2,
+	},
+};
+export const EffectCatalog: Record<VFXKey, EffectMeta> = {
 	Frost_Cast: {
 		//key: "Frost_Cast",
 		effectTemplate: EffectPartsFolder.WaitForChild("Frost_Cast") as Part,

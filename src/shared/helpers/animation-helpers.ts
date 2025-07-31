@@ -10,7 +10,7 @@
  * @lastUpdated  2025-07-24 by Trembus
  */
 import { Players } from "@rbxts/services";
-import { AnimationConstants, AnimationKey, getAnimationID } from "shared/asset-ids";
+import { getAnimationId, getAllAnimationIds, AnimationKey, AnimationIdMap } from "shared/asset-ids/animation-assets";
 
 export const AnimationTracks: Map<Model, Map<string, AnimationTrack>> = new Map();
 
@@ -37,8 +37,8 @@ export function cleanupCharacterAnimations(character: Model): void {
 	}
 }
 
-function createAnimation(key: AnimationKey): Animation | undefined {
-	const animationId = getAnimationID(key);
+function createAnimation(key: string): Animation | undefined {
+	const animationId = getAnimationId(key);
 	if (animationId === undefined) {
 		warn(`Animation ID not found or invalid for ${key}`);
 		return undefined;
@@ -110,7 +110,44 @@ export function LoadCharacterAnimations(character: Model, keys: AnimationKey[]):
 	}
 }
 
-export function PlayAnimation(character: Model, key: AnimationKey): boolean {
+/**
+ * Loads all available animations for a character on spawn
+ * This includes all emotes, ability animations, and combat animations
+ * @param character The character to load animations for
+ */
+export function LoadAllCharacterAnimations(character: Model): void {
+	const animationKeys: AnimationKey[] = [];
+
+	// Get all animation keys from the map
+	for (const [key] of AnimationIdMap) {
+		animationKeys.push(key as AnimationKey);
+	}
+
+	LoadCharacterAnimations(character, animationKeys);
+	print(`Loaded ${animationKeys.size()} animations for character ${character.Name}`);
+}
+
+/**
+ * Helper function to find animation key by ID
+ * @param animationId The animation ID to find the key for
+ * @returns The animation key or undefined if not found
+ */
+function findAnimationKeyById(animationId: string): string | undefined {
+	for (const [key, id] of AnimationIdMap) {
+		if (id === animationId) {
+			return key;
+		}
+	}
+	return undefined;
+}
+
+/**
+ * Plays an animation on a character
+ * @param character The character to play the animation on
+ * @param key The animation key to play
+ * @returns True if the animation was played successfully
+ */
+export function PlayAnimation(character: Model, key: AnimationKey, duration: number = 1): boolean {
 	const track = AnimationTracks.get(character)?.get(key) as AnimationTrack;
 	if (!track) {
 		warn(`Animation track for ${key} not found on character ${character.Name}`);
@@ -123,11 +160,44 @@ export function PlayAnimation(character: Model, key: AnimationKey): boolean {
 	}
 
 	try {
+		const length = track.Length;
+		const speed = length / duration; // Adjust speed based on desired duration
 		track.Play();
+		track.AdjustSpeed(speed);
 		warn(`Playing animation ${key} on character ${character.Name}`);
 		return true;
 	} catch (error) {
 		warn(`Failed to play animation ${key} on character ${character.Name}: ${error}`);
 		return false;
 	}
+}
+
+/**
+ * Plays a random animation from a set of animation IDs
+ * @param character The character to play the animation on
+ * @param animationSet Array of animation IDs to choose from
+ * @returns True if an animation was played successfully
+ */
+export function PlayRandomAnimationFromSet(
+	character: Model,
+	animationSet: readonly string[],
+	duration: number = 1,
+): boolean {
+	if (animationSet.size() === 0) {
+		warn(`No animations in set for character ${character.Name}`);
+		return false;
+	}
+
+	// Get a random animation from the set
+	const randomIndex = math.random(0, animationSet.size() - 1);
+	const selectedAnimationId = animationSet[randomIndex];
+
+	// Find the key for this animation ID
+	const animationKey = findAnimationKeyById(selectedAnimationId);
+	if (animationKey === undefined) {
+		warn(`Could not find animation key for ID ${selectedAnimationId}`);
+		return false;
+	}
+
+	return PlayAnimation(character, animationKey as AnimationKey);
 }

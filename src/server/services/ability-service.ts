@@ -297,14 +297,6 @@ class AbilityService {
 	 */
 	private handleAbilityStart(player: Player, abilityKey: AbilityKey): boolean {
 		const abilityMeta = AbilityCatalog[abilityKey];
-		const castEffectKey = abilityMeta?.castEffectKey as VFXKey | undefined;
-		if (castEffectKey) {
-			// Run the cast effect for visual feedback
-			print(`Running cast effect for ${abilityKey} on ${player.Name}`);
-			RunEffect(castEffectKey, player.Character as Model);
-		}
-
-		RunEffect("CastFailInterupt", player.Character as Model);
 
 		try {
 			if (!this.validateAbility(player, abilityKey)) {

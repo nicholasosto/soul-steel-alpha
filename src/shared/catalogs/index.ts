@@ -37,3 +37,4 @@
  */
 
 export * from "./ability-catalog";
+export * from "./animation-catalog";
