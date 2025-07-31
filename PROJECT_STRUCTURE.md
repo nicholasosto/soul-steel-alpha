@@ -37,24 +37,29 @@ soul-steel-alpha/
 - `event-dispatcher.ts` - Client-side event coordination and dispatch
 
 #### Client State Management (`src/client/states/`)
+
 - `message-state.ts` - Message display state using Fusion reactive programming
 - `movement-state.ts` - Player movement and input state management
 
 #### Client UI System (`src/client/client-ui/`)
+
 **Architecture**: Atomic Design Pattern with Fusion reactive UI framework
 
 **Atoms** (`client-ui/atoms/`):
+
 - `MessageBox.ts` - Reactive message display component with type-based styling
 - `IconButton.ts` - Reusable icon button component with click handlers
 - `index.ts` - Atomic component exports
 
 **Organisms** (`client-ui/organisms/`):
+
 - `button-bars/ButtonBar.ts` - Horizontal button bar layout component
 - `button-bars/ability-buttons.ts` - Ability activation button bar
 - `button-bars/menu-buttons.ts` - Menu navigation button bar
 - `button-bars/index.ts` - Button bar exports
 
 **Helpers** (`client-ui/helpers/`):
+
 - `decorator-helpers.ts` - UI layout and styling utility functions
 - `index.ts` - Helper function exports
 
@@ -67,6 +72,7 @@ soul-steel-alpha/
 - `service.server.ts` - Service orchestration and initialization
 
 #### Service Architecture (`src/server/services/`)
+
 - `ability-service.ts` - Player abilities management and validation
 - `animation-service.ts` - Character animation handling
 - `data-service.ts` - Player data management (ProfileService integration)
@@ -74,6 +80,7 @@ soul-steel-alpha/
 - `index.ts` - Service exports and coordination
 
 #### Network Handlers (`src/server/network/`)
+
 - `vfx.server.ts` - Visual effects and particle system management
 
 ### Shared Directory (`src/shared/`)
@@ -82,6 +89,7 @@ soul-steel-alpha/
 **Compilation Target**: ModuleScripts in Roblox
 
 #### Asset Management
+
 - `asset-ids/` - Centralized Roblox asset ID constants
   - `animation-assets.ts` - Animation asset IDs
   - `image-assets.ts` - Image/texture asset IDs  
@@ -89,11 +97,13 @@ soul-steel-alpha/
   - `index.ts` - Exports and asset utilities
 
 #### Game Content
+
 - `catalogs/` - Structured game content definitions
   - `ability-catalog.ts` - Ability definitions and metadata
   - `index.ts` - Catalog exports and utilities
 
 #### Utilities
+
 - `helpers/` - Reusable utility functions
   - `animation-helpers.ts` - Animation utility functions
   - `audio-helpers.ts` - Audio processing utilities
@@ -101,17 +111,20 @@ soul-steel-alpha/
   - `index.ts` - Helper function exports
 
 #### Identifiers
+
 - `keys/` - Type-safe string identifiers
   - `ability-keys.ts` - Ability identifier constants
   - `player-data-keys.ts` - Player data key constants
   - `index.ts` - Key exports and validation
 
 #### Metadata
+
 - `meta/` - Entity metadata and configuration
   - `ability-meta.ts` - Ability metadata schemas
   - `index.ts` - Metadata exports
 
 #### Networking
+
 - `network/` - Client-server communication definitions
   - `ability-remotes.ts` - Ability-related remote events/functions
   - `effect-remotes.ts` - Visual/audio effect remotes
@@ -120,6 +133,7 @@ soul-steel-alpha/
   - `index.ts` - Network definition exports
 
 #### Type Definitions
+
 - `types/` - Shared TypeScript interfaces and types
   - `SSEntity.ts` - Core entity type definitions
   - `message-type.ts` - Message system type definitions
@@ -160,6 +174,7 @@ soul-steel-alpha/
 ## Key Dependencies
 
 ### Roblox Development
+
 - `roblox-ts` ^3.0.0 - TypeScript to Lua compiler
 - `@rbxts/types` ^1.0.865 - Roblox API type definitions
 - `@rbxts/services` ^1.5.5 - Type-safe service access
@@ -169,6 +184,7 @@ soul-steel-alpha/
 - `@rbxts/profileservice` ^1.4.2 - Player data management
 
 ### Development Tools
+
 - `typescript` ^5.8.3 - TypeScript compiler
 - `eslint` with Roblox-TS plugins - Code linting
 - `prettier` ^3.6.2 - Code formatting
@@ -187,28 +203,33 @@ soul-steel-alpha/
 ## Architecture Patterns
 
 ### Service-Oriented Architecture (Server)
+
 - Modular services for different game systems
 - Centralized service registration and dependency injection
 - Clear separation of concerns
 
 ### Shared Module Pattern
+
 - Organized by functionality (assets, types, helpers, etc.)
 - Consistent index file exports
 - Type-safe constants and validation functions
 
 ### Messaging System
+
 - **Client State**: Fusion reactive state management for message display
 - **Network Layer**: Type-safe server-to-client message broadcasting  
 - **UI Components**: Reactive MessageBox component with severity-based styling
 - **Features**: Auto-hiding messages, type-based color coding (error, warning, info)
 
 ### UI Architecture (Fusion + Atomic Design)
+
 - **Atomic Components**: Reusable button and display components
 - **Organism Components**: Complex layouts like button bars and menus
 - **Reactive State**: Fusion-based reactive programming for real-time updates
 - **Layout Helpers**: Utility functions for consistent spacing and arrangement
 
 ### Type Safety
+
 - Comprehensive TypeScript typing throughout
 - Runtime validation using type guards and Zod
 - Explicit undefined/null checks (no truthy/falsy assumptions)

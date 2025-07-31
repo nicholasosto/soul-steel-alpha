@@ -11,13 +11,15 @@ The Soul Steel Alpha UI system is built using **Fusion** (a reactive UI framewor
 **Purpose**: Basic, reusable UI building blocks
 
 #### MessageBox Component
+
 ```typescript
 // Location: src/client/client-ui/atoms/MessageBox.ts
 export const MessageBox = (messageState: MessageState) => { ... }
 ```
 
 **Features**:
-- Reactive message display using Fusion's `Computed()` 
+
+- Reactive message display using Fusion's `Computed()`
 - Type-based color coding:
   - `error`: Red (`Color3.fromRGB(255, 0, 0)`)
   - `warning`: Orange (`Color3.fromRGB(255, 165, 0)`)
@@ -27,6 +29,7 @@ export const MessageBox = (messageState: MessageState) => { ... }
 - Visibility controlled by reactive state
 
 #### IconButton Component
+
 ```typescript
 // Location: src/client/client-ui/atoms/IconButton.ts
 export interface IconButtonProps { ... }
@@ -34,6 +37,7 @@ export function IconButton(props: IconButtonProps) { ... }
 ```
 
 **Features**:
+
 - Configurable icon and styling
 - Click event handling
 - Type-safe props interface
@@ -44,6 +48,7 @@ export function IconButton(props: IconButtonProps) { ... }
 **Purpose**: Complex UI assemblies composed of atoms and molecules
 
 #### Button Bar System
+
 ```typescript
 // Base component: src/client/client-ui/organisms/button-bars/ButtonBar.ts
 export interface ButtonBarProps { ... }
@@ -65,6 +70,7 @@ export function HorizontalButtonBar(props: ButtonBarProps) { ... }
 ### Helper Utilities (`src/client/client-ui/helpers/`)
 
 #### Layout Decorators (`decorator-helpers.ts`)
+
 ```typescript
 export function makePadding(padding: number): UIPadding
 export function VerticalLayout(): UIListLayout  
@@ -89,12 +95,14 @@ export class MessageState {
 ```
 
 **Features**:
+
 - Singleton pattern ensures single message system
 - Reactive state automatically updates UI
 - Network integration for server-sent messages
 - Auto-hide functionality with configurable timing
 
 **Network Integration**:
+
 - Connects to `MessageRemotes.Client.Get("SendMessageToPlayer")`
 - Receives structured message objects with content and severity
 - Automatically manages message display lifecycle
@@ -108,11 +116,13 @@ Handles player input and movement state management (details to be documented bas
 ### Key Fusion Concepts Used
 
 1. **Value()**: Reactive state containers
+
    ```typescript
    const message = Value<string>("");
    ```
 
 2. **Computed()**: Derived reactive values
+
    ```typescript
    TextColor3: Computed(() => {
        switch (messageState.messageType.get()) {
@@ -123,6 +133,7 @@ Handles player input and movement state management (details to be documented bas
    ```
 
 3. **New()**: Component creation with reactive properties
+
    ```typescript
    const frame = New("Frame")({
        Visible: Computed(() => messageState.isVisible.get()),
@@ -131,6 +142,7 @@ Handles player input and movement state management (details to be documented bas
    ```
 
 4. **Children**: Parent-child relationships
+
    ```typescript
    [Children]: {
        Label,
@@ -141,34 +153,40 @@ Handles player input and movement state management (details to be documented bas
 ## Integration Points
 
 ### Network Layer
+
 - **Message System**: `src/shared/network/message-remotes.ts`
 - **Ability System**: `src/shared/network/ability-remotes.ts`
 - **Game Cycle**: `src/shared/network/game-cycle-remotes.ts`
 
 ### Asset Management
+
 - **Icons**: `src/shared/asset-ids/image-assets.ts`
 - **Sounds**: `src/shared/asset-ids/sound-assets.ts`
 - **UI Constants**: `src/shared/constants/ui-constants.ts`
 
 ### Type Definitions
+
 - **Message Types**: `src/shared/types/message-type.ts`
 - **Entity Types**: `src/shared/types/SSEntity.ts`
 
 ## Development Guidelines
 
 ### Component Creation
+
 1. **Atoms**: Single-purpose, highly reusable components
 2. **Molecules**: Simple combinations of atoms (when needed)
 3. **Organisms**: Complex UI sections with business logic
 4. **Templates**: Page-level layouts (future consideration)
 
 ### Naming Conventions
+
 - **Components**: PascalCase (`MessageBox`, `IconButton`)
 - **Props Interfaces**: `ComponentNameProps` (`IconButtonProps`)
 - **State Classes**: PascalCase with descriptive names (`MessageState`)
 - **Files**: kebab-case (`message-box.ts`, `icon-button.ts`)
 
 ### Best Practices
+
 1. **Type Safety**: Always define proper TypeScript interfaces
 2. **Reactive State**: Use Fusion's reactive primitives for dynamic updates
 3. **Single Responsibility**: Each component should have one clear purpose
@@ -178,12 +196,14 @@ Handles player input and movement state management (details to be documented bas
 ## Future Enhancements
 
 ### Planned Components
+
 - **Health/Mana Bars**: Player status indicators
 - **Inventory UI**: Item management interface  
 - **Character Panel**: Stats and progression display
 - **Settings Menu**: Game configuration options
 
 ### System Improvements
+
 - **Theme System**: Centralized color and styling management
 - **Animation Library**: Consistent UI transitions and effects
 - **Accessibility**: Screen reader support and keyboard navigation
