@@ -4,10 +4,11 @@ A Roblox TypeScript project with Model Context Protocol (MCP) server integration
 
 ## Documentation
 
-- **[📁 PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)** - Comprehensive project structure overview (MCP-generated)
-- **[🔧 DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md)** - Development guidelines and best practices
-- **[📚 SHARED_MODULE_REFERENCE.md](SHARED_MODULE_REFERENCE.md)** - Shared module architecture guide
-- **[⚡ QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Common pitfalls and quick fixes
+- **[📁 PROJECT_STRUCTURE.md](.documentation/PROJECT_STRUCTURE.md)** - Comprehensive project structure overview (MCP-generated)
+- **[🔧 DEVELOPMENT_GUIDE.md](.documentation/DEVELOPMENT_GUIDE.md)** - Development guidelines and best practices
+- **[📚 SHARED_MODULE_REFERENCE.md](.documentation/SHARED_MODULE_REFERENCE.md)** - Shared module architecture guide
+- **[🎨 UI_SYSTEM_GUIDE.md](.documentation/UI_SYSTEM_GUIDE.md)** - UI system architecture and patterns
+- **[⚡ QUICK_REFERENCE.md](.documentation/QUICK_REFERENCE.md)** - Common pitfalls and quick fixes
 
 ## Project Structure
 
