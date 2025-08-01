@@ -12,6 +12,7 @@
 import type { ResourceDTO } from "shared/dtos";
 import { ResourceDTORemotes } from "shared/network/resource-dto-remotes";
 import { Value } from "@rbxts/fusion";
+import { Players } from "@rbxts/services";
 /**
  * PlayerResourceSlice manages a player's resources via server fetch and real-time updates.
  * - fetch() retrieves the current ResourceDTO from the server
@@ -35,7 +36,6 @@ export type ResourcesState = {
 };
 export class PlayerResourceSlice {
 	/** Latest resource values */
-	public Resources: ResourceDTO;
 	public ResourcesState = {
 		Health: {
 			current: Value(1),
@@ -52,24 +52,30 @@ export class PlayerResourceSlice {
 	};
 
 	private updateConnection: RBXScriptConnection;
+	private humanoidHealthChanged?: RBXScriptConnection;
+	private characterCreatedConnection?: RBXScriptConnection;
 
 	constructor() {
-		// Initialize with default DTO
-		this.Resources = {
-			health: 100,
-			maxHealth: 100,
-			mana: 50,
-			maxMana: 50,
-			stamina: 100,
-			maxStamina: 100,
-			timestamp: tick(),
-		};
-
 		// Listen for server-pushed resource updates
 		const updateEvent = ResourceDTORemotes.Client.Get("ResourcesUpdated");
 		this.updateConnection = updateEvent.Connect((dto: ResourceDTO) => {
 			print("Received resource update from server:", dto);
 			this._onUpdate(dto);
+		});
+		// Character creation handling
+		this.characterCreatedConnection?.Disconnect(); // Disconnect previous connection if exists
+		this.characterCreatedConnection = Players.LocalPlayer.CharacterAdded.Connect((character) => {
+			const humanoid = character.WaitForChild("Humanoid") as Humanoid;
+			if (humanoid === undefined) {
+				warn("Humanoid not found in character, cannot track health changes");
+				return;
+			}
+			this.ResourcesState.Health.current.set(humanoid.Health);
+			this.ResourcesState.Health.max.set(humanoid.MaxHealth);
+			this.humanoidHealthChanged?.Disconnect(); // Disconnect previous connection if exists
+			this.humanoidHealthChanged = humanoid.HealthChanged.Connect((newHealth: number) => {
+				this.ResourcesState.Health.current.set(newHealth);
+			});
 		});
 	}
 
