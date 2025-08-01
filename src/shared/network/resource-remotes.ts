@@ -1,12 +1,12 @@
 /**
- * @file src/shared/network/health-remotes.ts
- * @module HealthRemotes
+ * @file src/shared/network/resource-remotes.ts
+ * @module ResourceRemotes
  * @layer Shared/Network
- * @description Network definitions for health and combat systems
+ * @description Network definitions for resource management and combat systems
  *
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
- * @lastUpdated 2025-07-31 - Initial health system implementation
+ * @lastUpdated 2025-08-01 - Renamed from health-remotes to resource-remotes for clarity
  */
 
 import { Definitions } from "@rbxts/net";
@@ -17,13 +17,13 @@ import {
 	DamageInfo,
 	HealingInfo,
 	StatusEffect,
-} from "shared/types/health-types";
+} from "shared/types/ResourceTypes";
 import { SSEntity } from "shared/types";
 
 /**
- * Health and combat related remote events and functions
+ * Resource management and combat related remote events and functions
  */
-export const HealthRemotes = Definitions.Create({
+export const ResourceRemotes = Definitions.Create({
 	// Health Changes
 	HealthChanged: Definitions.ServerToClientEvent<[HealthChangeEvent]>(),
 	ResourceChanged: Definitions.ServerToClientEvent<[ResourceChangeEvent]>(),

@@ -1,2 +1,2 @@
-export * from "./menu-buttons";
-export * from "./ability-buttons";
+export * from "./MenuButtons";
+export * from "./AbilityButtons";

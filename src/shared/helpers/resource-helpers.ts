@@ -1,15 +1,15 @@
 /**
- * @file src/shared/helpers/health-helpers.ts
- * @module HealthHelpers
+ * @file src/shared/helpers/resource-helpers.ts
+ * @module ResourceHelpers
  * @layer Shared/Helpers
- * @description Utility functions for health calculations and validations
+ * @description Utility functions for resource calculations and validations
  *
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
- * @lastUpdated 2025-07-31 - Initial health system implementation
+ * @lastUpdated 2025-08-01 - Renamed from health-helpers to resource-helpers for clarity
  */
 
-import { DamageInfo, HealingInfo, DamageType, HealingType } from "shared/types/health-types";
+import { DamageInfo, HealingInfo, DamageType, HealingType } from "shared/types/ResourceTypes";
 import { SSEntity } from "shared/types";
 
 /**

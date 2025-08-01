@@ -26,7 +26,7 @@ import {
 	StatusEffect,
 	StatusEffectType,
 	DamageType,
-} from "shared/types/health-types";
+} from "shared/types/ResourceTypes";
 import { AbilityKey } from "shared/keys";
 import { WeaponInfo, WeaponType } from "shared/catalogs/weapon-catalog";
 import { isSSEntity } from "shared/helpers/type-guards";

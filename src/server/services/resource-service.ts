@@ -20,8 +20,8 @@ import {
 	CombatStats,
 	StatusEffect,
 	ResourceType,
-} from "shared/types/health-types";
-import { HealthRemotes } from "shared/network/health-remotes";
+} from "shared/types/ResourceTypes";
+import { ResourceRemotes } from "shared/network/resource-remotes";
 import { isSSEntity } from "shared/helpers";
 
 /**
@@ -34,6 +34,7 @@ export class ResourceService {
 	private entityResources = new Map<SSEntity, PlayerResources>();
 	private entityStats = new Map<SSEntity, CombatStats>();
 	private statusEffects = new Map<SSEntity, Map<string, StatusEffect>>();
+	private humanoidConnections = new Map<SSEntity, RBXScriptConnection[]>();
 
 	// Default values
 	private readonly DEFAULT_MAX_HEALTH = 100;
@@ -81,15 +82,15 @@ export class ResourceService {
 		});
 
 		// Network handlers
-		HealthRemotes.Server.Get("DealDamage").SetCallback((player, target, damageInfo) => {
+		ResourceRemotes.Server.Get("DealDamage").SetCallback((player, target, damageInfo) => {
 			return this.dealDamage(target, damageInfo);
 		});
 
-		HealthRemotes.Server.Get("ApplyHealing").SetCallback((player, target, healingInfo) => {
+		ResourceRemotes.Server.Get("ApplyHealing").SetCallback((player, target, healingInfo) => {
 			return this.applyHealing(target, healingInfo);
 		});
 
-		HealthRemotes.Server.Get("GetPlayerResources").SetCallback((player, playerId) => {
+		ResourceRemotes.Server.Get("GetPlayerResources").SetCallback((player, playerId) => {
 			const userId = tonumber(playerId);
 			if (userId === undefined) return undefined;
 
@@ -100,11 +101,11 @@ export class ResourceService {
 			return undefined;
 		});
 
-		HealthRemotes.Server.Get("ModifyResource").SetCallback((player, target, resourceType, amount) => {
+		ResourceRemotes.Server.Get("ModifyResource").SetCallback((player, target, resourceType, amount) => {
 			return this.modifyResource(target, resourceType, amount);
 		});
 
-		HealthRemotes.Server.Get("GetStatusEffects").SetCallback((player, target) => {
+		ResourceRemotes.Server.Get("GetStatusEffects").SetCallback((player, target) => {
 			const effects = this.statusEffects.get(target);
 			if (!effects) return [];
 
@@ -113,8 +114,8 @@ export class ResourceService {
 			return result;
 		});
 
-		HealthRemotes.Server.Get("RequestSuicide").Connect((player) => {
-			if (player.Character) {
+		ResourceRemotes.Server.Get("RequestSuicide").Connect((player) => {
+			if (player.Character !== undefined) {
 				this.dealDamage(player.Character as SSEntity, {
 					baseDamage: 999999,
 					damageType: "pure",
@@ -151,10 +152,26 @@ export class ResourceService {
 		this.entityStats.set(entity, stats);
 		this.statusEffects.set(entity, new Map());
 
-		// Sync with Roblox Humanoid
+		// Sync with Roblox Humanoid and establish bidirectional connection
 		if (entity.Humanoid) {
 			entity.Humanoid.MaxHealth = resources.maxHealth;
 			entity.Humanoid.Health = resources.health;
+
+			// Connect Humanoid health changes back to resource system
+			const humanoidHealthConnection = entity.Humanoid.HealthChanged.Connect((health) => {
+				this.syncFromHumanoidHealth(entity, health);
+			});
+
+			// Connect Humanoid death to resource system
+			const humanoidDiedConnection = entity.Humanoid.Died.Connect(() => {
+				this.handleHumanoidDeath(entity);
+			});
+
+			// Store connections for cleanup
+			if (!this.humanoidConnections.has(entity)) {
+				this.humanoidConnections.set(entity, []);
+			}
+			this.humanoidConnections.get(entity)!.push(humanoidHealthConnection, humanoidDiedConnection);
 		}
 
 		print(`Resource system initialized for entity: ${entity.Name}`);
@@ -226,16 +243,68 @@ export class ResourceService {
 			changeType,
 		};
 
-		HealthRemotes.Server.Get("HealthChanged").SendToAllPlayers(healthEvent);
+		ResourceRemotes.Server.Get("HealthChanged").SendToAllPlayers(healthEvent);
 	}
 
 	/**
 	 * Clean up entity data when they leave
 	 */
 	private cleanupEntity(entity: SSEntity): void {
+		// Disconnect humanoid connections
+		const connections = this.humanoidConnections.get(entity);
+		if (connections) {
+			for (const connection of connections) {
+				connection.Disconnect();
+			}
+			this.humanoidConnections.delete(entity);
+		}
+
 		this.entityResources.delete(entity);
 		this.entityStats.delete(entity);
 		this.statusEffects.delete(entity);
+	}
+
+	/**
+	 * Sync resource system from humanoid health changes (external damage/healing)
+	 */
+	private syncFromHumanoidHealth(entity: SSEntity, newHumanoidHealth: number): void {
+		const resources = this.entityResources.get(entity);
+		if (!resources) return;
+
+		const previousHealth = resources.health;
+		const clampedHealth = math.max(0, math.min(resources.maxHealth, newHumanoidHealth));
+
+		// Only update if there's a significant change to avoid infinite loops
+		if (math.abs(resources.health - clampedHealth) > 0.1) {
+			resources.health = clampedHealth;
+
+			// Broadcast the health change
+			const change = clampedHealth - previousHealth;
+			this.broadcastHealthChange(
+				entity,
+				previousHealth,
+				clampedHealth,
+				change,
+				"external",
+				change > 0 ? "healing" : "damage",
+			);
+
+			// Check for death
+			if (clampedHealth <= 0) {
+				this.handleEntityDeath(entity);
+			}
+		}
+	}
+
+	/**
+	 * Handle humanoid death event
+	 */
+	private handleHumanoidDeath(entity: SSEntity): void {
+		const resources = this.entityResources.get(entity);
+		if (resources) {
+			resources.health = 0;
+			this.handleEntityDeath(entity);
+		}
 	}
 
 	/**
@@ -389,7 +458,7 @@ export class ResourceService {
 		};
 
 		// Broadcast to clients
-		HealthRemotes.Server.Get("ResourceChanged").SendToAllPlayers(resourceEvent);
+		ResourceRemotes.Server.Get("ResourceChanged").SendToAllPlayers(resourceEvent);
 
 		return true;
 	}
@@ -418,7 +487,7 @@ export class ResourceService {
 		this.statusEffects.set(victim, new Map());
 
 		// Broadcast death event
-		HealthRemotes.Server.Get("EntityDied").SendToAllPlayers(victim, killer);
+		ResourceRemotes.Server.Get("EntityDied").SendToAllPlayers(victim, killer);
 
 		// Handle respawn for players
 		const player = Players.GetPlayerFromCharacter(victim);

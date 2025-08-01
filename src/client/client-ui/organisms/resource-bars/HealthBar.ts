@@ -2,7 +2,7 @@
  * @file src/client/client-ui/organisms/resource-bars/ResourceBar.ts
  * @module ResourceBar
  * @layer Client/UI/Organisms
- * @description Resource management UI component for health, mana, and stamina using Fusion
+ * @description Resource bar UI component for health, mana, and stamina using Fusion
  *
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
@@ -61,7 +61,7 @@ export function ResourceBar(props: ResourceBarProps): Frame {
 
 		[Children]: {
 			// Health Bar (Red)
-			Health: createResourceBar(
+			HealthBar: createResourceBar(
 				"Health",
 				Color3.fromRGB(220, 50, 50),
 				Computed(() => props.resources.get().health),
@@ -70,7 +70,7 @@ export function ResourceBar(props: ResourceBarProps): Frame {
 			),
 
 			// Mana Bar (Blue)
-			Mana: createResourceBar(
+			ManaBar: createResourceBar(
 				"Mana",
 				Color3.fromRGB(50, 50, 220),
 				Computed(() => props.resources.get().mana),
@@ -79,7 +79,7 @@ export function ResourceBar(props: ResourceBarProps): Frame {
 			),
 
 			// Stamina Bar (Yellow)
-			Stamina: createResourceBar(
+			StaminaBar: createResourceBar(
 				"Stamina",
 				Color3.fromRGB(220, 220, 50),
 				Computed(() => props.resources.get().stamina),

@@ -1,12 +1,12 @@
 /**
- * @file src/shared/types/health-types.ts
- * @module HealthTypes
+ * @file src/shared/types/resource-types.ts
+ * @module ResourceTypes
  * @layer Shared/Types
- * @description Type definitions for health, mana, and resource management systems
+ * @description Type definitions for resource management systems (health, mana, stamina, etc.)
  *
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
- * @lastUpdated 2025-07-31 - Initial health system implementation
+ * @lastUpdated 2025-08-01 - Renamed from health-types to resource-types for clarity
  */
 
 import { SSEntity } from "./SSEntity";

@@ -39,8 +39,10 @@
  */
 
 export * from "./SSEntity";
-export * from "./message-type";
-export * from "./health-types";
+export * from "./MessageTypes";
+export * from "./ResourceTypes";
+// Import DTOs
+export * from "../dtos";
 // Player Data Interface
 export interface PlayerData {
 	health: number;
@@ -49,3 +51,8 @@ export interface PlayerData {
 	experience: number;
 	level: number;
 }
+
+// Export all type modules
+export * from "./MessageTypes";
+export * from "./SSEntity";
+export * from "./CombatFlowTypes";

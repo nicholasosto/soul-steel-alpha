@@ -1,1 +1,1 @@
-export * from "./HealthBar";
+export * from "./ResourceBar";

@@ -8,7 +8,7 @@
  * @since 1.0.0
  */
 
-import { CombatStats, StatusEffect } from "shared/types/health-types";
+import { CombatStats, StatusEffect } from "shared/types/ResourceTypes";
 
 export interface WeaponInfo {
 	id: string;

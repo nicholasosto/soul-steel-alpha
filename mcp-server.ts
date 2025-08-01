@@ -474,7 +474,7 @@ server.tool(
       const uiDir = join(PROJECT_ROOT, "src/client/client-ui");
       const uiFiles = await findTsFiles(uiDir);
       
-      const componentDocs = [];
+      const componentDocs: string[] = [];
       
       for (const file of uiFiles) {
         const content = await fs.readFile(file, "utf-8");
@@ -792,6 +792,366 @@ function findCommonElements(arrays: string[][]): string[] {
     arrays.every(arr => arr.includes(item))
   );
 }
+
+// Naming convention checker
+server.tool(
+  "check_naming_conventions",
+  "Find files and elements that don't follow the project's naming conventions",
+  {
+    strict_mode: z.boolean().optional().describe("Enable strict mode for more detailed checks (default: false)"),
+    focus_area: z.string().optional().describe("Focus on specific area: 'files', 'types', 'functions', 'variables', or 'all' (default: 'all')")
+  },
+  async ({ strict_mode = false, focus_area = "all" }) => {
+    try {
+      const files = await findTsFiles(PROJECT_ROOT);
+      const violations: Array<{
+        type: string;
+        severity: 'error' | 'warning' | 'suggestion';
+        file: string;
+        line?: number;
+        issue: string;
+        expected: string;
+        actual: string;
+      }> = [];
+      
+      // File naming convention rules
+      const fileNamingRules = {
+        // General rule: kebab-case for most files
+        general: /^[a-z0-9]+(-[a-z0-9]+)*\.(ts|tsx)$/,
+        
+        // Exceptions for specific patterns
+        exceptions: {
+          // UI components: PascalCase (client-ui folder)
+          uiComponents: /^[A-Z][a-zA-Z0-9]*\.(ts|tsx)$/,
+          // Type files: PascalCase ending with specific patterns
+          typeFiles: /^[A-Z][a-zA-Z0-9]*(Type|DTO|Entity)s?\.(ts|tsx)$/,
+          // Network files: [category]-remotes.ts
+          networkFiles: /^[a-z0-9]+(-[a-z0-9]+)*-remotes\.(ts|tsx)$/,
+          // Service files: [name]-service.ts
+          serviceFiles: /^[a-z0-9]+(-[a-z0-9]+)*-service\.(ts|tsx)$/,
+          // Key files: [name]-keys.ts
+          keyFiles: /^[a-z0-9]+(-[a-z0-9]+)*-keys\.(ts|tsx)$/,
+          // Catalog files: [name]-catalog.ts
+          catalogFiles: /^[a-z0-9]+(-[a-z0-9]+)*-catalog\.(ts|tsx)$/,
+        }
+      };
+      
+      // Check file naming conventions
+      if (focus_area === "files" || focus_area === "all") {
+        for (const file of files) {
+          const relativePath = relative(PROJECT_ROOT, file);
+          const fileName = relativePath.split(/[/\\]/).pop() || "";
+          const dirPath = relativePath.split(/[/\\]/).slice(0, -1).join("/");
+          
+          let expectedPattern = fileNamingRules.general;
+          let expectedDescription = "kebab-case";
+          let isException = false;
+          
+          // Check for specific patterns
+          if (dirPath.includes("client-ui")) {
+            expectedPattern = fileNamingRules.exceptions.uiComponents;
+            expectedDescription = "PascalCase (UI components)";
+            isException = true;
+          } else if (dirPath.includes("types") || fileName.includes("DTO") || fileName.includes("Entity")) {
+            expectedPattern = fileNamingRules.exceptions.typeFiles;
+            expectedDescription = "PascalCase ending with Type/DTO/Entity";
+            isException = true;
+          } else if (fileName.includes("-remotes.")) {
+            expectedPattern = fileNamingRules.exceptions.networkFiles;
+            expectedDescription = "[category]-remotes.ts";
+            isException = true;
+          } else if (fileName.includes("-service.")) {
+            expectedPattern = fileNamingRules.exceptions.serviceFiles;
+            expectedDescription = "[name]-service.ts";
+            isException = true;
+          } else if (fileName.includes("-keys.")) {
+            expectedPattern = fileNamingRules.exceptions.keyFiles;
+            expectedDescription = "[name]-keys.ts";
+            isException = true;
+          } else if (fileName.includes("-catalog.")) {
+            expectedPattern = fileNamingRules.exceptions.catalogFiles;
+            expectedDescription = "[name]-catalog.ts";
+            isException = true;
+          }
+          
+          if (!expectedPattern.test(fileName)) {
+            violations.push({
+              type: "File Naming",
+              severity: "error",
+              file: relativePath,
+              issue: `File name doesn't follow naming convention`,
+              expected: expectedDescription,
+              actual: fileName
+            });
+          }
+          
+          // Additional checks for specific file types
+          if (dirPath.includes("services") && !fileName.includes("-service.")) {
+            violations.push({
+              type: "Service File Pattern",
+              severity: "warning",
+              file: relativePath,
+              issue: "Service files should follow [name]-service.ts pattern",
+              expected: fileName.replace(/\.ts$/, "-service.ts"),
+              actual: fileName
+            });
+          }
+          
+          if (dirPath.includes("network") && !fileName.includes("-remotes.") && fileName !== "index.ts") {
+            violations.push({
+              type: "Network File Pattern",
+              severity: "warning",
+              file: relativePath,
+              issue: "Network files should follow [category]-remotes.ts pattern",
+              expected: fileName.replace(/\.ts$/, "-remotes.ts"),
+              actual: fileName
+            });
+          }
+        }
+      }
+      
+      // Check code-level naming conventions
+      if (focus_area === "types" || focus_area === "functions" || focus_area === "variables" || focus_area === "all") {
+        for (const file of files) {
+          try {
+            const content = await fs.readFile(file, "utf-8");
+            const lines = content.split("\n");
+            const relativePath = relative(PROJECT_ROOT, file);
+            
+            lines.forEach((line, index) => {
+              const lineNumber = index + 1;
+              
+              // Check interface/type naming (should be PascalCase)
+              if (focus_area === "types" || focus_area === "all") {
+                const interfaceMatch = line.match(/(?:export\s+)?interface\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/);
+                const typeMatch = line.match(/(?:export\s+)?type\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/);
+                
+                [interfaceMatch, typeMatch].forEach((match, isType) => {
+                  if (match) {
+                    const name = match[1];
+                    const kind = isType ? "type" : "interface";
+                    
+                    if (!/^[A-Z][a-zA-Z0-9]*$/.test(name)) {
+                      violations.push({
+                        type: `${kind.charAt(0).toUpperCase() + kind.slice(1)} Naming`,
+                        severity: "error",
+                        file: relativePath,
+                        line: lineNumber,
+                        issue: `${kind} name should be PascalCase`,
+                        expected: "PascalCase (e.g., PlayerResourceDTO, AbilityType)",
+                        actual: name
+                      });
+                    }
+                    
+                    // Check for common suffixes
+                    if (strict_mode) {
+                      const hasMeaningfulSuffix = /^[A-Z][a-zA-Z0-9]*(Type|DTO|Entity|Props|Config|Meta|Catalog|Key|Service|Manager|State|Slice)s?$/.test(name);
+                      if (!hasMeaningfulSuffix && name.length > 3) {
+                        violations.push({
+                          type: `${kind.charAt(0).toUpperCase() + kind.slice(1)} Suffix`,
+                          severity: "suggestion",
+                          file: relativePath,
+                          line: lineNumber,
+                          issue: `${kind} could have a more descriptive suffix`,
+                          expected: "Consider adding suffix like Type, DTO, Entity, Props, etc.",
+                          actual: name
+                        });
+                      }
+                    }
+                  }
+                });
+              }
+              
+              // Check function naming (should be camelCase)
+              if (focus_area === "functions" || focus_area === "all") {
+                const functionMatches = [
+                  line.match(/(?:export\s+)?(?:async\s+)?function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/),
+                  line.match(/(?:export\s+)?const\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(?:async\s*)?\([^)]*\)\s*=>/),
+                  line.match(/([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\([^)]*\)\s*(?::\s*[^{]+)?\s*\{/)
+                ];
+                
+                functionMatches.forEach(match => {
+                  if (match) {
+                    const name = match[1];
+                    
+                    // Skip constructors and React components
+                    if (name === "constructor" || /^[A-Z]/.test(name)) return;
+                    
+                    if (!/^[a-z][a-zA-Z0-9]*$/.test(name)) {
+                      violations.push({
+                        type: "Function Naming",
+                        severity: "error",
+                        file: relativePath,
+                        line: lineNumber,
+                        issue: "Function name should be camelCase",
+                        expected: "camelCase (e.g., createPlayer, handleAbilityActivation)",
+                        actual: name
+                      });
+                    }
+                  }
+                });
+              }
+              
+              // Check variable naming (should be camelCase)
+              if (focus_area === "variables" || focus_area === "all") {
+                const constantMatch = line.match(/(?:export\s+)?const\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*[=:]/);
+                const letMatch = line.match(/(?:export\s+)?let\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*[=:]/);
+                
+                [constantMatch, letMatch].forEach((match, isLet) => {
+                  if (match) {
+                    const name = match[1];
+                    
+                    // Constants in keys files can be SCREAMING_SNAKE_CASE
+                    if (relativePath.includes("-keys.ts") && /^[A-Z][A-Z0-9_]*$/.test(name)) {
+                      return; // This is acceptable
+                    }
+                    
+                    // Component names can be PascalCase
+                    if (relativePath.includes("client-ui") && /^[A-Z][a-zA-Z0-9]*$/.test(name)) {
+                      return; // This is acceptable
+                    }
+                    
+                    if (!/^[a-z][a-zA-Z0-9]*$/.test(name)) {
+                      const expectedStyle = relativePath.includes("-keys.ts") ? 
+                        "SCREAMING_SNAKE_CASE for constants or camelCase" : 
+                        "camelCase";
+                      
+                      violations.push({
+                        type: `${isLet ? 'Variable' : 'Constant'} Naming`,
+                        severity: "warning",
+                        file: relativePath,
+                        line: lineNumber,
+                        issue: `${isLet ? 'Variable' : 'Constant'} name should follow naming convention`,
+                        expected: expectedStyle,
+                        actual: name
+                      });
+                    }
+                  }
+                });
+              }
+              
+              // Check for magic strings that should be constants
+              if (strict_mode && (focus_area === "variables" || focus_area === "all")) {
+                const magicStringPattern = /["'`]([a-zA-Z][a-zA-Z0-9_-]{3,})["'`]/g;
+                let magicMatch;
+                while ((magicMatch = magicStringPattern.exec(line)) !== null) {
+                  const str = magicMatch[1];
+                  
+                  // Skip common patterns that are not magic strings
+                  if (!/^(http|www|src|dest|temp|test|spec|mock|debug|info|warn|error)/.test(str) && 
+                      !/\.(ts|tsx|js|jsx|json|md)$/.test(str) &&
+                      str.length > 5) {
+                    violations.push({
+                      type: "Magic String",
+                      severity: "suggestion",
+                      file: relativePath,
+                      line: lineNumber,
+                      issue: "Consider extracting magic string to a constant",
+                      expected: `const ${str.toUpperCase().replace(/[^A-Z0-9]/g, '_')} = "${str}"`,
+                      actual: `"${str}"`
+                    });
+                  }
+                }
+              }
+            });
+          } catch (error) {
+            // Skip files that can't be read
+          }
+        }
+      }
+      
+      // Generate report
+      if (violations.length === 0) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `✅ **Naming Convention Check Complete**\n\nNo naming convention violations found!${focus_area !== "all" ? ` (Checked: ${focus_area})` : ""}\n\nThe codebase follows the project's naming conventions correctly.`
+            }
+          ]
+        };
+      }
+      
+      // Group violations by type and severity
+      const errorViolations = violations.filter(v => v.severity === "error");
+      const warningViolations = violations.filter(v => v.severity === "warning");
+      const suggestionViolations = violations.filter(v => v.severity === "suggestion");
+      
+      let report = `🔍 **Naming Convention Violations Found**\n\n`;
+      report += `Total violations: ${violations.length}${focus_area !== "all" ? ` (Focus: ${focus_area})` : ""}\n`;
+      report += `- ❌ Errors: ${errorViolations.length}\n`;
+      report += `- ⚠️ Warnings: ${warningViolations.length}\n`;
+      report += `- 💡 Suggestions: ${suggestionViolations.length}\n\n`;
+      
+      if (errorViolations.length > 0) {
+        report += `## ❌ Errors (Must Fix)\n\n`;
+        errorViolations.forEach(violation => {
+          report += `**${violation.type}** - \`${violation.file}\`${violation.line ? `:${violation.line}` : ""}\n`;
+          report += `- Issue: ${violation.issue}\n`;
+          report += `- Expected: ${violation.expected}\n`;
+          report += `- Actual: \`${violation.actual}\`\n\n`;
+        });
+      }
+      
+      if (warningViolations.length > 0) {
+        report += `## ⚠️ Warnings (Should Fix)\n\n`;
+        warningViolations.forEach(violation => {
+          report += `**${violation.type}** - \`${violation.file}\`${violation.line ? `:${violation.line}` : ""}\n`;
+          report += `- Issue: ${violation.issue}\n`;
+          report += `- Expected: ${violation.expected}\n`;
+          report += `- Actual: \`${violation.actual}\`\n\n`;
+        });
+      }
+      
+      if (suggestionViolations.length > 0 && (strict_mode || suggestionViolations.length <= 10)) {
+        report += `## 💡 Suggestions (Optional Improvements)\n\n`;
+        const displaySuggestions = strict_mode ? suggestionViolations : suggestionViolations.slice(0, 10);
+        displaySuggestions.forEach(violation => {
+          report += `**${violation.type}** - \`${violation.file}\`${violation.line ? `:${violation.line}` : ""}\n`;
+          report += `- Issue: ${violation.issue}\n`;
+          report += `- Expected: ${violation.expected}\n`;
+          report += `- Actual: \`${violation.actual}\`\n\n`;
+        });
+        
+        if (!strict_mode && suggestionViolations.length > 10) {
+          report += `*... and ${suggestionViolations.length - 10} more suggestions (use strict_mode to see all)*\n\n`;
+        }
+      }
+      
+      report += `## 📖 Project Naming Conventions\n\n`;
+      report += `**File Names:**\n`;
+      report += `- General: kebab-case (\`enhanced-combat-service.ts\`)\n`;
+      report += `- UI Components: PascalCase (\`PlayerHealthBar.tsx\`)\n`;
+      report += `- Type Files: PascalCase with suffix (\`SSEntity.ts\`, \`ResourceDTO.ts\`)\n`;
+      report += `- Network Files: \`[category]-remotes.ts\`\n`;
+      report += `- Service Files: \`[name]-service.ts\`\n\n`;
+      report += `**Code Naming:**\n`;
+      report += `- Interfaces/Types: PascalCase (\`PlayerResourceDTO\`)\n`;
+      report += `- Functions: camelCase (\`createPlayer\`)\n`;
+      report += `- Variables: camelCase (\`playerData\`)\n`;
+      report += `- Constants in keys files: SCREAMING_SNAKE_CASE (\`ABILITY_KEYS\`)\n`;
+      
+      return {
+        content: [
+          {
+            type: "text",
+            text: report
+          }
+        ]
+      };
+      
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error checking naming conventions: ${error}`
+          }
+        ]
+      };
+    }
+  }
+);
 
 async function main() {
   const transport = new StdioServerTransport();

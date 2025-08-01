@@ -126,13 +126,14 @@ export function ProgressBar(props: ProgressBarProps): Frame {
 	// Add label if requested
 	if (showLabel) {
 		children.Label = New("TextLabel")({
-			Name: "Label",
+			Name: "ResourceLabel",
 			BackgroundTransparency: 1,
 			Text: displayText,
 			TextColor3: labelColor,
 			TextScaled: true,
 			TextStrokeTransparency: 0,
 			TextStrokeColor3: Color3.fromRGB(0, 0, 0),
+			Size: new UDim2(1, 0, 1, 0),
 			Font: Enum.Font.GothamBold,
 			ZIndex: 3,
 		});
