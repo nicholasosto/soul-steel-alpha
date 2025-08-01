@@ -1,46 +1,56 @@
 import { Players } from "@rbxts/services";
-import { NPCServiceInstance } from "server/services/npc-service";
+import { UnifiedNPCServiceInstance } from "server/services/unified-npc-service";
 
 /**
- * Phase 1 NPC Service Demo
+ * Updated NPC Service Demo (using UnifiedNPCService)
  *
- * This script demonstrates the basic functionality of the NPC service.
+ * This script demonstrates the unified NPC service functionality.
  * Run this from the server to spawn some test NPCs.
  */
 
-// Demo function to spawn some basic NPCs
+// Demo function to spawn some NPCs using unified service
 function spawnDemoNPCs() {
-	print("🎮 Starting Phase 1 NPC Demo...");
+	print("🎮 Starting Unified NPC Demo...");
 
-	// Spawn a goblin at position (0, 5, 0)
-	const goblin = NPCServiceInstance.SpawnNPC("goblin", new Vector3(0, 5, 0), { level: 3 });
+	// Spawn a basic goblin at position (0, 5, 0)
+	const goblin = UnifiedNPCServiceInstance.SpawnNPC("goblin", new Vector3(0, 5, 0), {
+		mode: "basic",
+		level: 3,
+	});
 	if (goblin) {
-		print(`✅ Spawned Goblin: ${goblin.npcId}`);
+		print(`✅ Spawned Basic Goblin: ${goblin.npcId}`);
 
 		// Set it to patrol mode after 3 seconds
 		task.wait(3);
-		NPCServiceInstance.SetAIState(goblin.npcId, "patrol");
+		UnifiedNPCServiceInstance.SetAIState(goblin.npcId, "patrol");
 		print("🚶 Goblin is now patrolling!");
 	}
 
-	// Spawn a skeleton at position (10, 5, 0)
-	const skeleton = NPCServiceInstance.SpawnNPC("skeleton", new Vector3(10, 5, 0), { level: 5 });
+	// Spawn an enhanced skeleton at position (10, 5, 0)
+	const skeleton = UnifiedNPCServiceInstance.SpawnNPC("skeleton", new Vector3(10, 5, 0), {
+		mode: "enhanced",
+		level: 5,
+		enableCombat: true,
+	});
 	if (skeleton) {
-		print(`✅ Spawned Skeleton: ${skeleton.npcId}`);
+		print(`✅ Spawned Enhanced Skeleton: ${skeleton.npcId}`);
 	}
 
 	// Spawn a guard at position (-10, 5, 0)
-	const guard = NPCServiceInstance.SpawnNPC("guard", new Vector3(-10, 5, 0), { level: 8 });
-	if (guard) {
+	const guard = UnifiedNPCServiceInstance.SpawnNPC("guard", new Vector3(-10, 5, 0), {
+		mode: "basic",
+		level: 8,
+	});
+	if (guard !== undefined) {
 		print(`✅ Spawned Guard: ${guard.npcId}`);
 
 		// Guards start in patrol mode
-		NPCServiceInstance.SetAIState(guard.npcId, "patrol");
+		UnifiedNPCServiceInstance.SetAIState(guard.npcId, "patrol");
 	}
 
 	// Print status after 5 seconds
 	task.wait(5);
-	const allNPCs = NPCServiceInstance.GetAllNPCs();
+	const allNPCs = UnifiedNPCServiceInstance.GetAllNPCs();
 	print(`📊 Total active NPCs: ${allNPCs.size()}`);
 
 	for (const npc of allNPCs) {
@@ -60,7 +70,7 @@ function demoPlayerDetection() {
 		for (const player of Players.GetPlayers()) {
 			if (player.Character && player.Character.FindFirstChild("HumanoidRootPart")) {
 				const playerPos = (player.Character.FindFirstChild("HumanoidRootPart") as BasePart).Position;
-				const nearbyNPCs = NPCServiceInstance.GetNPCsInRange(playerPos, 20);
+				const nearbyNPCs = UnifiedNPCServiceInstance.GetNPCsInRange(playerPos, 20);
 
 				if (nearbyNPCs.size() > 0) {
 					print(`🎯 ${player.Name} has ${nearbyNPCs.size()} NPCs nearby:`);
