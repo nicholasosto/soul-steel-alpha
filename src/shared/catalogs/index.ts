@@ -38,6 +38,7 @@
 
 export * from "./ability-catalog";
 export * from "./animation-catalog";
+export * from "./force-catalog";
 export * from "./npc-model-catalog";
 export * from "./weapon-catalog";
 export * from "./zone-catalog";

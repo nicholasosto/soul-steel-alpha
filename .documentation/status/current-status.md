@@ -1,6 +1,6 @@
 # Soul Steel Alpha - Current Development Status
 
-**Last Updated**: July 31, 2025
+**Last Updated**: August 1, 2025
 **Generated Using**: Soul Steel Alpha MCP Server Analysis
 
 ## Project Overview
@@ -73,14 +73,24 @@
 
 ### ✅ Recently Implemented (Phase 2)
 
-#### 1. Enhanced NPC System
+#### 1. Unified NPC System (August 2025)
 
-- **✅ Enhanced NPC Service**: Full SSEntity compatibility with combat integration
+- **✅ Unified NPC Service**: Feature-configurable service with basic/enhanced modes
+- **✅ Performance Scaling**: Basic mode (50-100 NPCs), Enhanced mode (20-30 NPCs)
+- **✅ Backward Compatibility**: Legacy NPC services remain functional during transition
+- **✅ Migration Tools**: Helper functions for smooth service migration
+- **✅ Configuration-Based**: Feature flags for combat, resources, AI complexity
+- **✅ SSEntity Integration**: Enhanced NPCs work with full combat and resource systems
+- **✅ Advanced AI**: State machine with idle, patrol, combat, pursuit, retreat behaviors
+- **✅ Template System**: Configurable NPC types (goblin, skeleton, guard) with distinct roles
+
+#### 2. Legacy NPC Systems (Consolidated)
+
+- **✅ Enhanced NPC Service**: Full SSEntity compatibility with combat integration (legacy)
+- **✅ Basic NPC Service**: Simple NPC functionality with minimal overhead (legacy)
 - **✅ Combat-Ready NPCs**: NPCs can participate in combat with players
 - **✅ Resource Management**: Health, mana, stamina tracking for NPCs
-- **✅ Advanced AI**: State machine with idle, patrol, combat, pursuit, retreat behaviors
 - **✅ Ability Usage**: NPCs can use abilities (Melee, Soul-Drain) against players
-- **✅ Template System**: Configurable NPC types (goblin, skeleton, guard) with distinct roles
 
 #### 2. Basic Combat System
 

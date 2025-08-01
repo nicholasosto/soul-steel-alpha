@@ -1,9 +1,45 @@
-# Enhanced NPC Service Integration Guide
+# NPC Service Integration Guide
 
 ## Overview
+
+**Important**: As of August 2025, we now have a **Unified NPC Service** that combines both basic and enhanced functionality. For new projects, use the Unified NPC Service for better performance and flexibility.
+
+### Service Options
+
+1. **✅ Unified NPC Service** (Recommended) - Feature-configurable with basic/enhanced modes
+2. **🔄 Enhanced NPC Service** (Legacy) - Full-featured combat NPCs  
+3. **🔄 Basic NPC Service** (Legacy) - Simple lightweight NPCs
+
+See: **[Unified NPC Service API](.documentation/api/unified-npc-service.md)** for complete documentation.
+
+## Quick Start - Unified Service
+
+```typescript
+import { UnifiedNPCServiceInstance } from "server/services";
+
+// Lightweight village NPC
+const villager = UnifiedNPCServiceInstance.SpawnNPC("guard", position, {
+    mode: "basic",
+    enableCombat: false,
+    isHostile: false
+});
+
+// Full combat enemy
+const enemy = UnifiedNPCServiceInstance.SpawnNPC("goblin", position, {
+    mode: "enhanced", 
+    enableCombat: true,
+    enableResourceManagement: true,
+    enableAdvancedAI: true,
+    isHostile: true
+});
+```
+
+## Legacy Enhanced NPC Service
+
 The **Enhanced NPC Service** (Phase 2) provides combat-ready NPCs with full SSEntity compatibility and deep integration with your game's combat and ability systems.
 
 ## Key Features
+
 - ✅ **Full SSEntity Compatibility**: NPCs are proper SSEntity objects with all body parts
 - ✅ **Combat System Integration**: NPCs register as combatants and can participate in combat
 - ✅ **Resource System Integration**: NPCs have health, mana, and stamina management
@@ -13,6 +49,7 @@ The **Enhanced NPC Service** (Phase 2) provides combat-ready NPCs with full SSEn
 ## Usage
 
 ### Basic NPC Spawning
+
 ```typescript
 import { EnhancedNPCServiceInstance } from "server/services";
 
@@ -42,6 +79,7 @@ const configuredNPC = EnhancedNPCServiceInstance.SpawnNPC(
 - **Guard**: "guard" - Tank with high health, typically non-hostile
 
 ### NPC Management
+
 ```typescript
 // Check if NPC exists
 const npcExists = EnhancedNPCServiceInstance.NPCExists("npc_001");
@@ -66,7 +104,9 @@ const allNPCs = EnhancedNPCServiceInstance.GetAllNPCs();
 ```
 
 ### AI States
+
 NPCs automatically transition between these states:
+
 - **"idle"**: Standing and occasionally looking around
 - **"patrol"**: Walking around within wander radius
 - **"combat"**: Actively attacking detected targets
@@ -77,17 +117,20 @@ NPCs automatically transition between these states:
 ### Combat Integration Benefits
 
 #### For Player Abilities
+
 - NPCs now work properly as targets for player abilities
 - All ability types (Melee, Soul-Drain, Ice-Rain, Earthquake) can affect NPCs
 - NPCs take proper damage and respond to combat effects
 
 #### NPC Combat Capabilities
+
 - NPCs can use abilities against players and other NPCs
 - Intelligent targeting and ability selection
 - Proper resource management (mana/stamina usage)
 - Retreat behavior when health is low
 
 ### Configuration Options
+
 ```typescript
 interface NPCConfig {
     health?: number;           // Override base health
@@ -101,6 +144,7 @@ interface NPCConfig {
 ### Integration with Existing Services
 
 #### With Combat Service
+
 ```typescript
 // NPCs automatically register with combat system
 // They can be targeted by combat abilities
@@ -108,6 +152,7 @@ interface NPCConfig {
 ```
 
 #### With Resource Service
+
 ```typescript
 // NPCs have health/mana/stamina automatically managed
 // They can use abilities that cost resources
@@ -115,6 +160,7 @@ interface NPCConfig {
 ```
 
 #### With Ability Service
+
 ```typescript
 // NPCs can cast abilities from the ability catalog
 // Ability cooldowns and resource costs are enforced
@@ -124,21 +170,25 @@ interface NPCConfig {
 ## Upgrading from Phase 1
 
 ### Replace Basic NPCs
+
 If you were using the basic `NPCService`, replace with:
 
 **Old:**
+
 ```typescript
 import { NPCServiceInstance } from "server/services";
 const npc = NPCServiceInstance.SpawnNPC("BloodTunic", position);
 ```
 
 **New:**
+
 ```typescript
 import { EnhancedNPCServiceInstance } from "server/services";
 const npc = EnhancedNPCServiceInstance.SpawnNPC("BloodTunic", position);
 ```
 
 ### Benefits of Upgrading
+
 1. **Player abilities now work on NPCs** - Major functionality gain
 2. **NPCs can fight back with abilities** - More engaging gameplay
 3. **Proper resource management** - More realistic NPC behavior
@@ -147,7 +197,9 @@ const npc = EnhancedNPCServiceInstance.SpawnNPC("BloodTunic", position);
 ## Debugging and Monitoring
 
 ### Console Output
+
 Enhanced NPCs provide detailed console logging with emojis:
+
 - 🏗️ NPC creation and model loading
 - ⚔️ Combat registrations and attacks
 - 💙 Resource system integration
@@ -155,18 +207,21 @@ Enhanced NPCs provide detailed console logging with emojis:
 - 💀 NPC death and cleanup
 
 ### Common Issues
+
 1. **NPCs not taking damage**: Ensure they're registered with ResourceService
 2. **Abilities not working**: Check combat system registration
 3. **Poor AI behavior**: Adjust aggression and radius settings
 4. **Model loading failures**: Verify model exists in ReplicatedStorage
 
 ## Performance Considerations
+
 - Enhanced NPCs use more resources than basic NPCs due to full SSEntity structure
 - AI behaviors run on heartbeat connections - monitor performance with many NPCs
 - Combat integration adds network traffic for ability effects
 - Consider spawning limits based on server capacity
 
 ## Next Steps
+
 - Test NPC spawning and basic AI behavior
 - Verify player abilities now work against NPCs
 - Experiment with different NPC configurations

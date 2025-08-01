@@ -1,6 +1,6 @@
 # Soul Steel Alpha - Documentation Index
 
-**Last Updated**: July 31, 2025  
+**Last Updated**: August 1, 2025  
 **Structure**: Organized by category for better navigation
 
 ## 📚 **Quick Start**
@@ -15,7 +15,8 @@ New to the project? Start here:
 
 Complete technical documentation for developers:
 
-- **[Enhanced NPC Service](api/enhanced-npc-service.md)** - Complete API for NPCs with combat integration
+- **[Unified NPC Service](api/unified-npc-service.md)** - 🆕 Feature-configurable NPC system (basic + enhanced modes)
+- **[Enhanced NPC Service](api/enhanced-npc-service.md)** - Legacy enhanced NPCs with combat integration
 - **[Combat Service](api/combat-service.md)** - Combat system documentation and API reference
 - **[Shared Modules](api/shared-modules.md)** - Shared module architecture guide
 
@@ -23,10 +24,18 @@ Complete technical documentation for developers:
 
 How-to guides for using game systems:
 
+- **[Zone System](guides/zone-system.md)** - 🆕 Complete guide to zone setup and configuration
 - **[NPC Integration](guides/npc-integration.md)** - How to spawn and manage NPCs
 - **[UI System](guides/ui-system.md)** - UI development patterns and components
 - **[Event System](guides/event-system.md)** - Client-server communication patterns
 - **[Development Guide](guides/development-guide.md)** - Development best practices
+
+## 🔄 **Migration Guides**
+
+For transitioning between system versions:
+
+- **[NPC Consolidation Summary](migration/npc-consolidation-summary.md)** - 🆕 Complete migration from old NPC services to unified system
+- **[Phase 1 to Phase 2 NPCs](migration/phase1-to-phase2-npc.md)** - Legacy NPC migration guide
 
 ## 🏗️ **Architecture**
 

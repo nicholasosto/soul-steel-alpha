@@ -2,6 +2,15 @@
 
 A Roblox TypeScript project with Model Context Protocol (MCP) server integration.
 
+## 📚 Documentation
+
+**Complete documentation is available in the [`.documentation/`](.documentation/README.md) folder**
+
+- **[API References](.documentation/api/)** - Technical documentation for all services
+- **[User Guides](.documentation/guides/)** - How-to guides for game systems  
+- **[Migration Guides](.documentation/migration/)** - System upgrade and transition guides
+- **[Current Status](.documentation/status/current-status.md)** - What's implemented and what's not
+
 ## Features
 
 ### 🎮 Game Systems
