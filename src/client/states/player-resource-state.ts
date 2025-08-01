@@ -34,6 +34,7 @@ export type ResourcesState = {
 		max: Value<number>;
 	};
 };
+
 export class PlayerResourceSlice {
 	/** Latest resource values */
 	public ResourcesState = {
@@ -84,11 +85,9 @@ export class PlayerResourceSlice {
 	 * @returns The fetched ResourceDTO
 	 */
 	public async fetch(): Promise<ResourceDTO> {
-		warn("Fetching resources from server...");
 		const fetchFunc = ResourceDTORemotes.Client.Get("FetchResources");
 		const dto = await fetchFunc.CallServerAsync();
 		this._onUpdate(dto);
-		warn("Fetched resources:", dto);
 		return dto;
 	}
 
@@ -97,7 +96,6 @@ export class PlayerResourceSlice {
 	 * @param resourceDTO New resource values
 	 */
 	protected _onUpdate(resourceDTO: ResourceDTO): void {
-		warn("Applying resource update:", resourceDTO);
 		this._dtoToResourcesState(resourceDTO);
 	}
 
