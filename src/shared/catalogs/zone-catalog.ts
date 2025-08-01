@@ -10,6 +10,25 @@
 
 import { ZoneKey } from "shared/keys";
 import { ZoneMeta, IZone } from "shared/meta";
+import { CombatRemotes } from "shared/network";
+import { CombatHitEvent } from "shared/network";
+import { SSEntity } from "shared/types";
+function createHitEvent(
+	source: SSEntity,
+	target: SSEntity,
+	weaponId: string,
+	damage: number,
+	isCritical: boolean,
+): CombatHitEvent {
+	return {
+		attacker: source,
+		target: target,
+		weaponId: weaponId,
+		damage: damage,
+		isCritical: isCritical,
+		hitType: "basic_attack", // Default type, can be changed based on context
+	};
+}
 
 /**
  * Catalog of all configured zones in the game
@@ -32,7 +51,17 @@ export const ZoneCatalog: Record<ZoneKey, ZoneMeta> = {
 			transparency: 0.8,
 		},
 		onPlayerEnter: (player: Player, zone: IZone) => {
-			print(`${player.Name} entered the spawn zone`);
+			print(`${player.Name} entered the spawn zsdsdasone`);
+			const playerEntity = player.Character as SSEntity;
+			if (playerEntity === undefined) {
+				warn(`Player entity not found for ${player.Name}`);
+				return;
+			}
+			warn(`XCreating combat hit event for ${player.Name} in spawn zone`);
+			CombatRemotes.Server.Get("CombatHit").SendToPlayer(
+				player,
+				createHitEvent(playerEntity, playerEntity, "TestWeapon", 0, false),
+			); // Prevent combat hits in spawn
 			// Add spawn protection, healing, etc.
 		},
 		onPlayerExit: (player: Player, zone: IZone) => {

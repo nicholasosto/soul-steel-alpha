@@ -208,6 +208,9 @@ export class ResourceService {
 		}
 
 		print(`Resource system initialized for entity: ${entity.Name}`);
+
+		// Send initial resource state to client for polling-based UI components
+		this.broadcastResourceUpdateDTO(entity);
 	}
 
 	/**
@@ -399,6 +402,9 @@ export class ResourceService {
 			this.handleEntityDeath(target, damageInfo.source);
 		}
 
+		// Send complete resource update for polling-based UI components
+		this.broadcastResourceUpdateDTO(target);
+
 		return true;
 	}
 
@@ -445,6 +451,9 @@ export class ResourceService {
 			healingInfo.sourceId,
 			"healing",
 		);
+
+		// Send complete resource update for polling-based UI components
+		this.broadcastResourceUpdateDTO(target);
 
 		return true;
 	}
@@ -507,6 +516,9 @@ export class ResourceService {
 		// Also broadcast via DTO system
 		this.broadcastResourceChangeDTO(target, resourceType, previousValue, resources[resourceType], amount);
 
+		// Send complete resource update for polling-based UI components
+		this.broadcastResourceUpdateDTO(target);
+
 		return true;
 	}
 
@@ -553,22 +565,68 @@ export class ResourceService {
 				const stats = this.entityStats.get(entity);
 				if (!stats || resources.health <= 0) continue;
 
+				let hasChanged = false;
+
 				// Health regeneration
 				if (resources.health < resources.maxHealth && stats.healthRegen > 0) {
 					const healthRegen = stats.healthRegen * deltaTime;
-					this.modifyResource(entity, "health", healthRegen);
+					const previousHealth = resources.health;
+					resources.health = math.min(resources.maxHealth, resources.health + healthRegen);
+
+					// Sync with Humanoid
+					if (entity.Humanoid) {
+						entity.Humanoid.Health = resources.health;
+					}
+
+					// Broadcast individual health change if significant
+					if (math.abs(resources.health - previousHealth) > 0.1) {
+						this.broadcastHealthChangeDTO(
+							entity,
+							previousHealth,
+							resources.health,
+							healthRegen,
+							"regeneration",
+							"regeneration",
+						);
+						hasChanged = true;
+					}
 				}
 
 				// Mana regeneration
 				if (resources.mana < resources.maxMana && stats.manaRegen > 0) {
 					const manaRegen = stats.manaRegen * deltaTime;
-					this.modifyResource(entity, "mana", manaRegen);
+					const previousMana = resources.mana;
+					resources.mana = math.min(resources.maxMana, resources.mana + manaRegen);
+
+					// Broadcast individual mana change if significant
+					if (math.abs(resources.mana - previousMana) > 0.1) {
+						this.broadcastResourceChangeDTO(entity, "mana", previousMana, resources.mana, manaRegen);
+						hasChanged = true;
+					}
 				}
 
 				// Stamina regeneration
 				if (resources.stamina < resources.maxStamina && stats.staminaRegen > 0) {
 					const staminaRegen = stats.staminaRegen * deltaTime;
-					this.modifyResource(entity, "stamina", staminaRegen);
+					const previousStamina = resources.stamina;
+					resources.stamina = math.min(resources.maxStamina, resources.stamina + staminaRegen);
+
+					// Broadcast individual stamina change if significant
+					if (math.abs(resources.stamina - previousStamina) > 0.1) {
+						this.broadcastResourceChangeDTO(
+							entity,
+							"stamina",
+							previousStamina,
+							resources.stamina,
+							staminaRegen,
+						);
+						hasChanged = true;
+					}
+				}
+
+				// Send complete resource update if any resources changed
+				if (hasChanged) {
+					this.broadcastResourceUpdateDTO(entity);
 				}
 			}
 		});

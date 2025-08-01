@@ -11,11 +11,11 @@
 
 import Fusion, { Children, Computed, New, Value, cleanup } from "@rbxts/fusion";
 import { ProgressBar } from "../../atoms";
-import { PlayerResourceSlice } from "client/states";
+import { PlayerResourceSlice, ResourcesState } from "client/states";
 import { RunService } from "@rbxts/services";
 
 export interface ResourceBarDTOProps {
-	resourceSlice: PlayerResourceSlice;
+	ResourcesState: ResourcesState;
 	size?: UDim2;
 	position?: UDim2;
 }
@@ -27,40 +27,7 @@ export function ResourceBarDTO(props: ResourceBarDTOProps): Frame {
 	const size = props.size || new UDim2(0, 300, 0, 80);
 	const position = props.position || new UDim2(0, 20, 0, 20);
 
-	// Create reactive values that update when the slice data changes
-	const healthValue = Value(props.resourceSlice.Resources.health);
-	const maxHealthValue = Value(props.resourceSlice.Resources.maxHealth);
-	const manaValue = Value(props.resourceSlice.Resources.mana);
-	const maxManaValue = Value(props.resourceSlice.Resources.maxMana);
-	const staminaValue = Value(props.resourceSlice.Resources.stamina);
-	const maxStaminaValue = Value(props.resourceSlice.Resources.maxStamina);
 
-	// Store last known timestamp to detect updates
-	let lastTimestamp = props.resourceSlice.Resources.timestamp;
-
-	// Update reactive values when slice updates
-	// We'll use a polling approach with RunService for now since the slice doesn't expose events
-	const updateConnection = RunService.Heartbeat.Connect(() => {
-		const currentResources = props.resourceSlice.Resources;
-
-		// Check if the resources have been updated (timestamp changed)
-		if (currentResources.timestamp !== lastTimestamp) {
-			lastTimestamp = currentResources.timestamp;
-
-			// Update all reactive values
-			healthValue.set(currentResources.health);
-			maxHealthValue.set(currentResources.maxHealth);
-			manaValue.set(currentResources.mana);
-			maxManaValue.set(currentResources.maxMana);
-			staminaValue.set(currentResources.stamina);
-			maxStaminaValue.set(currentResources.maxStamina);
-		}
-	});
-
-	// Clean up the connection when the component is destroyed
-	cleanup(() => {
-		updateConnection.Disconnect();
-	});
 
 	// Individual bar creation helper using ProgressBar atom
 	const createResourceBar = (
@@ -94,16 +61,33 @@ export function ResourceBarDTO(props: ResourceBarDTOProps): Frame {
 		BackgroundTransparency: 0.2,
 		BorderSizePixel: 2,
 		BorderColor3: Color3.fromRGB(80, 80, 80),
-
 		[Children]: {
 			// Health Bar (Red)
-			Health: createResourceBar("Health", Color3.fromRGB(220, 50, 50), healthValue, maxHealthValue, 5),
+			Health: createResourceBar(
+				"Health",
+				Color3.fromRGB(220, 50, 50),
+				props.ResourcesState.Health.current,
+				props.ResourcesState.Health.max,
+				5,
+			),
 
 			// Mana Bar (Blue)
-			Mana: createResourceBar("Mana", Color3.fromRGB(50, 50, 220), manaValue, maxManaValue, 30),
+			Mana: createResourceBar(
+				"Mana",
+				Color3.fromRGB(50, 50, 220),
+				props.ResourcesState.Mana.current,
+				props.ResourcesState.Mana.max,
+				30,
+			),
 
 			// Stamina Bar (Yellow)
-			Stamina: createResourceBar("Stamina", Color3.fromRGB(220, 220, 50), staminaValue, maxStaminaValue, 55),
+			Stamina: createResourceBar(
+				"Stamina",
+				Color3.fromRGB(220, 220, 50),
+				props.ResourcesState.Stamina.current,
+				props.ResourcesState.Stamina.max,
+				55,
+			),
 		},
 	});
 }

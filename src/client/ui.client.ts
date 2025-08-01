@@ -9,8 +9,7 @@ const playerGui = Players.LocalPlayer.WaitForChild("PlayerGui");
 MenuButtonBar.Parent = playerGui;
 
 // Create resource slice instance
-const resourceSlice = new PlayerResourceSlice();
-resourceSlice.fetch(); // Fetch initial data from server
+const resourceState = new PlayerResourceSlice().ResourcesState;
 
 New("ScreenGui")({
 	Name: "MAIN_UI",
@@ -20,7 +19,7 @@ New("ScreenGui")({
 	[Children]: {
 		MenuBar: MenuButtonBar,
 		ResourceBar: ResourceBarDTO({
-			resourceSlice: resourceSlice,
+			ResourcesState: resourceState,
 			size: new UDim2(0.3, 0, 0.1, 0),
 			position: new UDim2(0.35, 0, 0.05, 0),
 		}),
