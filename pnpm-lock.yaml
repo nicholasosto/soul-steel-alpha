@@ -29,6 +29,9 @@ importers:
       '@rbxts/signal':
         specifier: ^1.1.1
         version: 1.1.1
+      '@rbxts/zone-plus':
+        specifier: ^3.2.0
+        version: 3.2.0
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -146,6 +149,9 @@ packages:
 
   '@rbxts/types@1.0.865':
     resolution: {integrity: sha512-6hQaq85OE7AQxqZ9LBAqUUN/S7N6EcswPwCWCvvIoSLxyf94uEWQhMxNfisCfDVjR5n14sILUa75b3m1HqzbRw==}
+
+  '@rbxts/zone-plus@3.2.0':
+    resolution: {integrity: sha512-myxs7QXMVCCPhOpUzaoA/01ZCEG/6TBYRNk6LwksUvSp9bONnIpvEZYEazuWnIDwiOEIw/T9kCPY/7FGjMOvsA==}
 
   '@roblox-ts/luau-ast@2.0.0':
     resolution: {integrity: sha512-cmMi093IdwBOLVxwuordhM8AmtbyTIyRpsTbB0D/JauidW4SXsQRQowSwWjHo4QP0DRJBXvOIlxtqEQi50uNzQ==}
@@ -1232,6 +1238,8 @@ snapshots:
   '@rbxts/signal@1.1.1': {}
 
   '@rbxts/types@1.0.865': {}
+
+  '@rbxts/zone-plus@3.2.0': {}
 
   '@roblox-ts/luau-ast@2.0.0': {}
 

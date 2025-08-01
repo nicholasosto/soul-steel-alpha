@@ -6,3 +6,4 @@ export * from "./enhanced-npc-service";
 export * from "./message-service";
 export * from "./npc-service";
 export * from "./resource-service";
+export * from "./zone-service";

@@ -39,3 +39,4 @@
  */
 
 export * from "./ability-meta";
+export * from "./zone-meta";
