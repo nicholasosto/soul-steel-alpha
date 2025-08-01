@@ -2,7 +2,7 @@ import { ImageConstants } from "shared/asset-ids";
 import { HorizontalButtonBar } from "./ButtonBar";
 import { IconButton } from "client/client-ui/atoms";
 import { AbilityKey } from "shared/keys";
-import { ServerFunction } from "client/event-dispatcher";
+import { GameActionController } from "client/controllers";
 import { UI_SIZES } from "shared/constants/ui-constants";
 import { AbilityCatalog } from "shared/catalogs";
 import { AbilityButton } from "client/client-ui/molecules";
@@ -13,13 +13,15 @@ interface AbilityBarProps {
 }
 
 export function AbilityButtonBar(props: AbilityBarProps) {
+	const gameActionController = GameActionController.getInstance();
+
 	const buttons = props.keys.map((ability) => {
 		const abilityCatalogItem = AbilityCatalog[ability];
 		return AbilityButton({
 			abilityKey: ability,
 			onAbilityClick: (key) => {
 				print(`${key} button clicked`);
-				ServerFunction("ABILITY_ACTIVATE", key); // Call server function to activate the ability
+				gameActionController.activateAbility(key); // Use the new controller to activate the ability
 			},
 		});
 	});

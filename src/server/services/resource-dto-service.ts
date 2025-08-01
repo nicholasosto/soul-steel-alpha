@@ -71,9 +71,9 @@ export class ResourceDTOService {
 	 * Setup event forwarding from existing ResourceService to DTO events
 	 */
 	private setupEventForwarding(): void {
-		// We'll hook into the existing resource change broadcasts and convert them to DTO format
-		// This requires modifying the existing ResourceService or creating event bridges
-		// For now, we'll implement this as method calls that can be integrated later
+		// Event forwarding is now handled directly in ResourceService
+		// through lazy imports to avoid circular dependencies
+		print("ResourceDTOService: Event forwarding integrated with ResourceService");
 	}
 
 	/**

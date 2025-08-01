@@ -1,1 +1,2 @@
-export * from "./ResourceBar";
+// Main resource bar component
+export { ResourceBarDTO, ResourceBarDTOProps } from "./ResourceBarDTO";

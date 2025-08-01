@@ -244,6 +244,18 @@ export class ResourceService {
 		};
 
 		ResourceRemotes.Server.Get("HealthChanged").SendToAllPlayers(healthEvent);
+
+		// Also broadcast via DTO system - we'll use lazy import to avoid circular dependency
+		import("./resource-dto-service").then(({ ResourceDTOServiceInstance }) => {
+			ResourceDTOServiceInstance.broadcastHealthChange(
+				entity,
+				previousHealth,
+				newHealth,
+				change,
+				source,
+				changeType === "healing" ? "healing" : "damage",
+			);
+		});
 	}
 
 	/**
@@ -459,6 +471,17 @@ export class ResourceService {
 
 		// Broadcast to clients
 		ResourceRemotes.Server.Get("ResourceChanged").SendToAllPlayers(resourceEvent);
+
+		// Also broadcast via DTO system - we'll use lazy import to avoid circular dependency
+		import("./resource-dto-service").then(({ ResourceDTOServiceInstance }) => {
+			ResourceDTOServiceInstance.broadcastResourceChange(
+				target,
+				resourceType,
+				previousValue,
+				resources[resourceType],
+				amount,
+			);
+		});
 
 		return true;
 	}

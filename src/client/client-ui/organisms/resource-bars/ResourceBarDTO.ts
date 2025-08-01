@@ -2,16 +2,17 @@
  * @file src/client/client-ui/organisms/resource-bars/ResourceBarDTO.ts
  * @module ResourceBarDTO
  * @layer Client/UI/Organisms
- * @description DTO-based resource management UI component using the new PlayerResourceSlice
+ * @description DTO-based resource management UI component using the new PlayerResourceSlice with reactive updates
  *
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
- * @lastUpdated 2025-08-01 - DTO-based resource bar implementation
+ * @lastUpdated 2025-08-01 - Added proper reactive updates and cleanup
  */
 
-import Fusion, { Children, Computed, New, Value } from "@rbxts/fusion";
+import Fusion, { Children, Computed, New, Value, cleanup } from "@rbxts/fusion";
 import { ProgressBar } from "../../atoms";
-import { PlayerResourceSlice } from "../../../states/PlayerResourceSlice";
+import { PlayerResourceSlice } from "client/states";
+import { RunService } from "@rbxts/services";
 
 export interface ResourceBarDTOProps {
 	resourceSlice: PlayerResourceSlice;
@@ -34,8 +35,32 @@ export function ResourceBarDTO(props: ResourceBarDTOProps): Frame {
 	const staminaValue = Value(props.resourceSlice.Resources.stamina);
 	const maxStaminaValue = Value(props.resourceSlice.Resources.maxStamina);
 
-	// Update reactive values when slice updates (this would ideally be event-driven)
-	// For demonstration, you'd want to set up proper reactive connections
+	// Store last known timestamp to detect updates
+	let lastTimestamp = props.resourceSlice.Resources.timestamp;
+
+	// Update reactive values when slice updates
+	// We'll use a polling approach with RunService for now since the slice doesn't expose events
+	const updateConnection = RunService.Heartbeat.Connect(() => {
+		const currentResources = props.resourceSlice.Resources;
+
+		// Check if the resources have been updated (timestamp changed)
+		if (currentResources.timestamp !== lastTimestamp) {
+			lastTimestamp = currentResources.timestamp;
+
+			// Update all reactive values
+			healthValue.set(currentResources.health);
+			maxHealthValue.set(currentResources.maxHealth);
+			manaValue.set(currentResources.mana);
+			maxManaValue.set(currentResources.maxMana);
+			staminaValue.set(currentResources.stamina);
+			maxStaminaValue.set(currentResources.maxStamina);
+		}
+	});
+
+	// Clean up the connection when the component is destroyed
+	cleanup(() => {
+		updateConnection.Disconnect();
+	});
 
 	// Individual bar creation helper using ProgressBar atom
 	const createResourceBar = (
@@ -94,4 +119,7 @@ export function ResourceBarDTO(props: ResourceBarDTOProps): Frame {
  *     size: new UDim2(0, 300, 0, 80),
  *     position: new UDim2(0, 20, 0, 20)
  * });
+ *
+ * // The component will automatically update when the resourceSlice receives updates
+ * // from the server via ResourcesUpdated, HealthChanged, or ResourceChanged events
  */

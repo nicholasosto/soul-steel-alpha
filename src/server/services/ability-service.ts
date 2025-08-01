@@ -239,30 +239,14 @@ class AbilityService {
 	 */
 	private validateAbility(player: Player, abilityKey: AbilityKey): boolean {
 		// Get player's character
-		const character = player.Character;
+		const character = player.Character as SSEntity;
 		const profile = this.dataService.GetProfile(player);
 		if (!profile) {
 			warn(`Player ${player.Name} does not have a valid profile`);
 			return false;
 		}
 		if (profile.Data.Abilities[abilityKey] === undefined || !profile.Data.Abilities[abilityKey]) {
-			warn(`Ability ${abilityKey} is not defined in player profile`);
-			return false;
-		}
-		if (!character || !isSSEntity(character)) {
-			warn(`Player ${player.Name} does not have a valid SSEntity character`);
-			return false;
-		}
-
-		// Check if character has this ability registered
-		const registeredAbilities = this.characterAbilityMap.get(character);
-		if (!registeredAbilities) {
-			warn(`No abilities registered for player ${player.Name}'s character`);
-			return false;
-		}
-
-		if (!registeredAbilities.includes(abilityKey)) {
-			warn(`Ability ${abilityKey} not available for player ${player.Name}`);
+			warn(`Ability ${abilityKey} is not defined in player profile`, profile.Data.Abilities);
 			return false;
 		}
 
@@ -275,7 +259,7 @@ class AbilityService {
 
 		// Check resource costs
 		const manaCost = AbilityCatalog[abilityKey]?.cost ?? 0;
-		const currentMana = ResourceServiceInstance.getEntityResources(character as SSEntity)?.mana ?? 0;
+		const currentMana = ResourceServiceInstance.getEntityResources(character)?.mana ?? 0;
 		if (currentMana < manaCost) {
 			warn(`Player ${player.Name} does not have enough mana for ability ${abilityKey}`);
 			return false;
