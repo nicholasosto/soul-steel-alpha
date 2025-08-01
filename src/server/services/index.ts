@@ -5,7 +5,6 @@ export * from "./enhanced-combat-service";
 export * from "./data-service";
 export * from "./message-service";
 export * from "./resource-service";
-export * from "./resource-dto-service";
 export * from "./zone-service";
 
 // Unified NPC Service (replaces all legacy NPC services)

@@ -21,7 +21,9 @@ import {
 	StatusEffect,
 	ResourceType,
 } from "shared/types/ResourceTypes";
+import { ResourceDTO, ResourceChangeDTO, HealthChangeDTO } from "shared/dtos/ResourceDTO";
 import { ResourceRemotes } from "shared/network/resource-remotes";
+import { ResourceDTORemotes } from "shared/network/resource-dto-remotes";
 import { isSSEntity } from "shared/helpers";
 
 /**
@@ -53,6 +55,7 @@ export class ResourceService {
 
 	private constructor() {
 		this.initializeConnections();
+		this.initializeDTOConnections();
 		this.startRegeneration();
 	}
 
@@ -123,6 +126,36 @@ export class ResourceService {
 					sourceId: "suicide",
 				});
 			}
+		});
+	}
+
+	/**
+	 * Initialize DTO-based network connections
+	 */
+	private initializeDTOConnections(): void {
+		// Handle resource fetching via DTO
+		ResourceDTORemotes.Server.Get("FetchResources").SetCallback((player) => {
+			const character = player.Character as SSEntity;
+			if (!character) {
+				return this.createDefaultResourceDTO();
+			}
+
+			const resources = this.getEntityResources(character);
+			if (!resources) {
+				return this.createDefaultResourceDTO();
+			}
+
+			return this.convertToResourceDTO(resources);
+		});
+
+		// Handle resource modification requests via DTO
+		ResourceDTORemotes.Server.Get("ModifyResource").SetCallback((player, resourceType, amount) => {
+			const character = player.Character as SSEntity;
+			if (!character) {
+				return false;
+			}
+
+			return this.modifyResource(character, resourceType, amount);
 		});
 	}
 
@@ -245,17 +278,15 @@ export class ResourceService {
 
 		ResourceRemotes.Server.Get("HealthChanged").SendToAllPlayers(healthEvent);
 
-		// Also broadcast via DTO system - we'll use lazy import to avoid circular dependency
-		import("./resource-dto-service").then(({ ResourceDTOServiceInstance }) => {
-			ResourceDTOServiceInstance.broadcastHealthChange(
-				entity,
-				previousHealth,
-				newHealth,
-				change,
-				source,
-				changeType === "healing" ? "healing" : "damage",
-			);
-		});
+		// Also broadcast via DTO system
+		this.broadcastHealthChangeDTO(
+			entity,
+			previousHealth,
+			newHealth,
+			change,
+			source,
+			changeType === "healing" ? "healing" : "damage",
+		);
 	}
 
 	/**
@@ -422,6 +453,7 @@ export class ResourceService {
 	 * Modify a specific resource (health, mana, stamina)
 	 */
 	public modifyResource(target: SSEntity, resourceType: ResourceType, amount: number): boolean {
+		warn(`Modifying resource ${resourceType} for entity: ${target.Name} by ${amount}`);
 		if (!isSSEntity(target)) {
 			return false;
 		}
@@ -472,16 +504,8 @@ export class ResourceService {
 		// Broadcast to clients
 		ResourceRemotes.Server.Get("ResourceChanged").SendToAllPlayers(resourceEvent);
 
-		// Also broadcast via DTO system - we'll use lazy import to avoid circular dependency
-		import("./resource-dto-service").then(({ ResourceDTOServiceInstance }) => {
-			ResourceDTOServiceInstance.broadcastResourceChange(
-				target,
-				resourceType,
-				previousValue,
-				resources[resourceType],
-				amount,
-			);
-		});
+		// Also broadcast via DTO system
+		this.broadcastResourceChangeDTO(target, resourceType, previousValue, resources[resourceType], amount);
 
 		return true;
 	}
@@ -548,6 +572,108 @@ export class ResourceService {
 				}
 			}
 		});
+	}
+
+	// =============================================================================
+	// DTO CONVERSION METHODS
+	// =============================================================================
+
+	/**
+	 * Convert PlayerResources to ResourceDTO
+	 */
+	public convertToResourceDTO(resources: PlayerResources): ResourceDTO {
+		return {
+			health: resources.health,
+			maxHealth: resources.maxHealth,
+			mana: resources.mana,
+			maxMana: resources.maxMana,
+			stamina: resources.stamina,
+			maxStamina: resources.maxStamina,
+			timestamp: tick(),
+		};
+	}
+
+	/**
+	 * Create default ResourceDTO for initialization
+	 */
+	private createDefaultResourceDTO(): ResourceDTO {
+		return {
+			health: this.DEFAULT_MAX_HEALTH,
+			maxHealth: this.DEFAULT_MAX_HEALTH,
+			mana: this.DEFAULT_MAX_MANA,
+			maxMana: this.DEFAULT_MAX_MANA,
+			stamina: this.DEFAULT_MAX_STAMINA,
+			maxStamina: this.DEFAULT_MAX_STAMINA,
+			timestamp: tick(),
+		};
+	}
+
+	/**
+	 * Broadcast resource update to all clients (DTO version)
+	 */
+	public broadcastResourceUpdateDTO(entity: SSEntity): void {
+		const resources = this.getEntityResources(entity);
+		if (!resources) return;
+
+		const dto = this.convertToResourceDTO(resources);
+
+		// Get the player from the entity
+		const player = Players.GetPlayerFromCharacter(entity);
+		if (player) {
+			ResourceDTORemotes.Server.Get("ResourcesUpdated").SendToPlayer(player, dto);
+		}
+	}
+
+	/**
+	 * Broadcast health change to specific player (DTO version)
+	 */
+	public broadcastHealthChangeDTO(
+		entity: SSEntity,
+		previousHealth: number,
+		newHealth: number,
+		change: number,
+		source?: string,
+		changeType: "damage" | "healing" | "regeneration" | "drain" | "environmental" | "ability" = "damage",
+	): void {
+		const healthChangeDTO: HealthChangeDTO = {
+			previousHealth,
+			newHealth,
+			change,
+			source,
+			changeType,
+			timestamp: tick(),
+		};
+
+		const player = Players.GetPlayerFromCharacter(entity);
+		if (player) {
+			ResourceDTORemotes.Server.Get("HealthChanged").SendToPlayer(player, healthChangeDTO);
+		}
+	}
+
+	/**
+	 * Broadcast resource change to specific player (DTO version)
+	 */
+	public broadcastResourceChangeDTO(
+		entity: SSEntity,
+		resourceType: "health" | "mana" | "stamina",
+		previousValue: number,
+		newValue: number,
+		change: number,
+		source?: string,
+	): void {
+		const resourceChangeDTO: ResourceChangeDTO = {
+			resourceType,
+			previousValue,
+			newValue,
+			change,
+			source,
+			timestamp: tick(),
+		};
+
+		const player = Players.GetPlayerFromCharacter(entity);
+		if (player) {
+			ResourceDTORemotes.Server.Get("ResourceChanged").SendToPlayer(player, resourceChangeDTO);
+		}
 	}
 }
 
