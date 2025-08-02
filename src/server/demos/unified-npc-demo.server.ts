@@ -1,5 +1,5 @@
 import { Players } from "@rbxts/services";
-import { UnifiedNPCServiceInstance } from "server/services/unified-npc-service";
+import { UnifiedNPCServiceInstance } from "server/server-services/unified-npc-service";
 
 /**
  * Unified NPC Service Demo

@@ -281,15 +281,18 @@ class AbilityService {
 	 */
 	private handleAbilityStart(player: Player, abilityKey: AbilityKey): boolean {
 		const abilityMeta = AbilityCatalog[abilityKey];
+		// Execute ability logic here
+		const character = player.Character as SSEntity;
+		if (!isSSEntity(character)) {
+			warn(`Player ${player.Name} does not have a valid character model`);
+			return false;
+		}
 
 		try {
 			if (!this.validateAbility(player, abilityKey)) {
 				abilityMeta.OnStartFailure?.(player.Character as SSEntity);
 				return false;
 			}
-
-			// Execute ability logic here
-			const character = player.Character as SSEntity;
 
 			// Start cooldown timer
 			this.startAbilityCooldown(character, abilityKey);

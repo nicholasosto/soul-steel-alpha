@@ -1,6 +1,6 @@
 import { Definitions } from "@rbxts/net";
-import { AttributesDTO } from "shared/dtos";
-import { AttributeKey } from "shared/keys";
+import { AttributesDTO } from "shared/dtos/AttributesDTO";
+import { AttributeKey } from "shared/keys/attribute-keys";
 
 export const AttributeRemotes = Definitions.Create({
 	// Attribute Management

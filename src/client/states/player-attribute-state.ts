@@ -27,11 +27,11 @@ export type AttributesState = {
 export class PlayerAttributeSlice {
 	/** Latest attribute values */
 	public AttributesState: AttributesState = {
-		vitality: Value(0),
-		strength: Value(0),
-		dexterity: Value(0),
-		intelligence: Value(0),
-		luck: Value(0),
+		vitality: Value(1),
+		strength: Value(1),
+		agility: Value(1),
+		intellect: Value(1),
+		luck: Value(1),
 	};
 
 	private updateConnection: RBXScriptConnection;

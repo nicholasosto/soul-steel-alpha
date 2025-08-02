@@ -43,8 +43,8 @@ export const ImageConstants = {
 	},
 	Attributes: {
 		Strength: "rbxassetid://127745571044516",
-		Dexterity: "rbxassetid://73893872719367",
-		Intelligence: "rbxassetid://107600003376684",
+		Agility: "rbxassetid://73893872719367",
+		Intellect: "rbxassetid://107600003376684",
 		Vitality: "rbxassetid://121291227474039",
 		Luck: "rbxassetid://114767496083209",
 	},

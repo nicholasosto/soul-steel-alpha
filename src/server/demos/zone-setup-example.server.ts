@@ -9,7 +9,7 @@
  */
 
 import { Workspace } from "@rbxts/services";
-import { ZoneServiceInstance } from "server/services";
+import { ZoneServiceInstance } from "server/server-services";
 
 const ZonesFolder = Workspace.FindFirstChild("ZoneContainers") as Folder;
 assert(ZonesFolder, "ZoneContainers folder not found in Workspace");

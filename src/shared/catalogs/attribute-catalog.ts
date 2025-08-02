@@ -13,15 +13,15 @@ export const AttributeCatalog: Record<AttributeKey, AttributeMeta> = {
 		description: "Increases physical damage dealt.",
 		icon: ImageConstants.Attributes.Strength,
 	},
-	["dexterity"]: {
-		displayName: "Dexterity",
+	["agility"]: {
+		displayName: "Agility",
 		description: "Increases accuracy and evasion.",
-		icon: ImageConstants.Attributes.Dexterity,
+		icon: ImageConstants.Attributes.Agility,
 	},
-	["intelligence"]: {
-		displayName: "Intelligence",
+	["intellect"]: {
+		displayName: "Intellect",
 		description: "Increases magic damage dealt.",
-		icon: ImageConstants.Attributes.Intelligence,
+		icon: ImageConstants.Attributes.Intellect,
 	},
 	["luck"]: {
 		displayName: "Luck",

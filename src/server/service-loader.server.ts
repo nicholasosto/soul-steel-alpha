@@ -1,10 +1,11 @@
 import {
 	AbilityServiceInstance,
 	AnimationServiceInstance,
+	AttributeServiceInstance,
 	DataServiceInstance,
 	MessageServiceInstance,
 	ResourceServiceInstance,
-} from "./services";
+} from "./server-services";
 import { Players } from "@rbxts/services";
 import { AbilityKey } from "shared/keys";
 import { SSEntity } from "shared/types";
@@ -12,6 +13,7 @@ import { SSEntity } from "shared/types";
 const Services = {
 	AbilityService: AbilityServiceInstance,
 	AnimationService: AnimationServiceInstance,
+	AttributeService: AttributeServiceInstance,
 	DataService: DataServiceInstance,
 	MessageService: MessageServiceInstance,
 	ResourceService: ResourceServiceInstance,

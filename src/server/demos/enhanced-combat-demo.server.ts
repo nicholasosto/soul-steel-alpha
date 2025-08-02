@@ -12,7 +12,7 @@
 import { Players, Workspace } from "@rbxts/services";
 import { SSEntity } from "shared/types";
 import { isSSEntity } from "shared/helpers/type-guards";
-import { EnhancedCombatService } from "../services/enhanced-combat-service";
+import { EnhancedCombatService } from "../server-services/enhanced-combat-service";
 import { DamageInfo } from "shared/types/ResourceTypes";
 import { AbilityKey, ABILITY_KEYS } from "shared/keys";
 
