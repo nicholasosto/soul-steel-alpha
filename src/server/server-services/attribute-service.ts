@@ -12,12 +12,20 @@ import { AttributeRemotes } from "shared/network/attribute-remotes";
 import { DataServiceInstance } from "server/server-services/data-service";
 
 //const SendUpdate = AttributeRemotes.Server.Get("AttributesUpdated");
+const DEFAULT_ATTRIBUTES: AttributesDTO = {
+	agility: 0,
+	strength: 0,
+	intellect: 0,
+	luck: 0,
+	vitality: 0,
+};
 
 export class AttributeService {
 	private static instance?: AttributeService;
 
 	// Runtime cache - loaded from persistent data
 	private playerAttributes = new Map<Player, AttributesDTO>();
+	private dataService = DataServiceInstance;
 
 	// Connections
 	private updateConnection?: RBXScriptConnection;
@@ -32,118 +40,50 @@ export class AttributeService {
 		}
 		return AttributeService.instance;
 	}
-	/**
-	 * Initialize the service and set up player connections
-	 */
-	private initializePlayerAttributes(player: Player): void {
-		const attributes = this.loadAttributesFromProfile(player);
-		this.playerAttributes.set(player, attributes);
+	private initializeConnections() {
+		// Listen for player added events to initialize attributes
 
-		// Broadcast initial state to client
-		//SendUpdate.SendToPlayer(player, attributes);
-		print(`Initialized attributes for ${player.Name}:`, attributes);
-	}
-
-	private loadAttributesFromProfile(player: Player): AttributesDTO {
-		const profile = DataServiceInstance.GetProfile(player);
-
-		if (!profile) {
-			warn(`No profile found for ${player.Name}, using defaults`);
-			return this.getDefaultAttributes();
-		}
-
-		// Map from DataService format to AttributesDTO format
-		const profileData = profile.Data;
-		return {
-			vitality: profileData.Attributes.vitality,
-			strength: profileData.Attributes.strength,
-			dexterity: profileData.Attributes.agility, // agility -> dexterity
-			intelligence: profileData.Attributes.intellect, // intellect -> intelligence
-			luck: profileData.Attributes.luck,
-		};
-	}
-
-	private saveAttributesToProfile(player: Player, attributes: AttributesDTO): void {
-		const profile = DataServiceInstance.GetProfile(player);
-		if (!profile) {
-			warn(`Cannot save attributes for ${player.Name}: no profile loaded`);
-			return;
-		}
-
-		// Map from AttributesDTO back to DataService format
-		profile.Data.Attributes.vitality = attributes.vitality;
-		profile.Data.Attributes.strength = attributes.strength;
-		profile.Data.Attributes.agility = attributes.dexterity; // dexterity -> agility
-		profile.Data.Attributes.intellect = attributes.intelligence; // intelligence -> intellect
-		profile.Data.Attributes.luck = attributes.luck;
-	}
-
-	private initializeConnections(): void {
-		// Handle client fetch requests
+		// Attribute updates from client
 		AttributeRemotes.Server.Get("FetchAttributes").SetCallback((player) => {
-			return this.getPlayerAttributes(player) || this.getDefaultAttributes();
+			const attributes = this.playerAttributes.get(player);
+			return attributes ? attributes : DEFAULT_ATTRIBUTES;
 		});
 
-		// Handle attribute modification
-		AttributeRemotes.Server.Get("ModifyAttribute").SetCallback((player, attributeKey, amount) => {
-			return this.modifyAttribute(player, attributeKey, amount);
-		});
-
-		// Listen for player joins and initialize attributes
-		Players.PlayerAdded.Connect((player) => {
-			AttributeServiceInstance.initializePlayerAttributes(player);
-
-			// Clean up when player leaves
-			player.AncestryChanged.Connect((_, parent) => {
-				if (!parent) {
-					AttributeServiceInstance.cleanupPlayer(player);
+		// Handle attribute modification requests
+		AttributeRemotes.Server.Get("ModifyAttribute").SetCallback(
+			(player: Player, attributeKey: AttributeKey, amount: number) => {
+				const attributes = this.playerAttributes.get(player);
+				if (attributes === undefined) {
+					warn(`Player ${player.Name} has no attributes loaded.`);
+					return false; // No attributes found for player
 				}
-			});
-		});
-		// Initialize existing players
-		Players.GetPlayers().forEach((player) => {
-			AttributeServiceInstance.initializePlayerAttributes(player);
-		});
-	}
 
-	// Public API
-	public getPlayerAttributes(player: Player): AttributesDTO | undefined {
-		return this.playerAttributes.get(player);
-	}
+				// Modify the attribute
+				attributes[attributeKey] += amount;
+				const newValue = attributes[attributeKey];
 
-	public modifyAttribute(player: Player, attributeKey: AttributeKey, amount: number): boolean {
-		const current = this.playerAttributes.get(player);
-		if (!current) {
-			warn(`No attributes loaded for player: ${player.Name}`);
-			return false;
-		}
+				// Ensure attributes do not go below zero
+				if (attributes[attributeKey] < 0) {
+					attributes[attributeKey] = 0;
+				}
 
-		// Apply modification with bounds checking
-		const newValue = math.max(0, current[attributeKey] + amount);
-		current[attributeKey] = newValue;
+				// Update the player's attributes in persistent data
+				const profile = this.dataService.GetProfile(player);
+				if (profile === undefined) {
+					warn(`No profile found for player ${player.Name}. Cannot update attributes.`);
+					return false; // No profile found
+				}
+				print(
+					`Updating attribute ${attributeKey} for player ${player.Name} from ${profile.Data.Attributes[attributeKey]} to ${attributes[attributeKey]}`,
+				);
+				profile.Data.Attributes[attributeKey] = attributes[attributeKey];
 
-		// Save to persistent storage
-		this.saveAttributesToProfile(player, current);
+				// Notify clients of the updated attributes
+				AttributeRemotes.Server.Get("AttributesUpdated").SendToPlayer(player, attributes);
 
-		// Broadcast update to client
-		//SendUpdate.SendToPlayer(player, current);
-
-		print(`Modified ${attributeKey} for ${player.Name}: ${amount} (new value: ${newValue})`);
-		return true;
-	}
-
-	private getDefaultAttributes(): AttributesDTO {
-		return {
-			vitality: 10,
-			strength: 10,
-			dexterity: 10,
-			intelligence: 10,
-			luck: 10,
-		};
-	}
-
-	private cleanupPlayer(player: Player): void {
-		this.playerAttributes.delete(player);
+				return true;
+			},
+		);
 	}
 }
 export const AttributeServiceInstance = AttributeService.GetInstance();
