@@ -37,6 +37,7 @@
  */
 
 export * from "./ability-catalog";
+export * from "./attribute-catalog";
 export * from "./animation-catalog";
 export * from "./force-catalog";
 export * from "./npc-model-catalog";

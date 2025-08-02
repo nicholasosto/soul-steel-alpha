@@ -8,5 +8,5 @@
  * @since 1.0.0
  * @lastUpdated 2025-08-01 - Initial DTO module setup
  */
-
+export * from "./AttributesDTO";
 export * from "./ResourceDTO";

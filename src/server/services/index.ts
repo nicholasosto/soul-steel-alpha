@@ -1,3 +1,4 @@
+export * from "./attribute-service";
 export * from "./ability-service";
 export * from "./animation-service";
 export * from "./combat-service";

@@ -39,6 +39,7 @@
  */
 
 export * from "./ability-remotes";
+export * from "./attribute-remotes";
 export * from "./combat-remotes";
 export * from "./enhanced-combat-remotes";
 export * from "./effect-remotes";
