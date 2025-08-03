@@ -2,6 +2,7 @@ import Fusion, { New } from "@rbxts/fusion";
 import { IconButton } from "../../atoms/IconButton";
 import { ImageConstants, MenuButtonImageMap } from "shared/asset-ids";
 import { HorizontalLayout, makePadding } from "../../helpers";
+import { SliceImageFrame } from "client/client-ui/atoms/SliceImageFrame";
 
 const { Value } = Fusion;
 
@@ -28,11 +29,19 @@ export function HorizontalButtonBar(props: ButtonBarProps) {
 		BorderSizePixel: props.BorderSizePixel ?? 0,
 		ClipsDescendants: props.ClipsDescendants ?? true,
 		[Fusion.Children]: [
-			props.buttons.map((button, index) => {
-				return button;
+			New("Frame")({
+				Name: "ButtonContainer",
+				Size: UDim2.fromScale(1, 1),
+				BackgroundTransparency: 1,
+				[Fusion.Children]: [
+					props.buttons.map((button, index) => {
+						return button;
+					}),
+					makePadding(framePadding), // Add padding around the button bar
+					HorizontalLayout(5),
+				],
 			}),
-			makePadding(framePadding), // Add padding around the button bar
-			HorizontalLayout(5),
+			SliceImageFrame(),
 		],
 	});
 	return uiComponent;

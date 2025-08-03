@@ -5,6 +5,7 @@ import {
 	AttributeControl,
 	AttributeControlProps,
 } from "@trembus/rpg-attributes/out/fusion-components/attribute-controller";
+import { SliceImageFrame } from "client/client-ui/atoms/SliceImageFrame";
 import { AttributesState } from "client/states";
 
 export function AttributePanel(state: AttributesState) {
@@ -27,12 +28,20 @@ export function AttributePanel(state: AttributesState) {
 		BorderSizePixel: 0,
 		ClipsDescendants: true,
 		[Children]: [
-			New("UIListLayout")({
-				SortOrder: Enum.SortOrder.LayoutOrder,
-				FillDirection: Enum.FillDirection.Vertical,
-				Padding: new UDim(0, 10),
+			New("Frame")({
+				Name: "Content",
+				Size: new UDim2(1, 0, 1, 0),
+				BackgroundTransparency: 1,
+				[Children]: [
+					New("UIListLayout")({
+						SortOrder: Enum.SortOrder.LayoutOrder,
+						FillDirection: Enum.FillDirection.Vertical,
+						Padding: new UDim(0, 10),
+					}),
+					AttributeControl(attributeProps),
+				],
 			}),
-			AttributeControl(attributeProps),
+			SliceImageFrame(),
 		],
 	});
 

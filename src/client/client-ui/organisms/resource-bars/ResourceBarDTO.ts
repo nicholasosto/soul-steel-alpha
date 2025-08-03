@@ -13,6 +13,7 @@ import Fusion, { Children, Computed, New, Value, cleanup } from "@rbxts/fusion";
 import { ProgressBar } from "../../atoms";
 import { PlayerResourceSlice, ResourcesState } from "client/states";
 import { RunService } from "@rbxts/services";
+import { SliceImageFrame } from "client/client-ui/atoms/SliceImageFrame";
 
 export interface ResourceBarDTOProps {
 	ResourcesState: ResourcesState;
@@ -37,7 +38,7 @@ export function ResourceBarDTO(props: ResourceBarDTOProps): Frame {
 	): Frame => {
 		return ProgressBar({
 			Name: `${name}Bar`,
-			Size: new UDim2(1, -20, 0, 20),
+			Size: new UDim2(1, -20, 0, 30),
 			Position: new UDim2(0, 10, 0, yOffset),
 			progress: currentValue,
 			maxValue: maxValue,
@@ -60,6 +61,7 @@ export function ResourceBarDTO(props: ResourceBarDTOProps): Frame {
 		BorderSizePixel: 2,
 		BorderColor3: Color3.fromRGB(80, 80, 80),
 		[Children]: {
+			SliceFrame: SliceImageFrame(),
 			// Health Bar (Red)
 			Health: createResourceBar(
 				"Health",

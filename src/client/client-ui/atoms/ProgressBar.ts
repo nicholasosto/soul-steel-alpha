@@ -9,6 +9,7 @@
  */
 
 import Fusion, { Children, Computed, New, Value } from "@rbxts/fusion";
+import { SliceImageFrame } from "./SliceImageFrame";
 
 export interface ProgressBarProps extends Fusion.PropertyTable<Frame> {
 	/** Current progress value (0-1 for percentage, or actual value if using maxValue) */
@@ -148,6 +149,15 @@ export function ProgressBar(props: ProgressBarProps): Frame {
 		BorderColor3: props.BorderColor3 ?? Color3.fromRGB(100, 100, 100),
 		ZIndex: props.ZIndex,
 
-		[Children]: children,
+		[Children]: [
+
+			// Main container
+			New("Frame")({
+				Name: "ProgressBarContainer",
+				Size: UDim2.fromScale(1, 1),
+				BackgroundTransparency: 1,
+				[Children]: [children],
+			}),
+		],
 	});
 }
