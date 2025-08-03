@@ -9,7 +9,6 @@
  */
 
 import Fusion, { Children, Computed, New, Value } from "@rbxts/fusion";
-import { SliceImageFrame } from "./SliceImageFrame";
 
 export interface ProgressBarProps extends Fusion.PropertyTable<Frame> {
 	/** Current progress value (0-1 for percentage, or actual value if using maxValue) */
@@ -35,9 +34,6 @@ export interface ProgressBarProps extends Fusion.PropertyTable<Frame> {
 
 	/** Minimum height in pixels for horizontal bars, minimum width for vertical */
 	minSize?: number;
-
-	/** Whether the bar should animate smoothly */
-	animated?: boolean;
 }
 
 export function ProgressBar(props: ProgressBarProps): Frame {
@@ -46,7 +42,6 @@ export function ProgressBar(props: ProgressBarProps): Frame {
 	const showLabel = props.showLabel ?? false;
 	const labelColor = props.labelColor ?? Color3.fromRGB(255, 255, 255);
 	const minSize = props.minSize ?? 4;
-	const animated = props.animated ?? false;
 
 	// Calculate fill percentage
 	const fillPercentage = Computed(() => {
@@ -103,43 +98,6 @@ export function ProgressBar(props: ProgressBarProps): Frame {
 		}
 	});
 
-	// Create the progress bar components
-	const children: { [key: string]: Instance } = {};
-
-	// Background fill
-	children.Background = New("Frame")({
-		Name: "Background",
-		Size: new UDim2(1, 0, 1, 0),
-		BackgroundColor3: Color3.fromRGB(20, 20, 20),
-		BorderSizePixel: 0,
-	});
-
-	// Progress fill
-	children.Fill = New("Frame")({
-		Name: "Fill",
-		Size: fillSize,
-		Position: fillPosition,
-		BackgroundColor3: props.fillColor,
-		BorderSizePixel: 0,
-		ZIndex: 2,
-	});
-
-	// Add label if requested
-	if (showLabel) {
-		children.Label = New("TextLabel")({
-			Name: "ResourceLabel",
-			BackgroundTransparency: 1,
-			Text: displayText,
-			TextColor3: labelColor,
-			TextScaled: true,
-			TextStrokeTransparency: 0,
-			TextStrokeColor3: Color3.fromRGB(0, 0, 0),
-			Size: new UDim2(1, 0, 1, 0),
-			Font: Enum.Font.GothamBold,
-			ZIndex: 3,
-		});
-	}
-
 	return New("Frame")({
 		Name: props.Name ?? "ProgressBar",
 		Size: props.Size ?? new UDim2(1, 0, 0, minSize),
@@ -150,14 +108,39 @@ export function ProgressBar(props: ProgressBarProps): Frame {
 		ZIndex: props.ZIndex,
 
 		[Children]: [
-
-			// Main container
+			// Background fill
 			New("Frame")({
-				Name: "ProgressBarContainer",
-				Size: UDim2.fromScale(1, 1),
-				BackgroundTransparency: 1,
-				[Children]: [children],
+				Name: "Background",
+				Size: new UDim2(1, 0, 1, 0),
+				BackgroundColor3: Color3.fromRGB(20, 20, 20),
+				BorderSizePixel: 0,
 			}),
+
+			// Progress fill
+			New("Frame")({
+				Name: "Fill",
+				Size: fillSize,
+				Position: fillPosition,
+				BackgroundColor3: props.fillColor,
+				BorderSizePixel: 0,
+				ZIndex: 2,
+			}),
+
+			// Conditional label
+			showLabel
+				? New("TextLabel")({
+						Name: "ResourceLabel",
+						BackgroundTransparency: 1,
+						Text: displayText,
+						TextColor3: labelColor,
+						TextScaled: true,
+						TextStrokeTransparency: 0,
+						TextStrokeColor3: Color3.fromRGB(0, 0, 0),
+						Size: new UDim2(1, 0, 1, 0),
+						Font: Enum.Font.GothamBold,
+						ZIndex: 3,
+					})
+				: undefined,
 		],
 	});
 }
