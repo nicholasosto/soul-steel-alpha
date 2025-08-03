@@ -9,9 +9,10 @@
  * @lastUpdated 2025-08-01 - Initial DTO-based attribute slice implementation
  */
 
-import { AttributesDTO, AttributeKey, AttributeRemotes } from "shared";
+import { AttributeDTO, AttributeKey } from "@trembus/rpg-attributes";
 import { Value } from "@rbxts/fusion";
 import { Players } from "@rbxts/services";
+import { AttributeRemotes } from "shared";
 
 /**
  * PlayerAttributeSlice manages a player's attributes via server fetch and real-time updates.
@@ -39,7 +40,7 @@ export class PlayerAttributeSlice {
 	constructor() {
 		// Listen for server-pushed attribute updates
 		const updateEvent = AttributeRemotes.Client.Get("AttributesUpdated");
-		this.updateConnection = updateEvent.Connect((dto: AttributesDTO) => {
+		this.updateConnection = updateEvent.Connect((dto: AttributeDTO) => {
 			print("Received attribute update from server:", dto);
 			this._onUpdate(dto);
 		});
@@ -49,7 +50,7 @@ export class PlayerAttributeSlice {
 	 * Fetch attributes from the server via RemoteFunction.
 	 * @returns The fetched AttributeDTO
 	 */
-	public async fetch(): Promise<AttributesDTO> {
+	public async fetch(): Promise<AttributeDTO> {
 		const fetchFunc = AttributeRemotes.Client.Get("FetchAttributes");
 		const dto = await fetchFunc.CallServerAsync();
 		this._onUpdate(dto);
@@ -60,23 +61,20 @@ export class PlayerAttributeSlice {
 	 * Internal handler for applying attribute updates.
 	 * @param attributeDTO New attribute values
 	 */
-	protected _onUpdate(attributeDTO: AttributesDTO): void {
+	protected _onUpdate(attributeDTO: AttributeDTO): void {
 		this._dtoToAttributesState(attributeDTO);
 	}
 
 	/**
 	 * Internal handler for attribute change notifications.
-	 * @param attributesDTO Attribute change notification
+	 * @param attributeDTO Attribute change notification
 	 */
-	protected _dtoToAttributesState(attributesDTO: AttributesDTO): void {
-		for (const [key, value] of pairs(attributesDTO)) {
-			if (this.AttributesState[key as AttributeKey]) {
-				this.AttributesState[key as AttributeKey].set(value);
-			} else {
-				warn(`Unknown attribute key: ${key}`);
-			}
+	protected _dtoToAttributesState(attributeDTO: AttributeDTO): void {
+		for (const [key, value] of pairs(attributeDTO)) {
+			const totalValue = value.baseValue + value.equipmentBonus + value.effectBonus;
+			this.AttributesState[key as AttributeKey].set(totalValue);
+			print(`Updated ${key} to ${totalValue}`);
 		}
-		print("Updated attributes state:", this.AttributesState);
 	}
 
 	/**

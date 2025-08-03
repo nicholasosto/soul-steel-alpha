@@ -20,6 +20,9 @@
 					"$className": "Folder",
 					"@rbxts": {
 						"$path": "node_modules/@rbxts"
+					},
+					"@trembus": {
+						"$path": "node_modules/@trembus"
 					}
 				}
 			},

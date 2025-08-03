@@ -38,7 +38,6 @@
  */
 
 export * from "./ability-keys";
-export * from "./attribute-keys";
 export * from "./combat-keys";
 export * from "./event-keys";
 export * from "./force-keys";

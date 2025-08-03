@@ -16,8 +16,8 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "@rbxts/compiler-types": "^2.3.0-types.1",
-    "@rbxts/types": "^1.0.800",
+    "@rbxts/compiler-types": "2.3.0-types.2",
+    "@rbxts/types": "^1.0.866",
     "@types/node": "^24.1.0",
     "@typescript-eslint/eslint-plugin": "^8.38.0",
     "@typescript-eslint/parser": "^8.38.0",
@@ -27,17 +27,18 @@
     "eslint-plugin-roblox-ts": "^0.0.36",
     "prettier": "^3.6.2",
     "roblox-ts": "^3.0.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.2"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.16.0",
-    "@rbxts/fusion": "^0.2.0-rc.1",
+    "@modelcontextprotocol/sdk": "^1.17.1",
+    "@rbxts/fusion": "^0.2.0",
     "@rbxts/maid": "^1.1.0",
     "@rbxts/net": "^3.0.10",
     "@rbxts/profileservice": "^1.4.2",
     "@rbxts/services": "^1.5.5",
     "@rbxts/signal": "^1.1.1",
     "@rbxts/zone-plus": "^3.2.0",
+    "@trembus/rpg-attributes": "1.0.0-alpha.2",
     "zod": "^3.25.76"
   },
   "volta": {

@@ -27,8 +27,6 @@ export function ResourceBarDTO(props: ResourceBarDTOProps): Frame {
 	const size = props.size || new UDim2(0, 300, 0, 80);
 	const position = props.position || new UDim2(0, 20, 0, 20);
 
-
-
 	// Individual bar creation helper using ProgressBar atom
 	const createResourceBar = (
 		name: string,
