@@ -11,7 +11,7 @@
 
 import Fusion, { Children, Computed, New } from "@rbxts/fusion";
 import { ProgressBar } from "../../atoms";
-import { ResourceKey } from "shared/keys/resource-keys";
+import { ResourceKey } from "shared/catalogs/resources-catalog";
 import { PlayerResourceSlice } from "client/states";
 import { ResourcesCatalog } from "shared/catalogs/resources-catalog";
 
@@ -28,7 +28,7 @@ export function ResourceBar(props: ResourceBarProps): Frame | undefined {
 		return undefined; // Return undefined if no key is provided
 	}
 	const resourceMeta = ResourcesCatalog[props.resourceKey];
-	const resourceState = PlayerResources.ResourcesState[props.resourceKey];
+	const resourceState = PlayerResources[props.resourceKey];
 	warn(`ResourceBar: Creating bar for resource "${props.resourceKey}" with state:`, resourceState, resourceMeta);
 	if (resourceMeta === undefined || resourceState === undefined) {
 		warn(`ResourceBar: Invalid resource key "${props.resourceKey}"`);

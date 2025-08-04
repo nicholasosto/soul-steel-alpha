@@ -15,13 +15,13 @@
  */
 
 import { Players } from "@rbxts/services";
-import { AbilityKey, SIGNAL_KEYS } from "shared/keys";
+import { SIGNAL_KEYS } from "shared/keys";
 import { CooldownTimer } from "shared/packages";
 import { AbilityRemotes } from "shared/network";
 import { SSEntity } from "shared/types/SSEntity";
 import { MessageLibrary } from "shared/types";
 import { isSSEntity } from "shared/helpers/type-guards";
-import { AbilityCatalog } from "shared/catalogs";
+import { AbilityCatalog, AbilityKey } from "shared/catalogs";
 import { DataServiceInstance } from "./data-service";
 import { MessageServiceInstance } from "./message-service";
 import { ResourceServiceInstance } from "./resource-service";
@@ -259,7 +259,7 @@ class AbilityService {
 
 		// Check resource costs
 		const manaCost = AbilityCatalog[abilityKey]?.cost ?? 0;
-		const currentMana = ResourceServiceInstance.getEntityResources(character)?.mana ?? 0;
+		const currentMana = ResourceServiceInstance.GetResources(player)?.Mana.current ?? 0;
 		if (currentMana < manaCost) {
 			warn(`Player ${player.Name} does not have enough mana for ability ${abilityKey}`);
 			return false;
@@ -305,7 +305,7 @@ class AbilityService {
 				wait(abilityMeta.duration);
 				abilityMeta.OnEnd?.(character);
 			});
-			ResourceServiceInstance.modifyResource(character as SSEntity, "mana", -abilityMeta["cost"]);
+			ResourceServiceInstance.ModifyResource(player, "mana", -abilityMeta["cost"]);
 
 			return true;
 		} catch (err) {

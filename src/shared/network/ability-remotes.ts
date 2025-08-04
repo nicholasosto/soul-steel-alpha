@@ -1,5 +1,6 @@
 import { Definitions } from "@rbxts/net";
-import { AbilityKey, SIGNAL_KEYS, SignalKey } from "shared/keys";
+import { SIGNAL_KEYS, SignalKey } from "shared/keys";
+import { AbilityKey } from "shared/catalogs";
 import { PlayerData } from "shared/types";
 
 export const AbilityRemotes = Definitions.Create({

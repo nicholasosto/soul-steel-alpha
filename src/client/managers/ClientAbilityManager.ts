@@ -3,7 +3,7 @@
  * @description Manages ability cooldowns and UI integration on the client side
  */
 
-import { AbilityKey, ABILITY_KEYS } from "shared/keys";
+import { AbilityKey, ABILITY_KEYS } from "shared";
 import { AbilityCatalog } from "shared/catalogs";
 import { CooldownTimer } from "shared/packages";
 import { Value } from "@rbxts/fusion";

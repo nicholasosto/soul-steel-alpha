@@ -38,7 +38,5 @@
  * @lastUpdated 2025-07-24 by Trembus - Added comprehensive documentation
  */
 
-export * from "./ability-meta";
 export * from "./attributes-meta";
-export * from "./resources-meta";
 export * from "./zone-meta";

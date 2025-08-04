@@ -11,7 +11,7 @@
 
 import { SSEntity } from "./SSEntity";
 import { DamageInfo, DamageType } from "./ResourceTypes";
-import { AbilityKey } from "../keys";
+import { AbilityKey } from "shared/catalogs";
 
 /**
  * Unique identifier for damage containers

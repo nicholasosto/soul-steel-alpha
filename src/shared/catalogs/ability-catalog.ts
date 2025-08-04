@@ -1,12 +1,85 @@
 import { SoundService } from "@rbxts/services";
 import { ImageConstants } from "shared/asset-ids";
-import { AnimationSets, AnimationSetKey } from "shared/asset-ids/animation-assets";
+import { AnimationSets } from "shared/asset-ids/animation-assets";
 import { isSSEntity, PlayRandomAnimationFromSet, PlayAnimation } from "shared/helpers";
-import { AbilityKey } from "shared/keys";
-import { AbilityMeta } from "shared/meta";
+
 import { SSEntity } from "shared/types";
 const CastSuccessSound = SoundService.FindFirstChild("CastSuccess") as Sound;
 const CastFailSound = SoundService.FindFirstChild("CastFail") as Sound;
+
+/* -------------------------- Key - Meta - Type - Catalog --------------------------*/
+export const ABILITY_KEYS = ["Melee", "Soul-Drain", "Earthquake", "Ice-Rain"] as const;
+export type AbilityKey = (typeof ABILITY_KEYS)[number];
+export interface AbilityMeta {
+	/** The unique identifier for this ability, used for registration and activation */
+	abilityKey: AbilityKey;
+
+	/** Cooldown time in seconds before the ability can be used again */
+	cooldown: number; // Cooldown in seconds
+
+	/** Duration in seconds that the ability effect lasts */
+	duration: number; // Duration in seconds
+
+	/** Resource cost required to activate the ability (e.g., mana, energy, stamina) */
+	cost: number; // Resource cost, e.g., mana or energy
+
+	/** User-friendly display name shown in the UI */
+	displayName: string;
+
+	/** Detailed description of the ability's effects and usage */
+	description: string;
+
+	/** Roblox asset ID for the ability's icon image */
+	icon: string;
+
+	/** Array of animation IDs that can be randomly selected when the ability is cast */
+	animationSet?: readonly string[];
+
+	/** Cast Effect String Key */
+	castEffectKey?: string;
+
+	/**
+	 * Optional callback executed when the ability starts successfully.
+	 * Will be implemented in the ability catalog using the effect system.
+	 *
+	 * @param entity - The entity that activated the ability
+	 * @param target - Optional target entity for the ability
+	 */
+	OnStartSuccess?: (entity: SSEntity, target?: SSEntity) => void;
+
+	/**
+	 * Optional callback executed when the ability fails to start.
+	 * Will be implemented in the ability catalog using the effect system.
+	 *
+	 * @param entity - The entity that attempted to activate the ability
+	 */
+	OnStartFailure?: (entity: SSEntity) => void;
+
+	/**
+	 * Optional callback executed when the ability is interrupted before completion.
+	 * Will be implemented in the ability catalog using the effect system.
+	 *
+	 * @param entity - The entity whose ability was interrupted
+	 */
+	OnInterrupt?: (entity: SSEntity) => void;
+
+	/**
+	 * Optional callback executed continuously while the ability is being held/charged.
+	 * Will be implemented in the ability catalog using the effect system.
+	 *
+	 * @param entity - The entity holding the ability
+	 * @param holdTime - Time in seconds the ability has been held
+	 */
+	OnHold?: (entity: SSEntity, holdTime: number, target?: SSEntity) => void;
+
+	/**
+	 * Optional callback executed when the ability effect ends naturally.
+	 * Will be implemented in the ability catalog using the effect system.
+	 *
+	 * @param entity - The entity whose ability ended
+	 */
+	OnEnd?: (entity: SSEntity) => void;
+}
 
 // Internal Helpers
 

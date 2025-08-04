@@ -9,10 +9,10 @@
  * @lastUpdated 2025-08-01 - Initial DTO-based resource slice implementation
  */
 
-import type { ResourceDTO } from "shared/dtos";
-import { ResourceDTORemotes } from "shared/network/resource-dto-remotes";
-import { Value } from "@rbxts/fusion";
+import { makeDefaultResourceState, ResourceStateMap, ResourceDTO, makeDefaultResourceStateFromDTO } from "shared/catalogs/resources-catalog";
+import { ResourceRemotes } from "shared/network";
 import { Players } from "@rbxts/services";
+import { Value } from "@rbxts/fusion";
 /**
  * PlayerResourceSlice manages a player's resources via server fetch and real-time updates.
  * - fetch() retrieves the current ResourceDTO from the server
@@ -22,24 +22,8 @@ import { Players } from "@rbxts/services";
 
 export class PlayerResourceSlice {
 	/** Latest resource values */
-	public ResourcesState = {
-		Health: {
-			current: Value(1),
-			max: Value(5),
-		},
-		Mana: {
-			current: Value(1),
-			max: Value(5),
-		},
-		Stamina: {
-			current: Value(100),
-			max: Value(100),
-		},
-		Experience: {
-			current: Value(0),
-			max: Value(1000),
-		},
-	};
+	public PlayerResources: ResourceStateMap = makeDefaultResourceState();
+	public ReadyState: Value<"NO_DATA" | "LOADING" | "READY_PlayerData" | "READY_DefaultData"> = Value("NO_DATA"); // Initial state before data is fetched
 
 	private updateConnection: RBXScriptConnection;
 	private humanoidHealthChanged?: RBXScriptConnection;
@@ -47,7 +31,7 @@ export class PlayerResourceSlice {
 
 	constructor() {
 		// Listen for server-pushed resource updates
-		const updateEvent = ResourceDTORemotes.Client.Get("ResourcesUpdated");
+		const updateEvent = ResourceRemotes.Client.Get("ResourcesUpdated");
 		this.updateConnection = updateEvent.Connect((dto: ResourceDTO) => {
 			print("Received resource update from server:", dto);
 			this._onUpdate(dto);
@@ -60,11 +44,11 @@ export class PlayerResourceSlice {
 				warn("Humanoid not found in character, cannot track health changes");
 				return;
 			}
-			this.ResourcesState.Health.current.set(humanoid.Health);
-			this.ResourcesState.Health.max.set(humanoid.MaxHealth);
+			this.PlayerResources.Health.current.set(humanoid.Health);
+			this.PlayerResources.Health.max.set(humanoid.MaxHealth);
 			this.humanoidHealthChanged?.Disconnect(); // Disconnect previous connection if exists
 			this.humanoidHealthChanged = humanoid.HealthChanged.Connect((newHealth: number) => {
-				this.ResourcesState.Health.current.set(newHealth);
+				this.PlayerResources.Health.current.set(newHealth);
 			});
 		});
 	}
@@ -74,7 +58,7 @@ export class PlayerResourceSlice {
 	 * @returns The fetched ResourceDTO
 	 */
 	public async fetch(): Promise<ResourceDTO> {
-		const fetchFunc = ResourceDTORemotes.Client.Get("FetchResources");
+		const fetchFunc = ResourceRemotes.Client.Get("FetchResources");
 		const dto = await fetchFunc.CallServerAsync();
 		this._onUpdate(dto);
 		return dto;
@@ -85,22 +69,8 @@ export class PlayerResourceSlice {
 	 * @param resourceDTO New resource values
 	 */
 	protected _onUpdate(resourceDTO: ResourceDTO): void {
-		this._dtoToResourcesState(resourceDTO);
+		this.PlayerResources = makeDefaultResourceStateFromDTO(resourceDTO);
 	}
-
-	/**
-	 * Internal handler for resource change notifications.
-	 * @param resourcesDTO Resource change notification
-	 */
-	protected _dtoToResourcesState(resourcesDTO: ResourceDTO): void {
-		this.ResourcesState.Health.current.set(resourcesDTO.health);
-		this.ResourcesState.Health.max.set(resourcesDTO.maxHealth);
-		this.ResourcesState.Mana.current.set(resourcesDTO.mana);
-		this.ResourcesState.Mana.max.set(resourcesDTO.maxMana);
-		this.ResourcesState.Stamina.current.set(resourcesDTO.stamina);
-		this.ResourcesState.Stamina.max.set(resourcesDTO.maxStamina);
-	}
-
 	/**
 	 * Disconnects all update listeners.
 	 */

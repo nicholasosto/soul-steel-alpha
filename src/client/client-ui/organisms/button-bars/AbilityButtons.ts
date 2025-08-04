@@ -1,12 +1,7 @@
-import { ImageConstants } from "shared/asset-ids";
 import { HorizontalButtonBar } from "./ButtonBar";
-import { IconButton } from "client/client-ui/atoms";
-import { AbilityKey } from "shared/keys";
 import { GameActionController } from "client/controllers";
-import { UI_SIZES } from "shared/constants/ui-constants";
-import { AbilityCatalog } from "shared/catalogs";
+import { AbilityCatalog, AbilityKey } from "shared/catalogs";
 import { AbilityButton } from "client/client-ui/molecules";
-import Fusion from "@rbxts/fusion";
 
 interface AbilityBarProps {
 	keys: Array<AbilityKey>;

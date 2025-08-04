@@ -9,7 +9,7 @@
  * @lastUpdated 2025-08-01 - Extracted from input.client.ts for better separation of concerns
  */
 
-import { AbilityKey } from "shared/keys";
+import { AbilityKey } from "shared";
 import { VFXKey } from "shared/packages";
 import { AbilityRemotes, EffectRemotes } from "shared/network";
 

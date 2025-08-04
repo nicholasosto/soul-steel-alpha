@@ -1,10 +1,9 @@
 import { IconButton, IconButtonProps, ProgressBar } from "../atoms";
 import Fusion, { Value, New, Computed, OnEvent, Children } from "@rbxts/fusion";
-import { AbilityKey, ABILITY_KEYS } from "shared/keys";
-import { AbilityCatalog } from "shared/catalogs";
-import { UI_SIZES, UI_SPACING } from "shared/constants/ui-constants";
+import { AbilityCatalog, AbilityKey } from "shared/catalogs";
+import { UI_SIZES } from "shared/constants/ui-constants";
 import { ImageConstants } from "shared/asset-ids";
-import { VerticalLayout } from "../helpers";
+
 
 export interface AbilityButtonProps extends Omit<IconButtonProps, "icon"> {
 	abilityKey: AbilityKey;

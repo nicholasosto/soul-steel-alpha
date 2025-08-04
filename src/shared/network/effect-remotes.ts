@@ -1,5 +1,5 @@
 import { Definitions } from "@rbxts/net";
-import { AbilityKey, SIGNAL_KEYS } from "shared/keys";
+import { SIGNAL_KEYS } from "shared/keys";
 import { VFXKey } from "shared/packages";
 
 export const EffectRemotes = Definitions.Create({

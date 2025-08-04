@@ -10,7 +10,7 @@
  * @lastUpdated 2025-07-31 by Trembus - Updated to use new animation system
  */
 
-import { AbilityKey } from "shared/keys";
+import { AbilityKey } from "shared/catalogs/ability-catalog";
 import { AnimationSets } from "shared/asset-ids/animation-assets";
 
 /**

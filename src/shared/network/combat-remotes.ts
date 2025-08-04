@@ -10,7 +10,6 @@
 
 import { Definitions } from "@rbxts/net";
 import { SSEntity } from "shared/types";
-import { AbilityKey } from "shared/keys";
 
 // Combat-specific event data types
 export interface CombatHitEvent {

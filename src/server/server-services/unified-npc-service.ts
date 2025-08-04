@@ -14,7 +14,7 @@ import { SSEntity } from "shared/types/SSEntity";
 import { isSSEntity } from "shared/helpers/type-guards";
 
 // Import services for enhanced mode
-import { CombatServiceInstance } from "./combat-service";
+//import { CombatServiceInstance } from "./combat-service";
 import { ResourceServiceInstance } from "./resource-service";
 
 // =============================================================================
@@ -370,30 +370,30 @@ class UnifiedNPCService {
 	 * Setup NPC features based on configuration
 	 */
 	private setupNPCFeatures(npc: UnifiedNPCEntity): void {
-		const { config } = npc;
+		// const { config } = npc;
 
-		// Combat system integration
-		if (config.enableCombat && isEnhancedNPC(npc)) {
-			try {
-				const success = CombatServiceInstance.RegisterCombatant(npc);
-				if (success) {
-					npc.isCombatant = true;
-					print(`⚔️ Registered ${npc.npcId} with combat system`);
-				}
-			} catch (error) {
-				warn(`❌ Failed to register ${npc.npcId} with combat system: ${error}`);
-			}
-		}
+		// // Combat system integration
+		// if (config.enableCombat && isEnhancedNPC(npc)) {
+		// 	try {
+		// 		const success = CombatServiceInstance.RegisterCombatant(npc);
+		// 		if (success) {
+		// 			npc.isCombatant = true;
+		// 			print(`⚔️ Registered ${npc.npcId} with combat system`);
+		// 		}
+		// 	} catch (error) {
+		// 		warn(`❌ Failed to register ${npc.npcId} with combat system: ${error}`);
+		// 	}
+		// }
 
-		// Resource system integration
-		if (config.enableResourceManagement && isEnhancedNPC(npc)) {
-			try {
-				ResourceServiceInstance.initializeEntityHealth(npc);
-				print(`💙 Initialized resources for ${npc.npcId}`);
-			} catch (error) {
-				warn(`❌ Failed to initialize resources for ${npc.npcId}: ${error}`);
-			}
-		}
+		// // Resource system integration
+		// if (config.enableResourceManagement && isEnhancedNPC(npc)) {
+		// 	try {
+		// 		//ResourceServiceInstance.initializeEntityHealth(npc);
+		// 		print(`💙 Initialized resources for ${npc.npcId}`);
+		// 	} catch (error) {
+		// 		warn(`❌ Failed to initialize resources for ${npc.npcId}: ${error}`);
+		// 	}
+		// }
 	}
 
 	/**
@@ -559,7 +559,7 @@ class UnifiedNPCService {
 			for (const abilityKey of template.availableAbilities) {
 				try {
 					if (abilityKey === "Melee" && distance <= 6) {
-						CombatServiceInstance.ExecuteBasicAttack(npc, target);
+						//CombatServiceInstance.ExecuteBasicAttack(npc, target);
 						npc.behaviorState.lastAbilityTime = currentTime;
 						break;
 					}
@@ -585,7 +585,7 @@ class UnifiedNPCService {
 
 		// Unregister from systems if enhanced
 		if (isEnhancedNPC(npc) && npc.isCombatant) {
-			CombatServiceInstance.unregisterCombatant(npc);
+			// CombatServiceInstance.unregisterCombatant(npc);
 		}
 
 		print(`💀 ${npc.npcId} has been defeated!`);
@@ -688,9 +688,9 @@ class UnifiedNPCService {
 		}
 
 		// Unregister from systems if enhanced
-		if (isEnhancedNPC(npc) && npc.isCombatant) {
-			CombatServiceInstance.unregisterCombatant(npc);
-		}
+		// if (isEnhancedNPC(npc) && npc.isCombatant) {
+		// 	CombatServiceInstance.unregisterCombatant(npc);
+		// }
 
 		// Clean up model
 		if (npc.Model.Parent) {

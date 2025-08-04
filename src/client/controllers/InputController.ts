@@ -10,7 +10,7 @@
  */
 
 import { UserInputService } from "@rbxts/services";
-import { AbilityKey } from "shared/keys";
+import { AbilityKey } from "shared";
 import { VFXKey } from "shared/packages";
 
 export type InputAction =

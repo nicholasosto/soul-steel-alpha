@@ -6,48 +6,26 @@
  *
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
- * @lastUpdated 2025-08-01 - Renamed from health-remotes to resource-remotes for clarity
+ * @lastUpdated 2025-08-04 - Renamed from health-remotes to resource-remotes for clarity
  */
 
 import { Definitions } from "@rbxts/net";
-import {
-	HealthChangeEvent,
-	ResourceChangeEvent,
-	PlayerResources,
-	DamageInfo,
-	HealingInfo,
-	StatusEffect,
-} from "shared/types/ResourceTypes";
-import { SSEntity } from "shared/types";
+import { ResourceDTO } from "shared/catalogs/resources-catalog";
 
 /**
- * Resource management and combat related remote events and functions
+ * DTO-based resource management remote events and functions
  */
 export const ResourceRemotes = Definitions.Create({
-	// Health Changes
-	HealthChanged: Definitions.ServerToClientEvent<[HealthChangeEvent]>(),
-	ResourceChanged: Definitions.ServerToClientEvent<[ResourceChangeEvent]>(),
+	// Resource State Management
+	/** Server pushes complete resource state to clients */
+	ResourcesUpdated: Definitions.ServerToClientEvent<[ResourceDTO]>(),
 
-	// Damage and Healing
-	DealDamage: Definitions.ServerAsyncFunction<(target: SSEntity, damageInfo: DamageInfo) => boolean>(),
-	ApplyHealing: Definitions.ServerAsyncFunction<(target: SSEntity, healingInfo: HealingInfo) => boolean>(),
+	// Resource Fetching
+	/** Client requests current resource state */
+	FetchResources: Definitions.ServerAsyncFunction<() => ResourceDTO>(),
 
-	// Resource Management
-	GetPlayerResources: Definitions.ServerAsyncFunction<(playerId: string) => PlayerResources | undefined>(),
+	// Resource Modification (for abilities, admin commands, etc.)
+	/** Modify a specific resource by amount */
 	ModifyResource:
-		Definitions.ServerAsyncFunction<
-			(target: SSEntity, resourceType: "health" | "mana" | "stamina", amount: number) => boolean
-		>(),
-
-	// Status Effects
-	StatusEffectApplied: Definitions.ServerToClientEvent<[SSEntity, StatusEffect]>(),
-	StatusEffectRemoved: Definitions.ServerToClientEvent<[SSEntity, string]>(), // entity, effect id
-	GetStatusEffects: Definitions.ServerAsyncFunction<(target: SSEntity) => StatusEffect[]>(),
-
-	// Combat Stats
-	EntityDied: Definitions.ServerToClientEvent<[SSEntity, SSEntity | undefined]>(), // victim, killer
-	EntityRevived: Definitions.ServerToClientEvent<[SSEntity]>(),
-
-	// Client to Server requests
-	RequestSuicide: Definitions.ClientToServerEvent<[]>(), // For debugging/testing
+		Definitions.ServerAsyncFunction<(resourceType: "health" | "mana" | "stamina", amount: number) => boolean>(),
 });
