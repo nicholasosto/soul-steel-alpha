@@ -25,3 +25,18 @@ export function HorizontalLayout(spacing: number = 5) {
 		HorizontalFlex: Enum.UIFlexAlignment.SpaceEvenly,
 	});
 }
+
+export const Flex = {
+	Shrink: () =>
+		New("UIFlexItem")({
+			FlexMode: Enum.UIFlexMode.Shrink,
+		}),
+	Fill: () =>
+		New("UIFlexItem")({
+			FlexMode: Enum.UIFlexMode.Fill,
+		}),
+	None: () =>
+		New("UIFlexItem")({
+			FlexMode: Enum.UIFlexMode.None,
+		}),
+};

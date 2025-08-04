@@ -40,4 +40,5 @@
 
 export * from "./ability-meta";
 export * from "./attributes-meta";
+export * from "./resources-meta";
 export * from "./zone-meta";

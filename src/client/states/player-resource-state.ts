@@ -20,21 +20,6 @@ import { Players } from "@rbxts/services";
  * - Provides reactive change notifications for UI components
  */
 
-export type ResourcesState = {
-	Health: {
-		current: Value<number>;
-		max: Value<number>;
-	};
-	Mana: {
-		current: Value<number>;
-		max: Value<number>;
-	};
-	Stamina: {
-		current: Value<number>;
-		max: Value<number>;
-	};
-};
-
 export class PlayerResourceSlice {
 	/** Latest resource values */
 	public ResourcesState = {
@@ -49,6 +34,10 @@ export class PlayerResourceSlice {
 		Stamina: {
 			current: Value(100),
 			max: Value(100),
+		},
+		Experience: {
+			current: Value(0),
+			max: Value(1000),
 		},
 	};
 

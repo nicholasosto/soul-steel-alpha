@@ -1,31 +1,17 @@
-import { ButtonBarProps, HorizontalButtonBar } from "./ButtonBar";
-import { IconButton } from "../../atoms/IconButton";
-import { MenuButtonImageMap } from "shared/asset-ids";
+import { HorizontalButtonBar } from "./ButtonBar";
+import { MenuButton } from "client/client-ui/molecules/MenuButton";
 
 const MenuButtons = {
-	Character: IconButton({
-		Name: "CharacterButton",
-		icon: MenuButtonImageMap.Character,
-		onClick: () => {
-			print("Character button clicked");
-		},
+	Character: MenuButton({
+		menuKey: "CharacterMenu",
 	}),
-	Inventory: IconButton({
-		Name: "InventoryButton",
-		icon: MenuButtonImageMap.Inventory,
-		onClick: () => {
-			print("Inventory button clicked");
-		},
+	Inventory: MenuButton({
+		menuKey: "InventoryMenu",
 	}),
-	Settings: IconButton({
-		Name: "SettingsButton",
-		icon: MenuButtonImageMap.Settings,
-		onClick: () => {
-			print("Settings button clicked");
-		},
+	Settings: MenuButton({
+		menuKey: "SettingsMenu",
 	}),
 };
-
 export const MenuButtonBar = HorizontalButtonBar({
 	Position: new UDim2(0, 0, 0, 250),
 	AnchorPoint: new Vector2(0, 0),

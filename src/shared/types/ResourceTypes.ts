@@ -9,6 +9,7 @@
  * @lastUpdated 2025-08-01 - Renamed from health-types to resource-types for clarity
  */
 
+import { Value } from "@rbxts/fusion";
 import { SSEntity } from "./SSEntity";
 
 /**
@@ -28,6 +29,17 @@ export interface PlayerResources {
 	/** Maximum stamina points */
 	maxStamina: number;
 }
+
+export type ResourceState = {
+	current: Value<number>;
+	max: Value<number>;
+};
+
+export type ResourcesState = {
+	Health: ResourceState;
+	Mana: ResourceState;
+	Stamina: ResourceState;
+};
 
 /**
  * Health change event data
