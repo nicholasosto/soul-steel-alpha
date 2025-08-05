@@ -42,20 +42,6 @@ export class PlayerResourceSlice {
 			print("Received resource update from server:", dto);
 			this._onUpdate(dto);
 		});
-		task.spawn(() => {
-			// ResourceRemotes.Client.Get("FetchResources")
-			// 	.CallServerAsync()
-			// 	.andThen((dto: ResourceDTO) => {
-			// 		print("Fetched initial resources from server:", dto);
-					
-			// 		this._onUpdate(dto);
-			// 		this.ReadyState.set("READY_PlayerData");
-			// 	})
-			// 	.catch((err) => {
-			// 		warn("Failed to fetch resources from server:", err);
-			// 		this.ReadyState.set("READY_DefaultData");
-			// 	});
-		});
 		// Character creation handling
 		this.characterCreatedConnection?.Disconnect(); // Disconnect previous connection if exists
 		this.characterCreatedConnection = Players.LocalPlayer.CharacterAdded.Connect((character) => {
