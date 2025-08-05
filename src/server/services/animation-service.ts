@@ -16,7 +16,7 @@
 
 import { Players } from "@rbxts/services";
 import { AnimationKey } from "shared/asset-ids";
-import { SSEntity } from "shared/types/SSEntity";
+import { SSEntity } from "shared/types/ss-entity";
 import { isSSEntity, validateSSEntity } from "shared/helpers/type-guards";
 import {
 	LoadAllCharacterAnimations,

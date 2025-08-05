@@ -7,7 +7,7 @@
 
 import * as RPGAttributes from "@trembus/rpg-attributes";
 import { AttributeRemotes } from "shared/network/attribute-remotes";
-import { DataServiceInstance } from "server/server-services/data-service";
+import { DataServiceInstance } from "server/services/data-service";
 type AttributeDTO = RPGAttributes.AttributeDTO;
 type AttributeKey = RPGAttributes.AttributeKey;
 

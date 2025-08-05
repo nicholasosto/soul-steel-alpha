@@ -1,7 +1,6 @@
 export * from "./asset-ids";
 export * from "./catalogs";
 export * from "./constants";
-export * from "./dtos";
 export * from "./helpers";
 export * from "./keys";
 export * from "./meta";

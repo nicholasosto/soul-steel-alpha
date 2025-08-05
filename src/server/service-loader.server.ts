@@ -5,7 +5,7 @@ import {
 	DataServiceInstance,
 	MessageServiceInstance,
 	ResourceServiceInstance,
-} from "./server-services";
+} from "./services";
 import { Players } from "@rbxts/services";
 import { AbilityKey } from "shared";
 import { SSEntity } from "shared/types";

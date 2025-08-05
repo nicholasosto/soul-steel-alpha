@@ -18,7 +18,7 @@ import { Players } from "@rbxts/services";
 import { SIGNAL_KEYS } from "shared/keys";
 import { CooldownTimer } from "shared/packages";
 import { AbilityRemotes } from "shared/network";
-import { SSEntity } from "shared/types/SSEntity";
+import { SSEntity } from "shared/types/ss-entity";
 import { MessageLibrary } from "shared/types";
 import { isSSEntity } from "shared/helpers/type-guards";
 import { AbilityCatalog, AbilityKey } from "shared/catalogs";

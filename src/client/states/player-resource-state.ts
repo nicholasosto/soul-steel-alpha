@@ -17,7 +17,6 @@ import {
 	ResourceRemotes,
 } from "shared/catalogs/resources-catalog";
 
-import { Players } from "@rbxts/services";
 import { Value } from "@rbxts/fusion";
 /**
  * PlayerResourceSlice manages a player's resources via server fetch and real-time updates.
@@ -32,8 +31,6 @@ export class PlayerResourceSlice {
 	public ReadyState: Value<"NO_DATA" | "LOADING" | "READY_PlayerData" | "READY_DefaultData"> = Value("NO_DATA"); // Initial state before data is fetched
 
 	private updateConnection: RBXScriptConnection;
-	private humanoidHealthChanged?: RBXScriptConnection;
-	private characterCreatedConnection?: RBXScriptConnection;
 
 	constructor() {
 		// Listen for server-pushed resource updates
@@ -41,21 +38,6 @@ export class PlayerResourceSlice {
 		this.updateConnection = updateEvent.Connect((dto: ResourceDTO) => {
 			print("Received resource update from server:", dto);
 			this._onUpdate(dto);
-		});
-		// Character creation handling
-		this.characterCreatedConnection?.Disconnect(); // Disconnect previous connection if exists
-		this.characterCreatedConnection = Players.LocalPlayer.CharacterAdded.Connect((character) => {
-			const humanoid = character.WaitForChild("Humanoid") as Humanoid;
-			if (humanoid === undefined) {
-				warn("Humanoid not found in character, cannot track health changes");
-				return;
-			}
-			this.PlayerResources.Health.current.set(humanoid.Health);
-			this.PlayerResources.Health.max.set(humanoid.MaxHealth);
-			this.humanoidHealthChanged?.Disconnect(); // Disconnect previous connection if exists
-			this.humanoidHealthChanged = humanoid.HealthChanged.Connect((newHealth: number) => {
-				this.PlayerResources.Health.current.set(newHealth);
-			});
 		});
 	}
 

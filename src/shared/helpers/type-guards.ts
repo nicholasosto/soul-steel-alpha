@@ -11,7 +11,7 @@
  * @lastUpdated  2025-07-24 by Trembus
  */
 
-import { SSEntity } from "shared/types/SSEntity";
+import { SSEntity } from "shared/types/ss-entity";
 
 /**
  * Type guard to validate if a Model is a valid SSEntity

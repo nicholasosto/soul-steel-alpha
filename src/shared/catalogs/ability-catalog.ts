@@ -1,3 +1,4 @@
+import { Value } from "@rbxts/fusion";
 import { SoundService } from "@rbxts/services";
 import { ImageConstants } from "shared/asset-ids";
 import { AnimationSets } from "shared/asset-ids/animation-assets";
@@ -80,9 +81,17 @@ export interface AbilityMeta {
 	 */
 	OnEnd?: (entity: SSEntity) => void;
 }
+export type AbilityDTO = {
+	[key in AbilityKey]: number; // Maps each ability key to its current level or state
+};
+export type AbilitiesState = {
+	[key in AbilityKey]: {
+		level: Value<number>; // Reactive level value for the ability
+		meta: AbilityMeta; // Metadata for the ability
+	};
+};
 
 // Internal Helpers
-
 function runCastSuccessEffects(abilityKey: AbilityKey, character: Model) {
 	const entity = character as SSEntity;
 	const animationSet = AnimationSets[abilityKey] as readonly string[] | undefined;

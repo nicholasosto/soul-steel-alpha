@@ -38,18 +38,6 @@
  * @lastUpdated 2025-07-24 by Trembus - Added comprehensive documentation
  */
 
-export * from "./SSEntity";
-export * from "./MessageTypes";
-export * from "./ResourceTypes";
-export * from "./CombatFlowTypes";
-// Import DTOs
-export * from "../dtos";
-
-// Player Data Interface
-export interface PlayerData {
-	health: number;
-	mana: number;
-	stamina: number;
-	experience: number;
-	level: number;
-}
+export * from "./ss-entity";
+export * from "./message-types";
+export * from "./player-data";

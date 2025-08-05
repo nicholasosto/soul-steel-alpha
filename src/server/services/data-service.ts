@@ -111,5 +111,21 @@ class DataService {
 	public GetProfile(player: Player): Profile<PlayerProfileData> | undefined {
 		return this.profiles.get(player);
 	}
+	public GetAbilities(player: Player): PlayerProfileData["Abilities"] | undefined {
+		const profile = this.GetProfile(player);
+		if (profile) {
+			return profile.Data.Abilities;
+		}
+		warn(`No profile found for player ${player.Name}`);
+		return undefined;
+	}
+	public GetAttributes(player: Player): PlayerProfileData["Attributes"] | undefined {
+		const profile = this.GetProfile(player);
+		if (profile) {
+			return profile.Data.Attributes;
+		}
+		warn(`No profile found for player ${player.Name}`);
+		return undefined;
+	}
 }
 export const DataServiceInstance = DataService.Start();
