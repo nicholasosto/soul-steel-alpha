@@ -9,8 +9,14 @@
  * @lastUpdated 2025-08-01 - Initial DTO-based resource slice implementation
  */
 
-import { makeDefaultResourceState, ResourceStateMap, ResourceDTO, makeDefaultResourceStateFromDTO } from "shared/catalogs/resources-catalog";
-import { ResourceRemotes } from "shared/network";
+import {
+	makeDefaultResourceState,
+	ResourceStateMap,
+	ResourceDTO,
+	makeDefaultResourceStateFromDTO,
+	ResourceRemotes,
+} from "shared/catalogs/resources-catalog";
+
 import { Players } from "@rbxts/services";
 import { Value } from "@rbxts/fusion";
 /**
@@ -36,6 +42,20 @@ export class PlayerResourceSlice {
 			print("Received resource update from server:", dto);
 			this._onUpdate(dto);
 		});
+		task.spawn(() => {
+			// ResourceRemotes.Client.Get("FetchResources")
+			// 	.CallServerAsync()
+			// 	.andThen((dto: ResourceDTO) => {
+			// 		print("Fetched initial resources from server:", dto);
+					
+			// 		this._onUpdate(dto);
+			// 		this.ReadyState.set("READY_PlayerData");
+			// 	})
+			// 	.catch((err) => {
+			// 		warn("Failed to fetch resources from server:", err);
+			// 		this.ReadyState.set("READY_DefaultData");
+			// 	});
+		});
 		// Character creation handling
 		this.characterCreatedConnection?.Disconnect(); // Disconnect previous connection if exists
 		this.characterCreatedConnection = Players.LocalPlayer.CharacterAdded.Connect((character) => {
@@ -51,17 +71,6 @@ export class PlayerResourceSlice {
 				this.PlayerResources.Health.current.set(newHealth);
 			});
 		});
-	}
-
-	/**
-	 * Fetch resources from the server via RemoteFunction.
-	 * @returns The fetched ResourceDTO
-	 */
-	public async fetch(): Promise<ResourceDTO> {
-		const fetchFunc = ResourceRemotes.Client.Get("FetchResources");
-		const dto = await fetchFunc.CallServerAsync();
-		this._onUpdate(dto);
-		return dto;
 	}
 
 	/**

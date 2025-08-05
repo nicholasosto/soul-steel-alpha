@@ -8,4 +8,4 @@ export * from "./resource-service";
 export * from "./zone-service";
 
 // Unified NPC Service (replaces all legacy NPC services)
-export { UnifiedNPCServiceInstance } from "./unified-npc-service";
+//export { UnifiedNPCServiceInstance } from "./unified-npc-service";

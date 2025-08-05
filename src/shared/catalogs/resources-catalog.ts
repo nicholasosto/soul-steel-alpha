@@ -1,4 +1,6 @@
 import { Computed, Value } from "@rbxts/fusion";
+import { Definitions } from "@rbxts/net";
+import ServerAsyncFunction from "@rbxts/net/out/server/ServerAsyncFunction";
 export const RESOURCE_KEYS = ["Health", "Mana", "Stamina", "Experience"] as const;
 export type ResourceKey = (typeof RESOURCE_KEYS)[number];
 
@@ -95,3 +97,9 @@ export const makeDefaultResourceStateFromDTO = (dto: ResourceDTO): ResourceState
 	}
 	return resourceState;
 };
+
+/* -- Remotes -- */
+export const ResourceRemotes = Definitions.Create({
+	FetchResources: Definitions.ServerAsyncFunction<() => ResourceDTO>(),
+	ResourcesUpdated: Definitions.ServerToClientEvent<[ResourceDTO]>(),
+});

@@ -11,8 +11,7 @@
 
 import { Players } from "@rbxts/services";
 import { SSEntity } from "shared/types";
-import { ResourceRemotes } from "shared/network/resource-remotes";
-import { makeDefaultResourceDTO, ResourceDTO } from "shared/catalogs/resources-catalog";
+import { makeDefaultResourceDTO, ResourceDTO, ResourceRemotes } from "shared/catalogs/resources-catalog";
 
 /**
  * Resource Service - Manages health, mana, stamina, and combat for all entities
