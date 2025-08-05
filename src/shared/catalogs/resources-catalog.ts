@@ -1,4 +1,4 @@
-import { Computed, Value } from "@rbxts/fusion";
+import { Computed, ForKeys, Value } from "@rbxts/fusion";
 import { Definitions } from "@rbxts/net";
 import ServerAsyncFunction from "@rbxts/net/out/server/ServerAsyncFunction";
 export const RESOURCE_KEYS = ["Health", "Mana", "Stamina", "Experience"] as const;
@@ -22,7 +22,6 @@ export type ResourceDTO = {
 
 /* Resource State - Current Values for Resources */
 export type ResourceState = {
-	meta: ResourceMeta; // Metadata for the resource
 	current: Value<number>; // Current value of the resource
 	max: Value<number>; // Maximum value of the resource
 	percentage: Computed<number>; // Percentage of current/max (0-1)
@@ -61,14 +60,17 @@ export const ResourcesCatalog: Record<ResourceKey, ResourceMeta> = {
 
 export const makeDefaultResourceState = (): ResourceStateMap => {
 	const resourceState: ResourceStateMap = {} as ResourceStateMap;
-	for (const key of RESOURCE_KEYS) {
+	ForKeys(RESOURCE_KEYS, (key) => {
+		const resourceMeta = ResourcesCatalog[key];
 		resourceState[key] = {
-			meta: ResourcesCatalog[key],
-			current: Value(100), // Default current value, can be adjusted per resource
-			max: Value(100), // Default max value, can be adjusted per resource
-			percentage: Computed(() => resourceState[key].current.get() / resourceState[key].max.get()),
+			meta: resourceMeta,
+			current: Value(resourceMeta.defaultCurrent ?? 100), // Default current value, can be adjusted per resource
+			max: Value(resourceMeta.defaultMax ?? 100), // Default max value, can be adjusted per resource
+			percentage: Computed(() => {
+				return resourceState[key].current.get() / resourceState[key].max.get();
+			}),
 		};
-	}
+	});
 	return resourceState;
 };
 
@@ -84,19 +86,28 @@ export const makeDefaultResourceDTO = (): ResourceDTO => {
 	return resourceDTO;
 };
 
-// Helper: Convert ResourceDTO to ResourceStateMap
-export const makeDefaultResourceStateFromDTO = (dto: ResourceDTO): ResourceStateMap => {
+// Helper: make resource state
+const makeResourceState = (current: number, max: number): ResourceState => {
+	const currentValue = Value(current);
+	const maxValue = Value(max);
+	const percentage = Computed(() => {
+		return currentValue.get() / maxValue.get();
+	});
+	return {
+		current: currentValue,
+		max: maxValue,
+		percentage: percentage,
+	};
+};
+
+export const makeResourceStateFromDTO = (dto: ResourceDTO): ResourceStateMap => {
 	const resourceState: ResourceStateMap = {} as ResourceStateMap;
 	for (const key of RESOURCE_KEYS) {
-		resourceState[key] = {
-			meta: ResourcesCatalog[key],
-			current: Value(dto[key].current),
-			max: Value(dto[key].max),
-			percentage: Computed(() => resourceState[key].current.get() / resourceState[key].max.get()),
-		};
+		resourceState[key] = makeResourceState(dto[key].current, dto[key].max);
 	}
 	return resourceState;
 };
+
 
 /* -- Remotes -- */
 export const ResourceRemotes = Definitions.Create({

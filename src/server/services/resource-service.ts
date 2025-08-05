@@ -12,6 +12,7 @@
 import { Players } from "@rbxts/services";
 import { SSEntity } from "shared/types";
 import { makeDefaultResourceDTO, ResourceDTO, ResourceRemotes } from "shared/catalogs/resources-catalog";
+import { DataServiceInstance } from "./data-service";
 
 /**
  * Resource Service - Manages health, mana, stamina, and combat for all entities
@@ -42,6 +43,10 @@ export class ResourceService {
 	private initializeConnections(): void {
 		// Handle new players
 		Players.PlayerAdded.Connect((player) => {
+			print(`ResourceService: Player added - ${player.Name}`);
+			const profile = DataServiceInstance.GetProfile(player); // Ensure profile is loaded
+			print(`ResourceService: Called DataService for player ${player.Name}`, profile);
+
 			const resources = makeDefaultResourceDTO();
 			this.entityResources.set(player, resources);
 			SendResourceUpdate.SendToPlayer(player, resources);

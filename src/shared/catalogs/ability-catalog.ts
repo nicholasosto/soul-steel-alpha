@@ -84,12 +84,36 @@ export interface AbilityMeta {
 export type AbilityDTO = {
 	[key in AbilityKey]: number; // Maps each ability key to its current level or state
 };
+export function makeDefaultAbilityDTO(): AbilityDTO {
+	const dto: AbilityDTO = {} as AbilityDTO;
+	for (const key of ABILITY_KEYS) {
+		dto[key] = 0; // Default level or state for each ability
+	}
+	return dto;
+}
+
 export type AbilitiesState = {
-	[key in AbilityKey]: {
-		level: Value<number>; // Reactive level value for the ability
-		meta: AbilityMeta; // Metadata for the ability
-	};
+	[key in AbilityKey]: Value<number>; // Reactive level value for the ability
 };
+
+export const createAbilitiesState = (): AbilitiesState => {
+	const abilitiesState: AbilitiesState = {} as AbilitiesState;
+	for (const key of ABILITY_KEYS) {
+		abilitiesState[key] = Value(0); // Initialize each ability with a default level of 0
+	}
+	return abilitiesState;
+};
+
+// export const AbilityDTOToAbilitiesState = (dto: AbilityDTO): AbilitiesState => {
+// 	const abilitiesState: AbilitiesState = {} as AbilitiesState;
+// 	for (const key of ABILITY_KEYS) {
+// 		abilitiesState[key] = {
+// 			level: Value(dto[key] || 0), // Use DTO value or default to 0
+// 			meta: AbilityCatalog[key],
+// 		};
+// 	}
+// 	return abilitiesState;
+// };
 
 // Internal Helpers
 function runCastSuccessEffects(abilityKey: AbilityKey, character: Model) {

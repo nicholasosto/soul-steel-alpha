@@ -10,36 +10,24 @@
 import ProfileService from "@rbxts/profileservice";
 import { Profile } from "@rbxts/profileservice/globals";
 import { Players } from "@rbxts/services";
+import { makeDefaultAbilityDTO, PersistantPlayerData } from "shared";
+import { DataRemotes } from "shared/network/data-remotes";
 
-export interface PlayerProfileData {
-	level: number;
-	experience: number;
-	Attributes: {
-		vitality: number;
-		intellect: number;
-		strength: number;
-		agility: number;
-		luck: number;
-	};
-	Abilities: {
-		[Melee: string]: boolean;
-		["Ice-Rain"]: boolean;
-	};
-}
-const DefaultData: PlayerProfileData = {
-	level: 1,
-	experience: 0,
-	Attributes: {
-		vitality: 10,
-		intellect: 10,
-		strength: 10,
-		agility: 10,
-		luck: 10,
-	},
-	Abilities: {
-		Melee: true,
-		"Ice-Rain": false,
-	},
+/* Remotes */
+DataRemotes.Server.Get("GET_PLAYER_DATA").SetCallback((player) => {
+	const profile = DataServiceInstance.GetProfile(player);
+	if (profile !== undefined) {
+		const persistantData = profile.Data as PersistantPlayerData;
+		return persistantData || undefined;
+	} else {
+		warn(`No profile found for player ${player.Name} when requesting data.`);
+		return undefined;
+	}
+});
+
+const DefaultData: PersistantPlayerData = {
+	Level: 1,
+	Abilities: makeDefaultAbilityDTO(),
 };
 
 // Datastore Name
@@ -48,7 +36,7 @@ const DATASTORE_NAME = "A_SoulSteelPlayerProfile";
 class DataService {
 	private static instance?: DataService;
 	private _profileStore = ProfileService.GetProfileStore(DATASTORE_NAME, DefaultData);
-	private profiles: Map<Player, Profile<PlayerProfileData>> = new Map();
+	private profiles: Map<Player, Profile<PersistantPlayerData>> = new Map();
 
 	private constructor() {
 		this._initConnections();
@@ -108,21 +96,13 @@ class DataService {
 			this.profiles.delete(player);
 		}
 	}
-	public GetProfile(player: Player): Profile<PlayerProfileData> | undefined {
+	public GetProfile(player: Player): Profile<PersistantPlayerData> | undefined {
 		return this.profiles.get(player);
 	}
-	public GetAbilities(player: Player): PlayerProfileData["Abilities"] | undefined {
+	public GetAbilities(player: Player): PersistantPlayerData["Abilities"] | undefined {
 		const profile = this.GetProfile(player);
 		if (profile) {
 			return profile.Data.Abilities;
-		}
-		warn(`No profile found for player ${player.Name}`);
-		return undefined;
-	}
-	public GetAttributes(player: Player): PlayerProfileData["Attributes"] | undefined {
-		const profile = this.GetProfile(player);
-		if (profile) {
-			return profile.Data.Attributes;
 		}
 		warn(`No profile found for player ${player.Name}`);
 		return undefined;

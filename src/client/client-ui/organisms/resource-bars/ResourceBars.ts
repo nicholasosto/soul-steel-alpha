@@ -11,11 +11,11 @@
 
 import Fusion, { Children, Computed, New } from "@rbxts/fusion";
 import { ProgressBar } from "../../atoms";
-import { ResourceKey } from "shared/catalogs/resources-catalog";
-import { PlayerResourceSlice } from "client/states";
+import { makeDefaultResourceState, ResourceKey } from "shared/catalogs/resources-catalog";
 import { ResourcesCatalog } from "shared/catalogs/resources-catalog";
+import { PlayerStateInstance } from "client/states";
 
-const PlayerResources = new PlayerResourceSlice();
+const PlayerResources = PlayerStateInstance.Resources;
 
 export interface ResourceBarProps extends Fusion.PropertyTable<Frame> {
 	resourceKey: ResourceKey;

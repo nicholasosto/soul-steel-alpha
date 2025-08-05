@@ -40,4 +40,3 @@
 export * from "./animation-helpers";
 export * from "./audio-helpers";
 export * from "./type-guards";
-export * from "./resource-helpers";

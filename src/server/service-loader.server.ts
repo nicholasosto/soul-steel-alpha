@@ -1,7 +1,6 @@
 import {
 	AbilityServiceInstance,
 	AnimationServiceInstance,
-	AttributeServiceInstance,
 	DataServiceInstance,
 	MessageServiceInstance,
 	ResourceServiceInstance,
@@ -13,7 +12,6 @@ import { SSEntity } from "shared/types";
 const Services = {
 	AbilityService: AbilityServiceInstance,
 	AnimationService: AnimationServiceInstance,
-	AttributeService: AttributeServiceInstance,
 	DataService: DataServiceInstance,
 	MessageService: MessageServiceInstance,
 	ResourceService: ResourceServiceInstance,

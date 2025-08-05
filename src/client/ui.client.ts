@@ -3,6 +3,7 @@ import { AbilityButtonBar, MenuButtonBar } from "./client-ui/organisms";
 import { New, Children } from "@rbxts/fusion";
 import { MessageStateInstance } from "./states/message-state";
 import { MessageBox } from "./client-ui";
+import { PlayerStateInstance } from "./states";
 //import { ResourceBars } from "./client-ui/organisms/resource-bars/ResourceBars";
 
 const playerGui = Players.LocalPlayer.WaitForChild("PlayerGui");
@@ -23,3 +24,4 @@ New("ScreenGui")({
 		}),
 	},
 }) as ScreenGui;
+print("PLAYERSTATEL :", PlayerStateInstance);

@@ -1,22 +1,23 @@
-// /**
-//  * @file src/client/main.client.ts
-//  * @module MainClient
-//  * @layer Client
-//  * @description Main client entry point - coordinates all client-side initialization
-//  *
-//  * @author Soul Steel Alpha Development Team
-//  * @since 1.0.0
-//  * @lastUpdated 2025-08-01 - Reorganized to use controller architecture
-//  */
+/**
+ * @file src/client/main.client.ts
+ * @module MainClient
+ * @layer Client
+ * @description Main client entry point - coordinates all client-side initialization
+ *
+ * @author Soul Steel Alpha Development Team
+ * @since 1.0.0
+ * @lastUpdated 2025-08-01 - Reorganized to use controller architecture
+ */
 
-// import { makeHello } from "shared/module";
-// import { ClientController } from "./controllers";
+import { PlayerStateInstance } from "./states/player-state";
+import { DataRemotes } from "shared/network/data-remotes";
 
-// print(makeHello("main.client.ts"));
+const playerData = DataRemotes.Client.Get("GET_PLAYER_DATA");
 
-// // Initialize the main client controller
-// // This will set up input handling, movement, and game actions
-// const clientController = ClientController.initialize();
-
-// // The client is now ready
-// print("Client initialization complete");
+playerData.CallServerAsync().then((data) => {
+	if (data) {
+		print("Player data received:", data);
+	} else {
+		warn("No player data received.");
+	}
+});
