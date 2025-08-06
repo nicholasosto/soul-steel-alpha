@@ -1,6 +1,6 @@
 # Soul Steel Alpha - Current Development Status
 
-**Last Updated**: August 1, 2025
+**Last Updated**: August 6, 2025
 **Generated Using**: Soul Steel Alpha MCP Server Analysis
 
 ## Project Overview
@@ -68,12 +68,25 @@
 
 - **✅ Remote Definitions**: Comprehensive remote event/function definitions
 - **✅ Message Broadcasting**: Server-to-client message system working
+- **✅ Combat Networking**: Full combat remote system with type safety
 - **🚧 Ability Activation**: Network calls defined but not fully implemented
 - **❌ Security Validation**: Server-side validation needs implementation
 
 ### ✅ Recently Implemented (Phase 2)
 
-#### 1. Unified NPC System (August 2025)
+#### 1. Combat System (August 6, 2025)
+
+- **✅ Combat Service**: Complete server-side combat management service
+- **✅ Basic Attack System**: Player vs Player and Player vs NPC attacks
+- **✅ Weapon System**: Three weapon types with distinct damage/crit stats
+- **✅ Damage Calculation**: Variable damage with critical hit system
+- **✅ Combat Sessions**: Session management for organized combat
+- **✅ Network Integration**: Full client-server combat communication
+- **✅ Resource Integration**: Health damage through ResourceService
+- **✅ Message Feedback**: Combat notifications via MessageService
+- **✅ Test Client**: Combat testing client with key bindings
+
+#### 2. Unified NPC System
 
 - **✅ Unified NPC Service**: Feature-configurable service with basic/enhanced modes
 - **✅ Performance Scaling**: Basic mode (50-100 NPCs), Enhanced mode (20-30 NPCs)
@@ -91,14 +104,6 @@
 - **✅ Combat-Ready NPCs**: NPCs can participate in combat with players
 - **✅ Resource Management**: Health, mana, stamina tracking for NPCs
 - **✅ Ability Usage**: NPCs can use abilities (Melee, Soul-Drain) against players
-
-#### 2. Basic Combat System
-
-- **✅ Combat Integration**: Basic damage calculation and health management
-- **✅ Resource Management**: Mana/stamina systems via ResourceService
-- **✅ NPC Targeting**: NPCs can target and attack players
-- **✅ Player-NPC Combat**: Player abilities now work on NPCs
-- **✅ Basic Attacks**: Melee combat through CombatService
 
 ### ❌ Still Not Yet Implemented
 
@@ -155,26 +160,26 @@
 
 ## Current Development Priorities
 
-Based on the analysis, here are the recommended next steps:
+Based on the analysis and recent Combat Service implementation, here are the updated next steps:
 
 ### High Priority (Core Gameplay)
 
-1. **Implement Ability Cooldowns**: Add timing restrictions to ability usage
-2. **Create Target Selection**: Mouse-based and area targeting systems
-3. **Add Combat Mechanics**: Health, damage, and healing systems
-4. **Connect Visual Effects**: Link abilities to particle/visual systems
+1. **Integrate Combat with Abilities**: Connect AbilityService with CombatService for ability-based attacks
+2. **Connect NPCs to Combat**: Link UnifiedNPCService with CombatService for NPC combat
+3. **Implement Ability Cooldowns**: Add timing restrictions to ability usage
+4. **Create Target Selection**: Mouse-based and area targeting systems
 
 ### Medium Priority (Polish & Features)
 
-1. **Complete UI Components**: Health bars, ability hotbars with cooldown displays
-2. **Player Progression**: Basic leveling and stat systems
-3. **Enhanced Networking**: Server validation and anti-cheat measures
-4. **Performance Optimization**: Efficient ability and effect management
+1. **Complete Combat UI**: Health bars, damage indicators, weapon displays
+2. **Add Visual Effects**: Link abilities to particle/visual systems
+3. **Player Progression**: Basic leveling and stat systems
+4. **Enhanced Networking**: Server validation and anti-cheat measures
 
 ### Low Priority (Enhancement)
 
-1. **Advanced Combat**: Status effects, buffs/debuffs
-2. **Equipment System**: Gear that modifies abilities
+1. **Advanced Combat**: Status effects, buffs/debuffs, combos
+2. **Equipment System**: Gear that modifies abilities and combat
 3. **Social Features**: Teams, guilds, leaderboards
 4. **Mobile Optimization**: Touch-friendly UI adaptations
 
@@ -183,12 +188,12 @@ Based on the analysis, here are the recommended next steps:
 ```text
 soul-steel-alpha/
 ├── src/
-│   ├── client/           # 11 TypeScript files
+│   ├── client/           # 12 TypeScript files
 │   │   ├── client-ui/    # Atomic UI components (13 files)
 │   │   ├── states/       # Reactive state management (3 files)
-│   │   └── *.client.ts   # Client scripts (5 files)
+│   │   └── *.client.ts   # Client scripts (6 files)
 │   ├── server/           # 8 TypeScript files  
-│   │   ├── services/     # Game services (6 files)
+│   │   ├── services/     # Game services (7 files)
 │   │   └── network/      # Server network handlers (1 file)
 │   └── shared/           # 39 TypeScript files
 │       ├── asset-ids/    # Asset management (4 files)
@@ -203,7 +208,7 @@ soul-steel-alpha/
 └── include/              # Lua runtime libraries
 ```
 
-**Total**: 59 TypeScript source files, ~4,000+ lines of code
+**Total**: 60 TypeScript source files, ~4,500+ lines of code
 
 ## Outstanding Tasks (TODO Analysis)
 

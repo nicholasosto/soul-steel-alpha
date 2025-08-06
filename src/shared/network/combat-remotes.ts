@@ -45,6 +45,9 @@ export const CombatRemotes = Definitions.Create({
 	ExecuteWeaponSkill: Definitions.ClientToServerEvent<[skillId: string, target?: SSEntity]>(),
 	RequestWeaponEquip: Definitions.ClientToServerEvent<[weaponId: string]>(),
 
+	// Demo/Testing - Client to Server
+	SpawnTestNPCs: Definitions.ClientToServerEvent<[]>(),
+
 	// Combat Events - Server to Client
 	CombatHit: Definitions.ServerToClientEvent<[CombatHitEvent]>(),
 	CombatMiss: Definitions.ServerToClientEvent<[attacker: SSEntity, target: SSEntity, reason: string]>(),

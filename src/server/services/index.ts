@@ -1,7 +1,9 @@
 export * from "./ability-service";
 export * from "./animation-service";
+export * from "./combat-service";
 export * from "./data-service";
 export * from "./message-service";
+export * from "./npc-demo-service";
 export * from "./resource-service";
 export * from "./zone-service";
 

@@ -174,16 +174,16 @@ The core magical system combining four primary forces:
 ### Core Gameplay Loop
 
 #### **Session Loop (5-15 minutes)**
-1. **Preparation**: Check abilities, manage resources, select equipment
+1. **Preparation**: Check abilities, manage resources, select equipment (equipment system planned)
 2. **Exploration**: Move through world zones, encounter NPCs and other players
 3. **Combat Encounters**: Engage in strategic battles using abilities and weapons
 4. **Progression**: Gain experience, improve abilities, acquire new capabilities
-5. **Recovery**: Return to safe zones for healing and equipment management
+5. **Recovery**: Return to safe zones for healing and equipment management (equipment system planned)
 
 #### **Progression Loop (Multiple Sessions)**
 1. **Skill Development**: Master existing abilities through practice and usage
 2. **Zone Advancement**: Access increasingly challenging areas
-3. **Equipment Acquisition**: Obtain better weapons and gear
+3. **Equipment Acquisition**: Obtain better weapons and gear (equipment system planned)
 4. **Character Specialization**: Develop focused playstyles and strategies
 
 ### Player Goals
@@ -222,7 +222,7 @@ The core magical system combining four primary forces:
 - **TypeScript Implementation**: Comprehensive type checking and validation
 - **Runtime Validation**: Guards against invalid data and edge cases
 - **Error Handling**: Graceful degradation and recovery mechanisms
-- **Testing Framework**: Automated validation of system functionality
+- **Testing Framework**: Automated validation of system functionality (planned, not yet implemented)
 
 #### **Performance Optimization**
 - **Efficient Asset Loading**: Streamlined loading of animations, images, and sounds
@@ -256,11 +256,12 @@ The core magical system combining four primary forces:
 - Visual indication and player feedback systems
 - Integration with other services for zone-specific behaviors
 
-#### **CombatService**
-- Damage calculation and application
-- Weapon system integration
-- Combo chain management and bonus calculation
-- Combat session tracking and analytics
+#### **CombatService** (Planned, not yet implemented)
+
+- Damage calculation and application (planned)
+- Weapon system integration (planned)
+- Combo chain management and bonus calculation (planned)
+- Combat session tracking and analytics (planned)
 
 ---
 
