@@ -1,4 +1,4 @@
 export * from "./atoms";
-export * from "./molecules/cooldown-button";
+export * from "./molecules";
 export * from "./organisms";
 export * from "./helpers";
