@@ -14,6 +14,7 @@ export const UI_SIZES = {
 	BUTTON_MEDIUM: UDim2.fromOffset(120, 50),
 	BUTTON_LARGE: UDim2.fromOffset(150, 60),
 	BUTTON_EXTRA_LARGE: UDim2.fromOffset(200, 60),
+	BUTTON_COOLDOWN: UDim2.fromOffset(60, 88), // 60x88 for ability button with cooldown bar
 
 	// Icon Button Sizes
 	ICON_SMALL: UDim2.fromOffset(50, 50),

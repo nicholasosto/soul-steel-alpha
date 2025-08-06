@@ -11,7 +11,7 @@
 
 import Fusion, { Children, Computed, New } from "@rbxts/fusion";
 import { ProgressBar } from "../../atoms";
-import { makeDefaultResourceState, ResourceKey } from "shared/catalogs/resources-catalog";
+import { ResourceKey } from "shared/catalogs/resources-catalog";
 import { ResourcesCatalog } from "shared/catalogs/resources-catalog";
 import { PlayerStateInstance } from "client/states";
 

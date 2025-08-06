@@ -1,1 +1,1 @@
-export * from "./AbilityButton";
+export * from "./cooldown-button";

@@ -8,6 +8,7 @@ import {
 import { Players } from "@rbxts/services";
 import { AbilityKey } from "shared";
 import { SSEntity } from "shared/types";
+import { HumanoidServicesInstance } from "./services/humanoid-services";
 
 const Services = {
 	AbilityService: AbilityServiceInstance,
@@ -15,6 +16,7 @@ const Services = {
 	DataService: DataServiceInstance,
 	MessageService: MessageServiceInstance,
 	ResourceService: ResourceServiceInstance,
+	HumanoidServices: HumanoidServicesInstance,
 };
 
 Players.PlayerAdded.Connect((player) => {
@@ -23,7 +25,7 @@ Players.PlayerAdded.Connect((player) => {
 		const testAbilityKeys: AbilityKey[] = ["Melee", "Ice-Rain"]; // Example ability keys
 		print(`Player ${player.Name} added character ${entity.Name}. Registering abilities...`);
 		Services.AbilityService.RegisterModel(entity, testAbilityKeys); // Register the character with the AbilityService
-	//	Services.ResourceService.initializeEntityHealth(entity); // Initialize health for the entity
+		//	Services.ResourceService.initializeEntityHealth(entity); // Initialize health for the entity
 	});
 });
 

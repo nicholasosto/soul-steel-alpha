@@ -44,6 +44,9 @@ export function IconButton(props: IconButtonProps) {
 		),
 		[Children]: {
 			IconImage: IconImage,
+			AspectRatioConstraint: New("UIAspectRatioConstraint")({
+				AspectRatio: 1, // Maintain square aspect ratio
+			}),
 		},
 		[OnEvent("MouseEnter")]: () => isHovered.set(true),
 		[OnEvent("MouseLeave")]: () => isHovered.set(false),

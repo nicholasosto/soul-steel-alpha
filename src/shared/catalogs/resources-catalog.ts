@@ -20,13 +20,12 @@ export type ResourceDTO = {
 	};
 };
 
-/* Resource State - Current Values for Resources */
+/* Resource State and State Map - Current Values for Resources */
 export type ResourceState = {
 	current: Value<number>; // Current value of the resource
 	max: Value<number>; // Maximum value of the resource
 	percentage: Computed<number>; // Percentage of current/max (0-1)
 };
-
 export type ResourceStateMap = {
 	[Key in ResourceKey]: ResourceState; // Map of resource states by key
 };
@@ -57,22 +56,6 @@ export const ResourcesCatalog: Record<ResourceKey, ResourceMeta> = {
 		color: Color3.fromRGB(50, 220, 50),
 	},
 } satisfies Record<ResourceKey, ResourceMeta>;
-
-export const makeDefaultResourceState = (): ResourceStateMap => {
-	const resourceState: ResourceStateMap = {} as ResourceStateMap;
-	ForKeys(RESOURCE_KEYS, (key) => {
-		const resourceMeta = ResourcesCatalog[key];
-		resourceState[key] = {
-			meta: resourceMeta,
-			current: Value(resourceMeta.defaultCurrent ?? 100), // Default current value, can be adjusted per resource
-			max: Value(resourceMeta.defaultMax ?? 100), // Default max value, can be adjusted per resource
-			percentage: Computed(() => {
-				return resourceState[key].current.get() / resourceState[key].max.get();
-			}),
-		};
-	});
-	return resourceState;
-};
 
 // Helper: make a default ResourceDTO
 export const makeDefaultResourceDTO = (): ResourceDTO => {
@@ -107,7 +90,6 @@ export const makeResourceStateFromDTO = (dto: ResourceDTO): ResourceStateMap => 
 	}
 	return resourceState;
 };
-
 
 /* -- Remotes -- */
 export const ResourceRemotes = Definitions.Create({

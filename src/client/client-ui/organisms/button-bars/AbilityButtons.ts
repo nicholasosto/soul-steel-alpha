@@ -1,7 +1,7 @@
 import { HorizontalButtonBar } from "./ButtonBar";
 import { GameActionController } from "client/controllers";
 import { AbilityCatalog, AbilityKey } from "shared/catalogs";
-import { AbilityButton } from "client/client-ui/molecules";
+import { AbilityButton } from "client/client-ui/molecules/cooldown-button";
 
 interface AbilityBarProps {
 	keys: Array<AbilityKey>;
