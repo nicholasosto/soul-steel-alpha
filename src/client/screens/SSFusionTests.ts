@@ -35,8 +35,8 @@ export const ssFusionUI = New("ScreenGui")({
 		}),
 		CooldownButton: CooldownButton({
 			icon: ImageConstants.Ability.Blood_Siphon,
+			Size: UDim2.fromOffset(70, 90),
 			cooldown: 3,
-			Size: new UDim2(0.3, 0, 0.05, 0),
 			Position: new UDim2(0.35, 0, 0.4, 0),
 		}),
 	},

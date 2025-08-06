@@ -10,5 +10,15 @@
 		"editor.formatOnSave": true
 	},
 	"eslint.run": "onType",
-	"eslint.format.enable": true
+	"eslint.format.enable": true,
+	"chat.mcp.serverSampling": {
+		"soul-steel-alpha/.vscode/mcp.json: soul-steel-alpha-mcp": {
+			"allowedModels": [
+				"github.copilot-chat/gpt-4.1",
+				"github.copilot-chat/claude-sonnet-4",
+				"github.copilot-chat/OpenAI-gpt-4.1",
+				"github.copilot-chat/o4-mini"
+			]
+		}
+	}
 }
