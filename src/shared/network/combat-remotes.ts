@@ -18,7 +18,7 @@ export interface CombatHitEvent {
 	weaponId: string;
 	damage: number;
 	isCritical: boolean;
-	hitType: "basic_attack" | "weapon_skill" | "combo_finisher";
+	hitType: "basic_attack" | "weapon_skill" | "combo_finisher" | "ability_attack";
 }
 
 export interface ComboEvent {
@@ -42,6 +42,7 @@ export interface WeaponEquipEvent {
 export const CombatRemotes = Definitions.Create({
 	// Combat Actions - Client to Server
 	ExecuteBasicAttack: Definitions.ClientToServerEvent<[target: SSEntity, weaponId?: string]>(),
+	ExecuteAbilityAttack: Definitions.ClientToServerEvent<[abilityKey: string, target?: SSEntity]>(),
 	ExecuteWeaponSkill: Definitions.ClientToServerEvent<[skillId: string, target?: SSEntity]>(),
 	RequestWeaponEquip: Definitions.ClientToServerEvent<[weaponId: string]>(),
 

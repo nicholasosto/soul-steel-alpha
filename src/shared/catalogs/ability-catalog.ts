@@ -24,6 +24,18 @@ export interface AbilityMeta {
 	/** Resource cost required to activate the ability (e.g., mana, energy, stamina) */
 	cost: number; // Resource cost, e.g., mana or energy
 
+	/** Base damage dealt by this ability (if it's a damage ability) */
+	baseDamage?: number; // Optional damage value
+
+	/** Critical hit chance (0.0 to 1.0) for this ability */
+	criticalChance?: number; // Optional crit chance
+
+	/** Critical hit damage multiplier */
+	criticalMultiplier?: number; // Optional crit multiplier
+
+	/** Whether this ability requires a target to be selected */
+	requiresTarget?: boolean; // Whether ability needs a target
+
 	/** User-friendly display name shown in the UI */
 	displayName: string;
 
@@ -165,6 +177,10 @@ export const AbilityCatalog: Record<AbilityKey, AbilityMeta> = {
 		cooldown: 0.5,
 		duration: 0.5,
 		cost: 5,
+		baseDamage: 15,
+		criticalChance: 0.1, // 10%
+		criticalMultiplier: 1.8,
+		requiresTarget: true,
 		icon: ImageConstants.Ability.Melee,
 		animationSet: AnimationSets.MeleeAnimationSet,
 		OnStartSuccess: (entity, target) => {
@@ -183,6 +199,10 @@ export const AbilityCatalog: Record<AbilityKey, AbilityMeta> = {
 		cooldown: 10,
 		duration: 3,
 		cost: 20,
+		baseDamage: 35,
+		criticalChance: 0.15, // 15%
+		criticalMultiplier: 2.2,
+		requiresTarget: true,
 		castEffectKey: "Animal_Cast",
 		icon: ImageConstants.Ability.Ice_Rain,
 		animationSet: AnimationSets.IceRainAnimationSet,
@@ -202,6 +222,10 @@ export const AbilityCatalog: Record<AbilityKey, AbilityMeta> = {
 		cooldown: 15,
 		duration: 4,
 		cost: 30,
+		baseDamage: 50,
+		criticalChance: 0.12, // 12%
+		criticalMultiplier: 2.5,
+		requiresTarget: false, // Area effect ability
 		castEffectKey: "Animal_Cast",
 		icon: ImageConstants.Ability.Earthquake,
 		animationSet: AnimationSets.EarthquakeAnimationSet,
@@ -221,6 +245,10 @@ export const AbilityCatalog: Record<AbilityKey, AbilityMeta> = {
 		cooldown: 12,
 		duration: 5,
 		cost: 25,
+		baseDamage: 25,
+		criticalChance: 0.2, // 20% - higher crit chance for life steal
+		criticalMultiplier: 2.0,
+		requiresTarget: true,
 		icon: ImageConstants.Ability.Soul_Drain,
 		animationSet: AnimationSets.SoulDrainAnimationSet,
 		OnInterrupt: (entity) => {

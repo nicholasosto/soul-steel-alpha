@@ -89,6 +89,46 @@ function testCombatSystem(): void {
 			print("Requesting NPC demo start");
 			CombatRemotes.Client.Get("SpawnTestNPCs").SendToServer();
 		}
+
+		// Ability keys
+		if (input.KeyCode === Enum.KeyCode.Q) {
+			// Melee ability
+			const target = findNearestTarget("all");
+			if (target !== undefined) {
+				print(`Using Melee ability on ${target.Name}`);
+				CombatRemotes.Client.Get("ExecuteAbilityAttack").SendToServer("Melee", target);
+			} else {
+				print("No target found for Melee ability");
+			}
+		}
+
+		if (input.KeyCode === Enum.KeyCode.E) {
+			// Ice Rain ability
+			const target = findNearestTarget("all");
+			if (target !== undefined) {
+				print(`Using Ice Rain ability on ${target.Name}`);
+				CombatRemotes.Client.Get("ExecuteAbilityAttack").SendToServer("Ice-Rain", target);
+			} else {
+				print("No target found for Ice Rain ability");
+			}
+		}
+
+		if (input.KeyCode === Enum.KeyCode.F) {
+			// Earthquake ability (area effect, no target needed)
+			print("Using Earthquake ability!");
+			CombatRemotes.Client.Get("ExecuteAbilityAttack").SendToServer("Earthquake");
+		}
+
+		if (input.KeyCode === Enum.KeyCode.V) {
+			// Soul Drain ability
+			const target = findNearestTarget("all");
+			if (target !== undefined) {
+				print(`Using Soul Drain ability on ${target.Name}`);
+				CombatRemotes.Client.Get("ExecuteAbilityAttack").SendToServer("Soul-Drain", target);
+			} else {
+				print("No target found for Soul Drain ability");
+			}
+		}
 	});
 
 	print("Combat Test Controls:");
@@ -154,4 +194,9 @@ print("  1 - Equip Fists");
 print("  2 - Equip Basic Sword");
 print("  3 - Equip Soul Blade");
 print("  R - Spawn 3 test NPCs and run health demo");
+print("Abilities:");
+print("  Q - Melee ability (15 dmg, 10% crit)");
+print("  E - Ice Rain ability (35 dmg, 15% crit)");
+print("  F - Earthquake ability (50 dmg, area effect)");
+print("  V - Soul Drain ability (25 dmg + heal)");
 testCombatSystem();

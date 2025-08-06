@@ -27,6 +27,7 @@ import { MessageType, MessageMetaRecord } from "shared/types";
 import { ResourceServiceInstance } from "./resource-service";
 import { MessageServiceInstance } from "./message-service";
 import { NPCDemoServiceInstance } from "./npc-demo-service";
+import { AbilityCatalog, AbilityKey } from "shared/catalogs/ability-catalog";
 
 /**
  * Combat session data structure
@@ -150,6 +151,11 @@ class CombatService {
 			this.handleBasicAttack(player, target, weaponId);
 		});
 
+		// Ability attack handler
+		CombatRemotes.Server.Get("ExecuteAbilityAttack").Connect((player, abilityKey, target) => {
+			this.handleAbilityAttack(player, abilityKey, target);
+		});
+
 		// Weapon equip handler
 		CombatRemotes.Server.Get("RequestWeaponEquip").Connect((player, weaponId) => {
 			this.handleWeaponEquip(player, weaponId);
@@ -263,6 +269,203 @@ class CombatService {
 			MessageServiceInstance.SendMessageToPlayer(
 				attacker,
 				this.createMessage(`Your attack missed ${target.Name}!`, "warning"),
+			);
+		}
+	}
+
+	/**
+	 * Handle ability-based attack execution
+	 */
+	private handleAbilityAttack(attacker: Player, abilityKey: string, target?: SSEntity): void {
+		// Get attacker character
+		const attackerCharacter = attacker.Character;
+		if (!attackerCharacter || !isSSEntity(attackerCharacter)) {
+			warn(`CombatService: Invalid attacker character for ${attacker.Name}`);
+			return;
+		}
+
+		// Get ability data
+		const ability = AbilityCatalog[abilityKey as AbilityKey];
+		if (!ability) {
+			MessageServiceInstance.SendMessageToPlayer(
+				attacker,
+				this.createMessage(`Unknown ability: ${abilityKey}`, "error"),
+			);
+			return;
+		}
+
+		// Check if ability requires target
+		if (ability.requiresTarget && !target) {
+			MessageServiceInstance.SendMessageToPlayer(
+				attacker,
+				this.createMessage(`${ability.displayName} requires a target!`, "warning"),
+			);
+			return;
+		}
+
+		// Validate target if provided
+		if (target && !isSSEntity(target)) {
+			warn(`CombatService: Invalid target for ability ${abilityKey} from ${attacker.Name}`);
+			return;
+		}
+
+		// Prevent self-attack (unless it's a healing ability)
+		if (target && attackerCharacter === target && ability.baseDamage && ability.baseDamage > 0) {
+			MessageServiceInstance.SendMessageToPlayer(
+				attacker,
+				this.createMessage("You cannot attack yourself!", "warning"),
+			);
+			return;
+		}
+
+		// Check if ability deals damage
+		if (!ability.baseDamage || ability.baseDamage <= 0) {
+			MessageServiceInstance.SendMessageToPlayer(
+				attacker,
+				this.createMessage(`${ability.displayName} is not a damage ability!`, "warning"),
+			);
+			return;
+		}
+
+		// Calculate ability damage
+		const baseDamage = ability.baseDamage;
+		const critChance = ability.criticalChance || 0.05; // Default 5% crit
+		const critMultiplier = ability.criticalMultiplier || 1.5; // Default 1.5x crit
+
+		// Roll for critical hit
+		const isCritical = math.random() < critChance;
+
+		// Calculate final damage with variance
+		const variance = 0.85 + math.random() * 0.3; // 85%-115% damage variance
+		let finalDamage = math.floor(baseDamage * variance);
+		if (isCritical) {
+			finalDamage = math.floor(finalDamage * critMultiplier);
+		}
+
+		// Handle different ability types
+		if (abilityKey === "Earthquake") {
+			// Area effect - find nearby targets
+			this.handleAreaAbility(attackerCharacter, ability, finalDamage, isCritical);
+		} else if (target) {
+			// Single target ability
+			this.handleSingleTargetAbility(attackerCharacter, target, ability, finalDamage, isCritical);
+		}
+
+		// Handle special ability effects
+		if (abilityKey === "Soul-Drain" && target) {
+			// Heal attacker for 30% of damage dealt
+			const healAmount = math.floor(finalDamage * 0.3);
+			ResourceServiceInstance.ModifyResource(attacker, "health", healAmount);
+			MessageServiceInstance.SendMessageToPlayer(
+				attacker,
+				this.createMessage(`Soul Drain healed you for ${healAmount} health!`, "success"),
+			);
+		}
+	}
+
+	/**
+	 * Handle single target ability damage
+	 */
+	private handleSingleTargetAbility(
+		attacker: SSEntity,
+		target: SSEntity,
+		ability: (typeof AbilityCatalog)[AbilityKey],
+		damage: number,
+		isCritical: boolean,
+	): void {
+		// Apply damage
+		const success = this.applyDamage(target, damage);
+
+		if (success) {
+			// Create combat hit event
+			const hitEvent: CombatHitEvent = {
+				attacker,
+				target,
+				weaponId: ability.abilityKey,
+				damage,
+				isCritical,
+				hitType: "ability_attack",
+			};
+
+			// Broadcast combat hit
+			CombatRemotes.Server.Get("CombatHit").SendToAllPlayers(hitEvent);
+
+			// Send feedback messages
+			if (attacker.IsA("Player")) {
+				MessageServiceInstance.SendMessageToPlayer(
+					attacker,
+					this.createMessage(
+						`${ability.displayName} dealt ${damage} damage to ${target.Name}${isCritical ? " (Critical!)" : ""}`,
+						"success",
+					),
+				);
+			}
+
+			if (target.IsA("Player")) {
+				MessageServiceInstance.SendMessageToPlayer(
+					target,
+					this.createMessage(
+						`You took ${damage} damage from ${attacker.Name}'s ${ability.displayName}${isCritical ? " (Critical!)" : ""}`,
+						"warning",
+					),
+				);
+			}
+
+			print(`CombatService: ${attacker.Name} used ${ability.displayName} for ${damage} damage on ${target.Name}`);
+		}
+	}
+
+	/**
+	 * Handle area effect ability damage
+	 */
+	private handleAreaAbility(
+		attacker: SSEntity,
+		ability: (typeof AbilityCatalog)[AbilityKey],
+		damage: number,
+		isCritical: boolean,
+	): void {
+		// Find all entities within range (for now, simple implementation)
+		const attackerPosition = attacker.HumanoidRootPart?.Position;
+		if (!attackerPosition) return;
+
+		const targets: SSEntity[] = [];
+		const AREA_RANGE = 15; // 15 stud radius
+
+		// Check players
+		for (const player of Players.GetPlayers()) {
+			if (player.Character && isSSEntity(player.Character) && player.Character !== attacker) {
+				const targetPosition = player.Character.HumanoidRootPart?.Position;
+				if (targetPosition) {
+					const distance = attackerPosition.sub(targetPosition).Magnitude;
+					if (distance <= AREA_RANGE) {
+						targets.push(player.Character);
+					}
+				}
+			}
+		}
+
+		// Check NPCs in workspace
+		for (const child of Workspace.GetChildren()) {
+			if (classIs(child, "Model") && isSSEntity(child) && child !== attacker) {
+				const targetPosition = child.HumanoidRootPart?.Position;
+				if (targetPosition) {
+					const distance = attackerPosition.sub(targetPosition).Magnitude;
+					if (distance <= AREA_RANGE) {
+						targets.push(child);
+					}
+				}
+			}
+		}
+
+		// Apply damage to all targets
+		for (const target of targets) {
+			this.handleSingleTargetAbility(attacker, target, ability, damage, isCritical);
+		}
+
+		if (attacker.IsA("Player")) {
+			MessageServiceInstance.SendMessageToPlayer(
+				attacker,
+				this.createMessage(`${ability.displayName} hit ${targets.size()} targets!`, "success"),
 			);
 		}
 	}
