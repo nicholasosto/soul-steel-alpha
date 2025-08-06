@@ -22,6 +22,14 @@ class PlayerState {
 	public Level: Value<number> = Value(1); // Default level, can be adjusted
 	private constructor(playerData?: PlayerDTO) {
 		warn("PlayerState initialized for", this.player.Name, "with data:", playerData);
+
+		// Setup resource update listener immediately in constructor
+		ResourcesUpdated.Connect((resources) => {
+			if (resources) {
+				this.UpdateResources(resources);
+				print("Real-time resource update received:", resources);
+			}
+		});
 	}
 	public static GetInstance(): PlayerState {
 		if (this.instance === undefined) {
@@ -34,14 +42,6 @@ class PlayerState {
 		// Initialize any necessary connections or listeners here
 		const dataPromise = fetchPersistantData.CallServerAsync();
 		const resourcesPromise = FetchResources.CallServerAsync();
-
-		// Listen for real-time resource updates from server
-		ResourcesUpdated.Connect((resources) => {
-			if (resources && this.instance) {
-				this.instance.UpdateResources(resources);
-				print("Real-time resource update received:", resources);
-			}
-		});
 
 		dataPromise.then((data) => {
 			if (data) {
@@ -88,20 +88,25 @@ class PlayerState {
 
 	public UpdateResources(resourceDTO: ResourceDTO): void {
 		if (resourceDTO !== undefined) {
+			print("UpdateResources called with:", resourceDTO);
+
 			// Update existing resource states with new values from server
 			if (this.Resources.Health && resourceDTO.Health) {
+				print(`Setting Health: ${resourceDTO.Health.current}/${resourceDTO.Health.max}`);
 				this.Resources.Health.current.set(resourceDTO.Health.current);
 				this.Resources.Health.max.set(resourceDTO.Health.max);
 			}
 			if (this.Resources.Mana && resourceDTO.Mana) {
+				print(`Setting Mana: ${resourceDTO.Mana.current}/${resourceDTO.Mana.max}`);
 				this.Resources.Mana.current.set(resourceDTO.Mana.current);
 				this.Resources.Mana.max.set(resourceDTO.Mana.max);
 			}
 			if (this.Resources.Stamina && resourceDTO.Stamina) {
+				print(`Setting Stamina: ${resourceDTO.Stamina.current}/${resourceDTO.Stamina.max}`);
 				this.Resources.Stamina.current.set(resourceDTO.Stamina.current);
 				this.Resources.Stamina.max.set(resourceDTO.Stamina.max);
 			}
-			print("Player resources updated:", resourceDTO);
+			print("Player resources updated successfully");
 		} else {
 			warn("No resource DTO provided for update.");
 		}
