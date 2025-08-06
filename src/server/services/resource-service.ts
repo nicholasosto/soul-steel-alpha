@@ -74,21 +74,32 @@ export class ResourceService {
 			return false;
 		}
 
-		switch (resourceType) {
-			case "health":
-				resources.Health.current += amount;
-				break;
-			case "mana":
-				resources.Mana.current += amount;
-				break;
-			case "stamina":
-				resources.Stamina.current += amount;
-				break;
-			default:
-				warn(`ResourceService: Invalid resource type ${resourceType}`);
-				return false;
+		// Get the specific resource and apply change
+		if (resourceType === "health") {
+			const resource = resources.Health;
+			const newValue = resource.current + amount;
+			resource.current = math.max(0, math.min(newValue, resource.max));
+		} else if (resourceType === "mana") {
+			const resource = resources.Mana;
+			const newValue = resource.current + amount;
+			resource.current = math.max(0, math.min(newValue, resource.max));
+		} else if (resourceType === "stamina") {
+			const resource = resources.Stamina;
+			const newValue = resource.current + amount;
+			resource.current = math.max(0, math.min(newValue, resource.max));
+		} else {
+			warn(`ResourceService: Invalid resource type ${resourceType}`);
+			return false;
 		}
 
+		// Log the change for debugging
+		const currentResource =
+			resourceType === "health" ? resources.Health : resourceType === "mana" ? resources.Mana : resources.Stamina;
+		print(
+			`ResourceService: ${player.Name} ${resourceType} changed by ${amount} to ${currentResource.current}/${currentResource.max}`,
+		);
+
+		// Send update to client
 		SendResourceUpdate.SendToPlayer(player, resources);
 		return true;
 	}

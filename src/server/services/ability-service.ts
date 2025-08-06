@@ -83,6 +83,14 @@ class AbilityService {
 	}
 
 	/**
+	 * Public method to activate an ability from other services (like CombatService)
+	 * This allows other services to trigger abilities while maintaining proper validation
+	 */
+	public ActivateAbilityForCombat(player: Player, abilityKey: AbilityKey): boolean {
+		return this.handleAbilityStart(player, abilityKey);
+	}
+
+	/**
 	 * Initializes remote event handlers for client-server communication.
 	 * Sets up the START_ABILITY remote to handle ability activation requests.
 	 *

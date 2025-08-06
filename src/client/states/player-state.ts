@@ -6,11 +6,13 @@ import {
 	makeResourceStateFromDTO,
 	ResourceRemotes,
 	ResourceStateMap,
+	ResourceDTO,
 } from "shared/catalogs/resources-catalog";
 import { DataRemotes } from "shared/network/data-remotes";
 
 const fetchPersistantData = DataRemotes.Client.Get("GET_PLAYER_DATA");
 const FetchResources = ResourceRemotes.Client.Get("FetchResources");
+const ResourcesUpdated = ResourceRemotes.Client.Get("ResourcesUpdated");
 
 class PlayerState {
 	private static instance?: PlayerState;
@@ -32,6 +34,14 @@ class PlayerState {
 		// Initialize any necessary connections or listeners here
 		const dataPromise = fetchPersistantData.CallServerAsync();
 		const resourcesPromise = FetchResources.CallServerAsync();
+
+		// Listen for real-time resource updates from server
+		ResourcesUpdated.Connect((resources) => {
+			if (resources && this.instance) {
+				this.instance.UpdateResources(resources);
+				print("Real-time resource update received:", resources);
+			}
+		});
 
 		dataPromise.then((data) => {
 			if (data) {
@@ -73,6 +83,27 @@ class PlayerState {
 			print("Player resources set:", resources);
 		} else {
 			warn("No player resources provided.");
+		}
+	}
+
+	public UpdateResources(resourceDTO: ResourceDTO): void {
+		if (resourceDTO !== undefined) {
+			// Update existing resource states with new values from server
+			if (this.Resources.Health && resourceDTO.Health) {
+				this.Resources.Health.current.set(resourceDTO.Health.current);
+				this.Resources.Health.max.set(resourceDTO.Health.max);
+			}
+			if (this.Resources.Mana && resourceDTO.Mana) {
+				this.Resources.Mana.current.set(resourceDTO.Mana.current);
+				this.Resources.Mana.max.set(resourceDTO.Mana.max);
+			}
+			if (this.Resources.Stamina && resourceDTO.Stamina) {
+				this.Resources.Stamina.current.set(resourceDTO.Stamina.current);
+				this.Resources.Stamina.max.set(resourceDTO.Stamina.max);
+			}
+			print("Player resources updated:", resourceDTO);
+		} else {
+			warn("No resource DTO provided for update.");
 		}
 	}
 }

@@ -28,6 +28,7 @@ import { ResourceServiceInstance } from "./resource-service";
 import { MessageServiceInstance } from "./message-service";
 import { NPCDemoServiceInstance } from "./npc-demo-service";
 import { AbilityCatalog, AbilityKey } from "shared/catalogs/ability-catalog";
+import { AbilityServiceInstance } from "./ability-service";
 
 /**
  * Combat session data structure
@@ -294,6 +295,14 @@ class CombatService {
 			return;
 		}
 
+		// Use AbilityService to validate and consume resources
+		// This will check cooldowns, mana costs, and trigger ability effects
+		const abilitySuccess = AbilityServiceInstance.ActivateAbilityForCombat(attacker, abilityKey as AbilityKey);
+		if (abilitySuccess === false) {
+			// AbilityService already sent failure messages
+			return;
+		}
+
 		// Check if ability requires target
 		if (ability.requiresTarget && !target) {
 			MessageServiceInstance.SendMessageToPlayer(
@@ -310,7 +319,7 @@ class CombatService {
 		}
 
 		// Prevent self-attack (unless it's a healing ability)
-		if (target && attackerCharacter === target && ability.baseDamage && ability.baseDamage > 0) {
+		if (target && attackerCharacter === target && ability.baseDamage !== undefined && ability.baseDamage > 0) {
 			MessageServiceInstance.SendMessageToPlayer(
 				attacker,
 				this.createMessage("You cannot attack yourself!", "warning"),
@@ -319,7 +328,7 @@ class CombatService {
 		}
 
 		// Check if ability deals damage
-		if (!ability.baseDamage || ability.baseDamage <= 0) {
+		if (ability.baseDamage === undefined || ability.baseDamage <= 0) {
 			MessageServiceInstance.SendMessageToPlayer(
 				attacker,
 				this.createMessage(`${ability.displayName} is not a damage ability!`, "warning"),
@@ -329,8 +338,8 @@ class CombatService {
 
 		// Calculate ability damage
 		const baseDamage = ability.baseDamage;
-		const critChance = ability.criticalChance || 0.05; // Default 5% crit
-		const critMultiplier = ability.criticalMultiplier || 1.5; // Default 1.5x crit
+		const critChance = ability.criticalChance !== undefined ? ability.criticalChance : 0.05; // Default 5% crit
+		const critMultiplier = ability.criticalMultiplier !== undefined ? ability.criticalMultiplier : 1.5; // Default 1.5x crit
 
 		// Roll for critical hit
 		const isCritical = math.random() < critChance;
@@ -548,10 +557,28 @@ class CombatService {
 			// Apply damage to player through ResourceService
 			return ResourceServiceInstance.ModifyResource(target, "health", -damage);
 		} else {
-			// TODO: Handle NPC damage through UnifiedNPCService
-			// For now, assume success
-			print(`CombatService: Would apply ${damage} damage to NPC ${target.Name}`);
-			return true;
+			// Handle NPC damage directly through Humanoid
+			const humanoid = target.FindFirstChild("Humanoid") as Humanoid;
+			if (humanoid) {
+				const currentHealth = humanoid.Health;
+				const newHealth = math.max(0, currentHealth - damage);
+				humanoid.Health = newHealth;
+
+				print(
+					`CombatService: Applied ${damage} damage to NPC ${target.Name} (${currentHealth} -> ${newHealth})`,
+				);
+
+				// Check if NPC died
+				if (newHealth <= 0) {
+					print(`CombatService: NPC ${target.Name} was defeated!`);
+					// Optional: Add death effects here
+				}
+
+				return true;
+			} else {
+				warn(`CombatService: NPC ${target.Name} has no Humanoid to damage`);
+				return false;
+			}
 		}
 	}
 
