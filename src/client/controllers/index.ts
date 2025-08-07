@@ -7,4 +7,5 @@
 export { ClientController } from "./ClientController";
 export { InputController, InputAction } from "./InputController";
 export { MovementController } from "./MovementController";
-export { GameActionController } from "./GameActionController";
+export { AbilityController } from "./AbilityController";
+export { ZoneController } from "./ZoneController";

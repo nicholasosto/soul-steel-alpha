@@ -34,18 +34,14 @@ export function ResourceBar(props: ResourceBarProps): Frame | undefined {
 		warn(`ResourceBar: Invalid resource key "${props.resourceKey}"`);
 		return New("Frame")({}); // Return empty frame if invalid
 	}
-
+	const computedResource = PlayerStateInstance.getComputedResource(props.resourceKey);
 	const resourceBar = ProgressBar({
 		Name: `${resourceMeta.displayName}_Bar`,
-		progress: resourceState.current,
+		progress: computedResource,
 		maxValue: resourceState.max,
 		fillColor: resourceMeta.color,
 		showLabel: props.showLabel ?? true, // Default to true for visibility
-		labelText: Computed(() => {
-			const current = math.floor(resourceState.current.get()) || 0; // Ensure current is a number
-			const max = math.floor(resourceState.max.get()) || 1; // Avoid division by zero
-			return `${resourceMeta.displayName}: ${current}/${max}`;
-		}),
+		labelText: PlayerStateInstance.getComputedLabel(props.resourceKey), // New: Use computed label
 		Size: new UDim2(1, 0, 0, 30), // New: Consistent height
 		...props, // Merge additional props (e.g., Position if needed)
 	});
@@ -61,7 +57,7 @@ export function ResourceBars(props: ResourceBarsProps): Frame {
 	const resourceKeys = props.resourceKeys ?? ["Health", "Mana", "Stamina"]; // Default keys
 
 	return New("Frame")({
-		Name: "ResourceBarDTOContainer",
+		Name: "ResourceBarContainer",
 		Size: props.Size ?? UDim2.fromOffset(300, 150),
 		Position: props.Position ?? new UDim2(0.05, 0, 0.05, 0),
 		BackgroundTransparency: 1,

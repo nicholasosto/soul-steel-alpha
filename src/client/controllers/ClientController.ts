@@ -4,14 +4,28 @@
  * @layer Client/Controllers
  * @description Main client controller that coordinates all other controllers
  *
+ * @responsibility Central coordination ONLY - no direct game logic
+ * @responsibilities
+ * - Initialize and manage controller lifecycle
+ * - Route input actions to appropriate controllers
+ * - Provide access to sub-controllers
+ * - System integration and cleanup
+ *
+ * @anti_patterns
+ * - DO NOT add game logic (abilities, movement, zones)
+ * - DO NOT handle UI rendering or state management
+ * - DO NOT make direct network calls
+ * - DO NOT duplicate functionality from sub-controllers
+ *
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
- * @lastUpdated 2025-08-01 - Created to replace scattered client initialization
+ * @lastUpdated 2025-08-07 - Added architectural documentation and constraints
  */
 
 import { InputController, InputAction } from "./InputController";
 import { MovementController } from "./MovementController";
-import { GameActionController } from "./GameActionController";
+import { AbilityController } from "./AbilityController";
+import { ZoneController } from "./ZoneController";
 
 /**
  * ClientController is the main coordinator for all client-side logic.
@@ -21,13 +35,15 @@ export class ClientController {
 	private static instance: ClientController | undefined;
 	private inputController: InputController;
 	private movementController: MovementController;
-	private gameActionController: GameActionController;
+	private abilityController: AbilityController;
+	private zoneController: ZoneController;
 
 	private constructor() {
 		// Initialize all controllers
 		this.inputController = InputController.getInstance();
 		this.movementController = MovementController.getInstance();
-		this.gameActionController = GameActionController.getInstance();
+		this.abilityController = AbilityController.getInstance();
+		this.zoneController = ZoneController.getInstance();
 
 		// Set up action handling
 		this.inputController.onAction((action: InputAction) => {
@@ -63,23 +79,23 @@ export class ClientController {
 				break;
 
 			case "ABILITY_ACTIVATE":
-				this.gameActionController.activateAbility(action.abilityKey);
+				this.abilityController.activateAbility(action.abilityKey);
 				break;
 
 			case "EFFECT_TRIGGER":
-				this.gameActionController.triggerEffect(action.effectKey);
+				this.abilityController.triggerEffect(action.effectKey);
 				break;
 
 			case "MOUSE_LEFT_CLICK":
-				this.gameActionController.handleMouseClick("left");
+				this.abilityController.handleMouseClick("left");
 				break;
 
 			case "MOUSE_RIGHT_CLICK":
-				this.gameActionController.handleMouseClick("right");
+				this.abilityController.handleMouseClick("right");
 				break;
 
 			case "DEBUG_KEY_PRESS":
-				this.gameActionController.handleDebugKey(action.keyName);
+				this.abilityController.handleDebugKey(action.keyName);
 				break;
 
 			default:
@@ -94,8 +110,12 @@ export class ClientController {
 		return this.movementController;
 	}
 
-	public getGameActionController(): GameActionController {
-		return this.gameActionController;
+	public getAbilityController(): AbilityController {
+		return this.abilityController;
+	}
+
+	public getZoneController(): ZoneController {
+		return this.zoneController;
 	}
 
 	public getInputController(): InputController {
@@ -117,6 +137,7 @@ export class ClientController {
 	public destroy(): void {
 		this.inputController.destroy();
 		this.movementController.destroy();
-		// gameActionController doesn't need cleanup
+		this.abilityController.destroy();
+		this.zoneController.destroy();
 	}
 }

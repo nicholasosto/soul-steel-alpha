@@ -50,6 +50,24 @@ export class ResourceService {
 			const resources = makeDefaultResourceDTO();
 			this.entityResources.set(player, resources);
 			SendResourceUpdate.SendToPlayer(player, resources);
+
+			/* Character added connection */
+			player.CharacterAdded.Connect((character) => {
+				print(`ResourceService: Character added for player ${player.Name}`);
+				const humanoid = character.FindFirstChildOfClass("Humanoid");
+				if (humanoid) {
+					const connections: RBXScriptConnection[] = [];
+					connections.push(
+						humanoid.HealthChanged.Connect((newHealth) => {
+							print(`ResourceService: Health changed for ${player.Name} to ${newHealth}`);
+							this.ModifyResource(player, "health", newHealth);
+						}),
+					);
+					this.humanoidConnections.set(character as SSEntity, connections);
+				} else {
+					warn(`ResourceService: No Humanoid found for character of player ${player.Name}`);
+				}
+			});
 		});
 
 		// Handle player leaving

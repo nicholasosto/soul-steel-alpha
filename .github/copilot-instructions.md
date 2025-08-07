@@ -42,6 +42,29 @@ export const AbilityRemotes = Definitions.Create({
 START_ABILITY: Definitions.ServerAsyncFunction<(key: AbilityKey) => Promise<boolean>>(),
 ```
 
+### 🎯 Client Controller Architecture
+Enhanced client architecture follows strict single responsibility:
+
+**Controller Responsibilities:**
+- **InputController**: Raw input mapping ONLY (keyboard/mouse → actions)
+- **MovementController**: Player movement mechanics ONLY (running, jumping, speed)
+- **AbilityController**: Ability system ONLY (activation, cooldowns, effects, UI integration)
+- **ZoneController**: Zone management ONLY (creation, events, tracking)
+- **ClientController**: Central coordination ONLY (routing, initialization, cleanup)
+
+**Anti-Patterns to Avoid:**
+- DON'T mix input handling with game logic
+- DON'T duplicate network calls across controllers  
+- DON'T add movement logic to ability controllers
+- DON'T create vague controllers like "GameController" or "PlayerController"
+
+**Decision Framework:**
+1. Does this belong in existing controller? → Add to existing
+2. Is this new domain with 3+ responsibilities? → Create new controller  
+3. Would this create overlap? → Refactor to eliminate overlap
+
+See `CLIENT_ARCHITECTURE_GUIDELINES.md` for detailed guidance.
+
 ### 🎯 Combat Flow Architecture
 Enhanced combat follows damage container pattern:
 `AbilityActivateAttempt → ValidateAbility → DamageContainerCreated → DamageContainerApplied → DamageRecordedForRewardCalculation`

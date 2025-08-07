@@ -1,4 +1,4 @@
-import Fusion, { ForKeys, Value } from "@rbxts/fusion";
+import Fusion, { Computed, ForKeys, Value } from "@rbxts/fusion";
 import { Players } from "@rbxts/services";
 import { AbilitiesState, createAbilitiesState, PersistantPlayerData, PlayerDTO } from "shared";
 import {
@@ -20,6 +20,7 @@ class PlayerState {
 	public Resources: ResourceStateMap = makeResourceStateFromDTO(makeDefaultResourceDTO());
 	public Abilities: AbilitiesState = createAbilitiesState();
 	public Level: Value<number> = Value(1); // Default level, can be adjusted
+
 	private constructor(playerData?: PlayerDTO) {
 		warn("PlayerState initialized for", this.player.Name, "with data:", playerData);
 
@@ -38,6 +39,7 @@ class PlayerState {
 		}
 		return this.instance;
 	}
+
 	private static _initializeData(): PlayerState {
 		// Initialize any necessary connections or listeners here
 		const dataPromise = fetchPersistantData.CallServerAsync();
@@ -109,6 +111,34 @@ class PlayerState {
 			print("Player resources updated successfully");
 		} else {
 			warn("No resource DTO provided for update.");
+		}
+	}
+
+	public getComputedLabel(key: keyof ResourceStateMap): Computed<string> {
+		return Computed(() => {
+			const resource = this.Resources[key];
+			if (resource) {
+				const current = math.floor(resource.current.get());
+				const max = math.floor(resource.max.get());
+				// Ensure values are valid numbers
+				const safeCurrent = current >= 0 ? current : 0;
+				const safeMax = max > 0 ? max : 1;
+				return `${key}: ${safeCurrent}/${safeMax}`;
+			} else {
+				warn(`Resource ${key} does not exist.`);
+				return `${key}: 0/1`; // Default fallback
+			}
+		});
+	}
+
+	public getComputedResource(key: keyof ResourceStateMap): Computed<number> {
+		warn(`getComputedResource called for key: ${key}`);
+		const resource = this.Resources[key];
+		if (resource) {
+			return Computed(() => resource.current.get());
+		} else {
+			warn(`Resource ${key} does not exist.`);
+			return Computed(() => 0); // Default to 0 if resource doesn't exist
 		}
 	}
 }

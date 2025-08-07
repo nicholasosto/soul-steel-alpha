@@ -9,7 +9,8 @@
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
     "build:mcp": "tsc --project tsconfig.mcp.json",
-    "mcp:server": "node mcp-build/mcp-server.js"
+    "mcp:server": "node mcp-build/mcp-server.js",
+    "check:architecture": "node scripts/check-architecture.js"
   },
   "keywords": [],
   "author": "",

@@ -1,19 +1,48 @@
 /**
- * @file Client-side Ability Manager
- * @description Manages ability cooldowns and UI integration on the client side
+ * @file src/client/controllers/AbilityController.ts
+ * @module AbilityController
+ * @layer Client/Controllers
+ * @description Unified ability controller that handles activation, cooldowns, and effects
+ *
+ * @responsibility Ability system management ONLY
+ * @responsibilities
+ * - Ability activation via network calls
+ * - Cooldown tracking and management
+ * - Effect triggering
+ * - UI integration with reactive progress values
+ * - Mouse-based ability targeting (future)
+ *
+ * @anti_patterns
+ * - DO NOT handle input mapping (use InputController)
+ * - DO NOT handle movement logic (use MovementController)
+ * - DO NOT handle zone interactions (use ZoneController)
+ * - DO NOT duplicate network setup from other controllers
+ *
+ * @author Soul Steel Alpha Development Team
+ * @since 1.0.0
+ * @lastUpdated 2025-08-07 - Consolidated from GameActionController and ClientAbilityManager
  */
 
 import { AbilityKey, ABILITY_KEYS } from "shared";
+import { VFXKey } from "shared/packages";
 import { AbilityCatalog } from "shared/catalogs";
 import { CooldownTimer } from "shared/packages";
+import { AbilityRemotes, EffectRemotes } from "shared/network";
 import { Value } from "@rbxts/fusion";
 
 /**
- * Client-side ability manager that handles cooldown tracking and UI integration.
- * Works with AbilityButton components to provide real-time cooldown feedback.
+ * AbilityController handles all ability-related functionality:
+ * - Ability activation via network calls
+ * - Cooldown tracking and management
+ * - Effect triggering
+ * - UI integration with reactive progress values
  */
-export class ClientAbilityManager {
-	private static instance: ClientAbilityManager | undefined;
+export class AbilityController {
+	private static instance: AbilityController | undefined;
+
+	/** Network remotes */
+	private abilityRemote = AbilityRemotes.Client.Get("ABILITY_ACTIVATE");
+	private effectRemote = EffectRemotes.Client.Get("RUN_EVENT");
 
 	/** Map of ability keys to their cooldown timers */
 	private cooldownTimers: Map<AbilityKey, CooldownTimer> = new Map();
@@ -21,20 +50,57 @@ export class ClientAbilityManager {
 	/** Map of ability keys to their reactive progress values for UI binding */
 	private cooldownProgress: Map<AbilityKey, Value<number>> = new Map();
 
-	/**
-	 * Gets the singleton instance of the ClientAbilityManager
-	 */
-	public static getInstance(): ClientAbilityManager {
-		if (!this.instance) {
-			this.instance = new ClientAbilityManager();
-		}
-		return this.instance;
-	}
-
 	private constructor() {
 		// Initialize progress values for all abilities
 		for (const abilityKey of ABILITY_KEYS) {
 			this.cooldownProgress.set(abilityKey, Value(0));
+		}
+	}
+
+	/**
+	 * Gets the singleton instance of the AbilityController
+	 */
+	public static getInstance(): AbilityController {
+		if (!this.instance) {
+			this.instance = new AbilityController();
+		}
+		return this.instance;
+	}
+
+	/**
+	 * Activate an ability with cooldown checking
+	 */
+	public async activateAbility(abilityKey: AbilityKey): Promise<boolean> {
+		// Check if ability is on cooldown
+		if (this.isOnCooldown(abilityKey)) {
+			const remaining = this.getRemainingCooldown(abilityKey);
+			warn(`Ability ${abilityKey} is on cooldown for ${remaining} more seconds`);
+			return false;
+		}
+
+		try {
+			const success = await this.abilityRemote.CallServerAsync(abilityKey);
+
+			// If server confirms activation, start cooldown
+			if (success) {
+				this.startCooldown(abilityKey);
+			}
+
+			return success;
+		} catch (error) {
+			warn(`Failed to activate ability ${abilityKey}: ${error}`);
+			return false;
+		}
+	}
+
+	/**
+	 * Trigger an effect
+	 */
+	public async triggerEffect(effectKey: VFXKey): Promise<void> {
+		try {
+			await this.effectRemote.CallServerAsync(effectKey);
+		} catch (error) {
+			warn(`Failed to trigger effect ${effectKey}: ${error}`);
 		}
 	}
 
@@ -83,12 +149,11 @@ export class ClientAbilityManager {
 		const progressValue = this.cooldownProgress.get(abilityKey)!;
 
 		// Update UI progress whenever timer progress changes
-		// We'll use a simple polling approach since Fusion Values don't have onChange
 		const updateProgress = () => {
 			progressValue.set(timer.Progress.get());
 		};
 
-		// Start periodic updates (could be optimized with RunService)
+		// Start periodic updates
 		const updateTask = task.spawn(() => {
 			while (!timer.isReady()) {
 				updateProgress();
@@ -109,7 +174,7 @@ export class ClientAbilityManager {
 		this.cooldownTimers.set(abilityKey, timer);
 		timer.start();
 
-		print(`Started client cooldown for ${abilityKey} (${abilityMeta.cooldown}s)`);
+		print(`Started cooldown for ${abilityKey} (${abilityMeta.cooldown}s)`);
 	}
 
 	/**
@@ -143,17 +208,30 @@ export class ClientAbilityManager {
 	}
 
 	/**
-	 * Cleanup all timers - call when player is leaving or resetting
+	 * Handle mouse clicks for ability targeting
 	 */
-	public cleanup(): void {
+	public handleMouseClick(button: "left" | "right"): void {
+		// TODO: Implement mouse-based ability targeting
+		print(`${button} mouse button clicked - ability targeting`);
+	}
+
+	/**
+	 * Handle debug key presses for ability testing
+	 */
+	public handleDebugKey(keyName: string): void {
+		print(`Debug key pressed: ${keyName}`);
+		// TODO: Add debug functionality for ability testing
+	}
+
+	/**
+	 * Cleanup all timers and resources
+	 */
+	public destroy(): void {
 		for (const [abilityKey, timer] of this.cooldownTimers) {
 			timer.destroy();
 			this.cooldownProgress.get(abilityKey)?.set(0);
 		}
 		this.cooldownTimers.clear();
-		print("Cleaned up all ability cooldowns");
+		print("AbilityController destroyed");
 	}
 }
-
-// Export singleton instance for easy access
-export const ClientAbilityManagerInstance = ClientAbilityManager.getInstance();

@@ -1,5 +1,5 @@
 import { HorizontalButtonBar } from "./ButtonBar";
-import { GameActionController } from "client/controllers";
+import { AbilityController } from "client/controllers";
 import { AbilityCatalog, AbilityKey } from "shared/catalogs";
 import { AbilityButton } from "client/client-ui/molecules/cooldown-button";
 
@@ -8,7 +8,7 @@ interface AbilityBarProps {
 }
 
 export function AbilityButtonBar(props: AbilityBarProps) {
-	const gameActionController = GameActionController.getInstance();
+	const abilityController = AbilityController.getInstance();
 
 	const buttons = props.keys.map((ability) => {
 		const abilityCatalogItem = AbilityCatalog[ability];
@@ -16,7 +16,7 @@ export function AbilityButtonBar(props: AbilityBarProps) {
 			abilityKey: ability,
 			onAbilityClick: (key) => {
 				print(`${key} button clicked`);
-				gameActionController.activateAbility(key); // Use the new controller to activate the ability
+				abilityController.activateAbility(key); // Use the new controller to activate the ability
 			},
 		});
 	});

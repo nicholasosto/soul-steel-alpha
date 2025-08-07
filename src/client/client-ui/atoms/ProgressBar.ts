@@ -12,10 +12,10 @@ import Fusion, { Children, Computed, New, Value } from "@rbxts/fusion";
 
 export interface ProgressBarProps extends Fusion.PropertyTable<Frame> {
 	/** Current progress value (0-1 for percentage, or actual value if using maxValue) */
-	progress: Fusion.StateObject<number>;
+	progress: Value<number> | Computed<number>;
 
 	/** Maximum value for calculating percentage. If provided, progress is treated as current/max */
-	maxValue?: Fusion.StateObject<number>;
+	maxValue?: Value<number> | Computed<number>;
 
 	/** Color of the progress fill */
 	fillColor: Color3;
@@ -27,7 +27,7 @@ export interface ProgressBarProps extends Fusion.PropertyTable<Frame> {
 	showLabel?: boolean;
 
 	/** Custom label text. If not provided, shows "current/max" or "percentage%" */
-	labelText?: Fusion.StateObject<string>;
+	labelText?: Computed<string>;
 
 	/** Label text color */
 	labelColor?: Color3;

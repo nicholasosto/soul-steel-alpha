@@ -4,9 +4,22 @@
  * @layer Client/Controllers
  * @description Pure input handling controller that maps inputs to actions
  *
+ * @responsibility Raw input mapping ONLY - no game logic
+ * @responsibilities
+ * - Map keyboard/mouse inputs to semantic actions
+ * - Handle input validation and filtering
+ * - Emit actions to registered handlers
+ * - Manage configurable key mappings
+ *
+ * @anti_patterns
+ * - DO NOT add game logic (cooldown checks, ability validation)
+ * - DO NOT make network calls directly
+ * - DO NOT manage game state (health, mana, etc.)
+ * - DO NOT handle UI updates or rendering
+ *
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
- * @lastUpdated 2025-08-01 - Extracted from input.client.ts for better separation of concerns
+ * @lastUpdated 2025-08-07 - Added architectural documentation and constraints
  */
 
 import { UserInputService } from "@rbxts/services";
