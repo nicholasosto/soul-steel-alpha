@@ -2,22 +2,24 @@ import {
 	AbilityServiceInstance,
 	AnimationServiceInstance,
 	DataServiceInstance,
+	HumanoidMonitorServiceInstance,
 	MessageServiceInstance,
 	ResourceServiceInstance,
-	UnifiedNPCServiceInstance
+	UnifiedNPCServiceInstance,
+	RunLavaParts,
 } from "./services";
 import { Players } from "@rbxts/services";
 import { AbilityKey } from "shared";
 import { SSEntity } from "shared/types";
-import { HumanoidServicesInstance } from "./services/humanoid-services";
 
 const Services = {
 	AbilityService: AbilityServiceInstance,
 	AnimationService: AnimationServiceInstance,
+	Collection_Service: RunLavaParts(),
 	DataService: DataServiceInstance,
+	HumanoidMonitorService: HumanoidMonitorServiceInstance, // Use signal-based approach
 	MessageService: MessageServiceInstance,
 	ResourceService: ResourceServiceInstance,
-	HumanoidServices: HumanoidServicesInstance,
 	UnifiedNPCService: UnifiedNPCServiceInstance,
 };
 

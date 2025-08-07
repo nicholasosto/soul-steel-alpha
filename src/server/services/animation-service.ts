@@ -60,7 +60,7 @@ class AnimationService {
 	 * @returns The singleton AnimationService instance
 	 * @static
 	 */
-	public static Start(): AnimationService {
+	public static getInstance(): AnimationService {
 		if (AnimationService.instance === undefined) {
 			AnimationService.instance = new AnimationService();
 		}
@@ -378,4 +378,4 @@ class AnimationService {
  * AnimationServiceInstance.RegisterModelAnimations(mageCharacter, ["Cast_Projectile"]);
  * ```
  */
-export const AnimationServiceInstance = AnimationService.Start();
+export const AnimationServiceInstance = AnimationService.getInstance();

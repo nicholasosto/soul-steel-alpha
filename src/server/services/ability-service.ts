@@ -25,6 +25,7 @@ import { AbilityCatalog, AbilityKey } from "shared/catalogs";
 import { DataServiceInstance } from "./data-service";
 import { MessageServiceInstance } from "./message-service";
 import { ResourceServiceInstance } from "./resource-service";
+import { SignalServiceInstance } from "./signal-service";
 
 /**
  * Server-side ability management service.
@@ -63,7 +64,7 @@ class AbilityService {
 	 * @returns The singleton AbilityService instance
 	 * @static
 	 */
-	public static Start(): AbilityService {
+	public static getInstance(): AbilityService {
 		if (AbilityService.instance === undefined) {
 			AbilityService.instance = new AbilityService();
 		}
@@ -313,7 +314,18 @@ class AbilityService {
 				wait(abilityMeta.duration);
 				abilityMeta.OnEnd?.(character);
 			});
-			ResourceServiceInstance.ModifyResource(player, "mana", -abilityMeta["cost"]);
+			// Consume ability cost through signals instead of direct service calls
+			SignalServiceInstance.emit("ManaConsumed", {
+				player,
+				amount: abilityMeta["cost"],
+				source: `Ability: ${abilityKey}`,
+			});
+
+			// Emit ability activation signal for other services
+			SignalServiceInstance.emit("AbilityActivated", {
+				player,
+				abilityKey,
+			});
 
 			return true;
 		} catch (err) {
@@ -335,4 +347,4 @@ class AbilityService {
  * AbilityServiceInstance.RegisterModel(character, ["FIREBALL", "HEAL"]);
  * ```
  */
-export const AbilityServiceInstance = AbilityService.Start();
+export const AbilityServiceInstance = AbilityService.getInstance();

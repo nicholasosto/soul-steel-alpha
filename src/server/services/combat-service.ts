@@ -29,6 +29,7 @@ import { MessageServiceInstance } from "./message-service";
 import { NPCDemoServiceInstance } from "./npc-demo-service";
 import { AbilityCatalog, AbilityKey } from "shared/catalogs/ability-catalog";
 import { AbilityServiceInstance } from "./ability-service";
+import { SignalServiceInstance } from "./signal-service";
 
 /**
  * Combat session data structure
@@ -109,7 +110,7 @@ class CombatService {
 	/**
 	 * Get the singleton instance of CombatService
 	 */
-	public static GetInstance(): CombatService {
+	public static getInstance(): CombatService {
 		if (!CombatService.instance) {
 			CombatService.instance = new CombatService();
 		}
@@ -226,22 +227,16 @@ class CombatService {
 		const isCritical = this.rollCritical(weapon);
 		const finalDamage = isCritical ? damage * weapon.criticalMultiplier : damage;
 
-		// Apply damage through ResourceService
+		// Apply damage through signals
 		const success = this.applyDamage(target, finalDamage);
 
 		if (success) {
-			// Create combat hit event
-			const hitEvent: CombatHitEvent = {
-				attacker: attackerCharacter,
-				target,
-				weaponId: weapon.id,
+			// Emit combat events for other services to react to
+			SignalServiceInstance.emit("PlayerDamaged", {
+				victim: target.IsA("Player") ? target : undefined,
+				attacker: attacker,
 				damage: finalDamage,
-				isCritical,
-				hitType: "basic_attack",
-			};
-
-			// Broadcast combat hit to all clients
-			CombatRemotes.Server.Get("CombatHit").SendToAllPlayers(hitEvent);
+			});
 
 			// Send feedback messages
 			MessageServiceInstance.SendMessageToPlayer(
@@ -262,14 +257,16 @@ class CombatService {
 				);
 			}
 
-			print(`CombatService: ${attacker.Name} dealt ${finalDamage} damage to ${target.Name}`);
+			print(
+				`CombatService: ${attacker.Name} attacked ${target.Name} with ${weapon.name} for ${finalDamage} damage${
+					isCritical ? " (CRITICAL!)" : ""
+				}`,
+			);
 		} else {
-			// Attack missed or failed
-			CombatRemotes.Server.Get("CombatMiss").SendToAllPlayers(attackerCharacter, target, "Target dodged");
-
+			// Attack failed
 			MessageServiceInstance.SendMessageToPlayer(
 				attacker,
-				this.createMessage(`Your attack missed ${target.Name}!`, "warning"),
+				this.createMessage(`Your attack on ${target.Name} failed!`, "warning"),
 			);
 		}
 	}
@@ -554,10 +551,15 @@ class CombatService {
 	 */
 	private applyDamage(target: SSEntity, damage: number): boolean {
 		if (target.IsA("Player")) {
-			// Apply damage to player through ResourceService
-			return ResourceServiceInstance.ModifyResource(target, "health", -damage);
+			// Apply damage to player through signals
+			SignalServiceInstance.emit("HealthDamageRequested", {
+				player: target,
+				amount: damage,
+				source: "Combat",
+			});
+			return true;
 		} else {
-			// Handle NPC damage directly through Humanoid
+			// Handle NPC damage - could also use signals for consistency
 			const humanoid = target.FindFirstChild("Humanoid") as Humanoid;
 			if (humanoid) {
 				const currentHealth = humanoid.Health;
@@ -567,6 +569,13 @@ class CombatService {
 				print(
 					`CombatService: Applied ${damage} damage to NPC ${target.Name} (${currentHealth} -> ${newHealth})`,
 				);
+
+				// Emit signal for NPC damage (for logging, analytics, etc.)
+				SignalServiceInstance.emit("PlayerDamaged", {
+					victim: target,
+					attacker: undefined, // Could pass attacker if needed
+					damage: damage,
+				});
 
 				// Check if NPC died
 				if (newHealth <= 0) {
@@ -686,5 +695,5 @@ class CombatService {
 }
 
 // Export singleton instance
-export const CombatServiceInstance = CombatService.GetInstance();
+export const CombatServiceInstance = CombatService.getInstance();
 export { CombatService };

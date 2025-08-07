@@ -42,7 +42,7 @@ class DataService {
 		this._initConnections();
 	}
 
-	public static Start(): DataService {
+	public static getInstance(): DataService {
 		if (DataService.instance === undefined) {
 			DataService.instance = new DataService();
 		}
@@ -59,7 +59,7 @@ class DataService {
 	}
 
 	private handlePlayerAdded(player: Player) {
-		const svc = DataService.Start();
+		const svc = DataService.getInstance();
 		if (svc.profiles.has(player)) {
 			warn(`Profile for player ${player.Name} already exists.`);
 			return;
@@ -108,4 +108,4 @@ class DataService {
 		return undefined;
 	}
 }
-export const DataServiceInstance = DataService.Start();
+export const DataServiceInstance = DataService.getInstance();

@@ -45,7 +45,7 @@ class NPCDemoService {
 	/**
 	 * Get the singleton instance
 	 */
-	public static GetInstance(): NPCDemoService {
+	public static getInstance(): NPCDemoService {
 		if (!NPCDemoService.instance) {
 			NPCDemoService.instance = new NPCDemoService();
 		}
@@ -426,5 +426,5 @@ class NPCDemoService {
 }
 
 // Export singleton instance
-export const NPCDemoServiceInstance = NPCDemoService.GetInstance();
+export const NPCDemoServiceInstance = NPCDemoService.getInstance();
 export { NPCDemoService };

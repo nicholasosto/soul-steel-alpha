@@ -39,15 +39,12 @@ export function ResourceBar(props: ResourceBarProps): Frame | undefined {
 	}
 	const computedResource = PlayerStateInstance.getComputedResource(props.resourceKey);
 	const resourceBar = ProgressBar({
-		Name: `${resourceMeta.displayName}_Bar`,
-		currentValue: resourceState.current,
-		maxValue: resourceState.max,
+		currentValue: PlayerStateInstance.Resources[props.resourceKey].current,
+		maxValue: PlayerStateInstance.Resources[props.resourceKey].max,
 		fillColor: resourceMeta.color,
-		showLabel: props.showLabel ?? true, // Default to true for visibility
-		labelText: PlayerStateInstance.getComputedLabel(props.resourceKey), // New: Use computed label
-		Size: new UDim2(1, 0, 0, 30), // New: Consistent height
-		...props, // Merge additional props (e.g., Position if needed)
-	});
+		showLabel: props.showLabel ?? true, // Default to true if not specified
+		Size: props.Size ?? UDim2.fromOffset(200, 30), //
+	})
 
 	return resourceBar;
 }

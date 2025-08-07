@@ -30,7 +30,7 @@ const CombatAnimations = {
 // Magic/Ability Animation Sets
 const MagicAnimations = {
 	Cast_Projectile: "rbxassetid://72830464857270", // Name - Cast Fast
-	Cast_Summon: "rbxassetid://140479956568725",
+	Cast_Summon: "rbxassetid://91240355559085",
 	Cast_AOE_From_Ground: "rbxassetid://16157497624",
 	Cast_AOE_From_Above: "rbxassetid://140479956568725",
 } as const;

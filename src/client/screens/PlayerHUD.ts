@@ -1,6 +1,8 @@
-import { Children, New } from "@rbxts/fusion";
+import Fusion, { Children, New } from "@rbxts/fusion";
+import { Function } from "@rbxts/net/out/client";
 import { Players } from "@rbxts/services";
 import { AbilityButtonBar, ResourceBars } from "client/client-ui/organisms";
+import { PlayerStateInstance } from "client/states";
 
 const player = Players.LocalPlayer;
 const playerGui = player.WaitForChild("PlayerGui") as PlayerGui;
@@ -11,6 +13,17 @@ export const PlayerHUD = New("ScreenGui")({
 	Parent: playerGui,
 	DisplayOrder: 10,
 	[Children]: {
+		HealthText: New("TextLabel")({
+			Name: "HealthText",
+			Position: new UDim2(0.05, 0, 0.05, 0), // Positioning the health text at the top left
+			Size: new UDim2(0.2, 0, 0.05, 0),
+			Text: Fusion.Computed(() => {
+
+				const health = PlayerStateInstance.Resources.Health.current.get();
+				const maxHealth = PlayerStateInstance.Resources.Health.max.get();
+				return `Health: ${health}/${maxHealth}`;
+			}),
+		}),
 		AbilityBar: AbilityButtonBar({
 			keys: ["Earthquake", "Ice-Rain", "Melee", "Soul-Drain"],
 		}),

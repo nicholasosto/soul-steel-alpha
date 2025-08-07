@@ -23,6 +23,19 @@ export interface IResourceOperations {
 }
 
 /**
+ * Interface for signal-based resource requests
+ * Preferred approach - services should emit signals instead of direct calls
+ */
+export interface IResourceSignalOperations {
+	requestHealthDamage(player: Player, amount: number, source?: string): void;
+	requestHealthHeal(player: Player, amount: number, source?: string): void;
+	requestManaConsumption(player: Player, amount: number, source?: string): void;
+	requestManaRestoration(player: Player, amount: number, source?: string): void;
+	requestStaminaConsumption(player: Player, amount: number, source?: string): void;
+	requestStaminaRestoration(player: Player, amount: number, source?: string): void;
+}
+
+/**
  * Interface for ability-related operations
  * Services should depend on this interface rather than the concrete AbilityService
  */

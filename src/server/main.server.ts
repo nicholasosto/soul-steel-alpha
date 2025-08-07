@@ -5,6 +5,6 @@ import { CombatServiceInstance } from "./services/combat-service";
 import { NPCDemoServiceInstance } from "./services/npc-demo-service";
 
 print("Soul Steel Alpha server initialized successfully");
-MessageService.Start();
+MessageService.getInstance();
 CombatServiceInstance.Initialize();
 NPCDemoServiceInstance.Initialize();

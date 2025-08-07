@@ -25,8 +25,23 @@ export interface ServiceEvents {
 	PlayerDamaged: { victim: Player; attacker?: Player; damage: number };
 	AbilityActivated: { player: Player; abilityKey: string };
 
-	// Resource events (examples for future use)
-	ResourceChanged: { player: Player; resourceType: string; oldValue: number; newValue: number };
+	// Resource events - Enhanced for better resource management
+	ResourceChanged: {
+		player: Player;
+		resourceType: "health" | "mana" | "stamina";
+		oldValue: number;
+		newValue: number;
+	};
+	HealthDamageRequested: { player: Player; amount: number; source?: string };
+	HealthHealRequested: { player: Player; amount: number; source?: string };
+	ManaConsumed: { player: Player; amount: number; source?: string };
+	ManaRestored: { player: Player; amount: number; source?: string };
+	StaminaConsumed: { player: Player; amount: number; source?: string };
+	StaminaRestored: { player: Player; amount: number; source?: string };
+
+	// Humanoid events - Bridge between Roblox API and our system
+	HumanoidHealthChanged: { player: Player; character: Model; newHealth: number; maxHealth: number };
+	HumanoidDied: { player: Player; character: Model };
 }
 
 export class SignalService {
@@ -56,6 +71,14 @@ export class SignalService {
 			"PlayerDamaged",
 			"AbilityActivated",
 			"ResourceChanged",
+			"HealthDamageRequested",
+			"HealthHealRequested",
+			"ManaConsumed",
+			"ManaRestored",
+			"StaminaConsumed",
+			"StaminaRestored",
+			"HumanoidHealthChanged",
+			"HumanoidDied",
 		];
 
 		for (const eventKey of eventKeys) {

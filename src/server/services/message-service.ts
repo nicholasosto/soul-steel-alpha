@@ -23,7 +23,7 @@ const SendMessageToPlayerRemote = MessageRemotes.Server.Get("SendMessageToPlayer
 /*──── Service Class ──────────────────────────────────────────────────*/
 export default class MessageService {
 	private static _instance?: MessageService;
-	public static Start(): MessageService {
+	public static getInstance(): MessageService {
 		if (!this._instance) this._instance = new MessageService();
 		return this._instance;
 	}
@@ -87,5 +87,5 @@ export default class MessageService {
 		if (RunService.IsStudio()) warn(`${SERVICE_NAME} destroyed`);
 	}
 }
-export const MessageServiceInstance = MessageService.Start();
+export const MessageServiceInstance = MessageService.getInstance();
 MessageServiceInstance.SendServerWideMessage(MessageLibrary.DataLoadedSuccess);
