@@ -34,6 +34,7 @@ export const ZONE_KEYS = [
 	"BuffZone",
 	"DebuffZone",
 	"RestZone",
+	"TestResourceZone",
 ] as const;
 
 export type ZoneKey = (typeof ZONE_KEYS)[number];

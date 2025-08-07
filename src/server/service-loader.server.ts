@@ -4,6 +4,7 @@ import {
 	DataServiceInstance,
 	MessageServiceInstance,
 	ResourceServiceInstance,
+	UnifiedNPCServiceInstance
 } from "./services";
 import { Players } from "@rbxts/services";
 import { AbilityKey } from "shared";
@@ -17,6 +18,7 @@ const Services = {
 	MessageService: MessageServiceInstance,
 	ResourceService: ResourceServiceInstance,
 	HumanoidServices: HumanoidServicesInstance,
+	UnifiedNPCService: UnifiedNPCServiceInstance,
 };
 
 Players.PlayerAdded.Connect((player) => {

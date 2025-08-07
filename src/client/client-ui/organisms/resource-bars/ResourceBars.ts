@@ -10,7 +10,7 @@
  */
 
 import Fusion, { Children, Computed, New } from "@rbxts/fusion";
-import { ProgressBar } from "../../atoms";
+import { ProgressBar } from "@trembus/ss-fusion";
 import { ResourceKey } from "shared/catalogs/resources-catalog";
 import { ResourcesCatalog } from "shared/catalogs/resources-catalog";
 import { PlayerStateInstance } from "client/states";
@@ -29,6 +29,9 @@ export function ResourceBar(props: ResourceBarProps): Frame | undefined {
 	}
 	const resourceMeta = ResourcesCatalog[props.resourceKey];
 	const resourceState = PlayerResources[props.resourceKey];
+	const currentProgress = Computed(() => {
+		resourceState.current.get();
+	});
 	warn(`ResourceBar: Creating bar for resource "${props.resourceKey}" with state:`, resourceState, resourceMeta);
 	if (resourceMeta === undefined || resourceState === undefined) {
 		warn(`ResourceBar: Invalid resource key "${props.resourceKey}"`);
@@ -37,7 +40,7 @@ export function ResourceBar(props: ResourceBarProps): Frame | undefined {
 	const computedResource = PlayerStateInstance.getComputedResource(props.resourceKey);
 	const resourceBar = ProgressBar({
 		Name: `${resourceMeta.displayName}_Bar`,
-		progress: computedResource,
+		currentValue: resourceState.current,
 		maxValue: resourceState.max,
 		fillColor: resourceMeta.color,
 		showLabel: props.showLabel ?? true, // Default to true for visibility

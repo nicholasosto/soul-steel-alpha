@@ -17,9 +17,9 @@
 import { Players, Workspace, RunService, ReplicatedStorage } from "@rbxts/services";
 import { SSEntity } from "shared/types";
 import { isSSEntity } from "shared/helpers/type-guards";
-import { ResourceServiceInstance } from "./resource-service";
 import { MessageServiceInstance } from "./message-service";
 import { MessageType, MessageMetaRecord } from "shared/types";
+import { cloneNPCModel, getNPCModel } from "shared";
 
 /**
  * NPC Demo data structure
@@ -102,6 +102,11 @@ class NPCDemoService {
 	 * Spawn 3 NPCs around the player character
 	 */
 	private spawnNPCsAroundPlayer(player: Player, character: Model): void {
+		const bloodToad = cloneNPCModel(
+			"blood_toad",
+			character.GetPivot().Position.add(new Vector3(5, 0, 0)),
+			"TestNPC_BloodToad",
+		);
 		if (!isSSEntity(character)) {
 			warn(`NPCDemoService: Invalid character for ${player.Name}`);
 			return;

@@ -472,6 +472,30 @@ export const ZoneCatalog: Record<ZoneKey, ZoneMeta> = {
 			// Stop regeneration effects
 		},
 	},
+	TestResourceZone: {
+		zoneKey: "TestResourceZone",
+		displayName: "Test Resource Zone",
+		description: "Zone for testing resource collection",
+		category: "special",
+		accuracy: "High",
+		enterDetection: "Centre",
+		exitDetection: "Centre",
+		priority: 5,
+		visual: {
+			showBounds: true,
+			color: Color3.fromRGB(0, 255, 255),
+			transparency: 0.8,
+		},
+		onPlayerEnter: (player: Player, zone: IZone) => {
+			print(`${player.Name} approached quest giver`);
+
+			// Show quest indicator, enable interaction
+		},
+		onPlayerExit: (player: Player, zone: IZone) => {
+			print(`${player.Name} left quest giver area`);
+			// Hide quest indicator
+		},
+	},
 };
 
 /**

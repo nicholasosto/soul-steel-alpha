@@ -13,6 +13,7 @@ import { Zone } from "@rbxts/zone-plus";
 import { ZoneKey } from "shared/keys";
 import { ZoneCatalog, getZoneConfig } from "shared/catalogs";
 import { ZoneMeta, IZone } from "shared/meta";
+import { SignalServiceInstance } from "./signal-service";
 
 interface ManagedZone {
 	zone: Zone;
@@ -70,6 +71,10 @@ export class ZoneService {
 			});
 
 			print(`Zone created: ${config.displayName} (${zoneKey})`);
+
+			// Emit signal for other services
+			SignalServiceInstance.emit("ZoneCreated", { zoneKey });
+
 			return true;
 		} catch (error) {
 			warn(`Failed to create zone ${zoneKey}: ${error}`);
@@ -110,6 +115,10 @@ export class ZoneService {
 			});
 
 			print(`Zone created from region: ${config.displayName} (${zoneKey})`);
+
+			// Emit signal for other services
+			SignalServiceInstance.emit("ZoneCreated", { zoneKey });
+
 			return true;
 		} catch (error) {
 			warn(`Failed to create zone from region ${zoneKey}: ${error}`);
@@ -141,6 +150,7 @@ export class ZoneService {
 			return false;
 		}
 
+		const wasActive = managedZone.isActive;
 		managedZone.isActive = active;
 
 		if (!active) {
@@ -148,6 +158,15 @@ export class ZoneService {
 			const playersInZone = managedZone.zone.getPlayers();
 			for (const player of playersInZone) {
 				this.handlePlayerExit(player, managedZone);
+			}
+		}
+
+		// Emit signals for state changes
+		if (wasActive !== active) {
+			if (active) {
+				SignalServiceInstance.emit("ZoneActivated", { zoneKey });
+			} else {
+				SignalServiceInstance.emit("ZoneDeactivated", { zoneKey });
 			}
 		}
 
@@ -167,6 +186,10 @@ export class ZoneService {
 			managedZone.zone.destroy();
 			this.zones.delete(zoneKey);
 			print(`Zone destroyed: ${managedZone.config.displayName} (${zoneKey})`);
+
+			// Emit signal for other services
+			SignalServiceInstance.emit("ZoneDestroyed", { zoneKey });
+
 			return true;
 		} catch (error) {
 			warn(`Failed to destroy zone ${zoneKey}: ${error}`);
@@ -286,6 +309,12 @@ export class ZoneService {
 			this.playerZoneHistory.set(player, history);
 		}
 
+		// Emit signal for other services
+		SignalServiceInstance.emit("ZonePlayerEntered", {
+			player,
+			zoneKey: config.zoneKey,
+		});
+
 		// Call custom enter handler
 		if (config.onPlayerEnter) {
 			try {
@@ -310,6 +339,12 @@ export class ZoneService {
 			const newHistory = history.filter((zoneKey) => zoneKey !== config.zoneKey);
 			this.playerZoneHistory.set(player, newHistory);
 		}
+
+		// Emit signal for other services
+		SignalServiceInstance.emit("ZonePlayerExited", {
+			player,
+			zoneKey: config.zoneKey,
+		});
 
 		// Call custom exit handler
 		if (config.onPlayerExit) {

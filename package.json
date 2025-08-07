@@ -40,7 +40,7 @@
     "@rbxts/signal": "^1.1.1",
     "@rbxts/zone-plus": "^3.2.0",
     "@trembus/rpg-attributes": "1.0.0-alpha.3",
-    "@trembus/ss-fusion": "^1.0.3",
+    "@trembus/ss-fusion": "^1.0.4",
     "zod": "^3.25.76"
   },
   "volta": {
