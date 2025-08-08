@@ -27,8 +27,11 @@ import { AbilityKey, ABILITY_KEYS } from "shared";
 import { VFXKey } from "shared/packages";
 import { AbilityCatalog } from "shared/catalogs";
 import { CooldownTimer } from "shared/packages";
-import { AbilityRemotes, EffectRemotes } from "shared/network";
+import { AbilityRemotes, EffectRemotes, CombatRemotes } from "shared/network";
 import { Value } from "@rbxts/fusion";
+import { Players } from "@rbxts/services";
+import { isSSEntity } from "shared/helpers/type-guards";
+import { SSEntity } from "shared/types";
 
 /**
  * AbilityController handles all ability-related functionality:
@@ -71,6 +74,21 @@ export class AbilityController {
 	 * Activate an ability with cooldown checking
 	 */
 	public async activateAbility(abilityKey: AbilityKey): Promise<boolean> {
+		const abilityMeta = AbilityCatalog[abilityKey];
+		if (!abilityMeta) {
+			warn(`Unknown ability: ${abilityKey}`);
+			return false;
+		}
+
+		// If ability requires a target, acquire one before contacting server
+		let target: SSEntity | undefined = undefined;
+		if (abilityMeta.requiresTarget === true) {
+			target = this.getTargetFromMouse();
+			if (target === undefined) {
+				warn(`${abilityKey} requires a valid target`);
+				return false;
+			}
+		}
 		// Check if ability is on cooldown
 		if (this.isOnCooldown(abilityKey)) {
 			const remaining = this.getRemainingCooldown(abilityKey);
@@ -79,11 +97,17 @@ export class AbilityController {
 		}
 
 		try {
+			// Ask server to validate and start ability (cooldown/cost)
 			const success = await this.abilityRemote.CallServerAsync(abilityKey);
 
 			// If server confirms activation, start cooldown
 			if (success) {
 				this.startCooldown(abilityKey);
+
+				// If targeted ability, send the ability attack with selected target
+				if (abilityMeta.requiresTarget === true && target !== undefined) {
+					CombatRemotes.Client.Get("ExecuteAbilityAttack").SendToServer(abilityKey, target);
+				}
 			}
 
 			return success;
@@ -91,6 +115,21 @@ export class AbilityController {
 			warn(`Failed to activate ability ${abilityKey}: ${error}`);
 			return false;
 		}
+	}
+
+	/**
+	 * Try to get an SSEntity target from the player's mouse.
+	 */
+	private getTargetFromMouse(): SSEntity | undefined {
+		const player = Players.LocalPlayer;
+		if (player === undefined) return undefined;
+		const mouse = player.GetMouse();
+		const targetPart = mouse?.Target;
+		const model = targetPart?.Parent as Model | undefined;
+		if (model !== undefined && isSSEntity(model)) {
+			return model;
+		}
+		return undefined;
 	}
 
 	/**

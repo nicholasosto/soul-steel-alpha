@@ -3,8 +3,10 @@ import { SoundService } from "@rbxts/services";
 import { ImageConstants } from "shared/asset-ids";
 import { AnimationSets } from "shared/asset-ids/animation-assets";
 import { isSSEntity, PlayRandomAnimationFromSet, PlayAnimation } from "shared/helpers";
+import { VFXKey } from "shared/packages";
 
 import { SSEntity } from "shared/types";
+import { EffectRemotes } from "shared/network";
 const CastSuccessSound = SoundService.FindFirstChild("CastSuccess") as Sound;
 const CastFailSound = SoundService.FindFirstChild("CastFail") as Sound;
 
@@ -48,8 +50,8 @@ export interface AbilityMeta {
 	/** Array of animation IDs that can be randomly selected when the ability is cast */
 	animationSet?: readonly string[];
 
-	/** Cast Effect String Key */
-	castEffectKey?: string;
+	/** Cast Effect Key (VFX identifier) */
+	castEffectKey?: VFXKey;
 
 	/**
 	 * Optional callback executed when the ability starts successfully.
@@ -116,17 +118,6 @@ export const createAbilitiesState = (): AbilitiesState => {
 	return abilitiesState;
 };
 
-// export const AbilityDTOToAbilitiesState = (dto: AbilityDTO): AbilitiesState => {
-// 	const abilitiesState: AbilitiesState = {} as AbilitiesState;
-// 	for (const key of ABILITY_KEYS) {
-// 		abilitiesState[key] = {
-// 			level: Value(dto[key] || 0), // Use DTO value or default to 0
-// 			meta: AbilityCatalog[key],
-// 		};
-// 	}
-// 	return abilitiesState;
-// };
-
 // Internal Helpers
 function runCastSuccessEffects(abilityKey: AbilityKey, character: Model) {
 	const entity = character as SSEntity;
@@ -138,19 +129,14 @@ function runCastSuccessEffects(abilityKey: AbilityKey, character: Model) {
 		warn("INVALID: Character model is not a valid SSEntity");
 		return;
 	}
+	// Broadcast to clients to play VFX for this entity
 	if (castEffectKey !== undefined) {
-		const castEffect = entity.FindFirstChild(castEffectKey) as ParticleEmitter | undefined;
-		if (castEffect) {
-			castEffect.Enabled = true;
-			wait(0.5); // Allow effect to play briefly
-			castEffect.Enabled = false;
-		} else {
-			warn(`Cast effect ${castEffectKey} not found on entity ${entity.Name}`);
-		}
+		EffectRemotes.Server.Get("RunEffectOnEntity").SendToAllPlayers(castEffectKey as VFXKey, entity, duration);
 	}
-	CastSuccessSound.Play();
+	// optional: keep a subtle server-side ack logger
 
 	// Play random animation from set if provided, otherwise play default taunt
+	// Drive animation via client-side effect handler or keep server-triggered animation
 	if (animationSet && animationSet.size() > 0) {
 		PlayRandomAnimationFromSet(entity, animationSet, duration);
 	} else {
@@ -164,7 +150,7 @@ function runCastFailEffects(character: Model) {
 		warn("INVALID: Character model is not a valid SSEntity");
 		return;
 	}
-	CastFailSound.Play();
+	// Optional: client-side can render failure feedback based on messages; keep animation for now
 	PlayAnimation(entity, "TakeDamage");
 }
 
