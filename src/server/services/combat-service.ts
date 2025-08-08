@@ -106,6 +106,16 @@ class CombatService {
 		},
 	};
 
+	/** Simple per-player rate limit windows for various actions */
+	private lastBasicAttackAt = new Map<Player, number>();
+	private BASIC_ATTACK_WINDOW_SEC = 0.1; // 10/s
+
+	private lastAbilityAttackAt = new Map<Player, number>();
+	private ABILITY_ATTACK_WINDOW_SEC = 0.15; // ~6/s
+
+	private lastEquipAt = new Map<Player, number>();
+	private EQUIP_WINDOW_SEC = 0.25; // 4/s
+
 	private constructor() {}
 
 	/**
@@ -151,16 +161,28 @@ class CombatService {
 	private setupNetworkConnections(): void {
 		// Basic attack handler
 		CombatRemotes.Server.Get("ExecuteBasicAttack").Connect((player, target, weaponId) => {
+			const now = tick();
+			const last = this.lastBasicAttackAt.get(player);
+			if (last !== undefined && now - last < this.BASIC_ATTACK_WINDOW_SEC) return;
+			this.lastBasicAttackAt.set(player, now);
 			this.handleBasicAttack(player, target, weaponId);
 		});
 
 		// Ability attack handler
 		CombatRemotes.Server.Get("ExecuteAbilityAttack").Connect((player, abilityKey, target) => {
+			const now = tick();
+			const last = this.lastAbilityAttackAt.get(player);
+			if (last !== undefined && now - last < this.ABILITY_ATTACK_WINDOW_SEC) return;
+			this.lastAbilityAttackAt.set(player, now);
 			this.handleAbilityAttack(player, abilityKey, target);
 		});
 
 		// Weapon equip handler
 		CombatRemotes.Server.Get("RequestWeaponEquip").Connect((player, weaponId) => {
+			const now = tick();
+			const last = this.lastEquipAt.get(player);
+			if (last !== undefined && now - last < this.EQUIP_WINDOW_SEC) return;
+			this.lastEquipAt.set(player, now);
 			this.handleWeaponEquip(player, weaponId);
 		});
 

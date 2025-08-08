@@ -13,6 +13,8 @@ import { Players } from "@rbxts/services";
 import { getAnimationId, getAllAnimationIds, AnimationKey, AnimationIdMap } from "shared/asset-ids/animation-assets";
 
 export const AnimationTracks: Map<Model, Map<string, AnimationTrack>> = new Map();
+// Simple per-character animation group tagging for cancel/blend control
+const AnimationGroups: Map<Model, Map<string, string>> = new Map();
 
 // Cleanup animation tracks when player leaves
 Players.PlayerRemoving.Connect((player) => {
@@ -35,6 +37,10 @@ export function cleanupCharacterAnimations(character: Model): void {
 		AnimationTracks.delete(character);
 		warn(`Cleaned up animation tracks for character ${character.Name}`);
 	}
+	// Clear any group tags
+	if (AnimationGroups.has(character)) {
+		AnimationGroups.delete(character);
+	}
 }
 
 function createAnimation(key: string): Animation | undefined {
@@ -50,13 +56,29 @@ function createAnimation(key: string): Animation | undefined {
 	return animation;
 }
 
-function getAnimator(character: Model): Animator | undefined {
-	const humanoid = character.FindFirstChildOfClass("Humanoid");
+function getAnimator(character: Model, timeoutSec = 3): Animator | undefined {
+	// Try to find humanoid with a short wait loop to avoid spawn race conditions
+	let humanoid = character.FindFirstChildOfClass("Humanoid");
+	if (!humanoid) {
+		const deadline = tick() + timeoutSec;
+		while (!humanoid && tick() < deadline) {
+			task.wait(0.05);
+			humanoid = character.FindFirstChildOfClass("Humanoid");
+		}
+	}
 	if (!humanoid) {
 		warn(`Humanoid not found in character ${character.Name}`);
 		return undefined;
 	}
-	const animator = humanoid.FindFirstChildOfClass("Animator");
+	// Try to find animator with a short wait loop as well
+	let animator = humanoid.FindFirstChildOfClass("Animator");
+	if (!animator) {
+		const deadline = tick() + timeoutSec;
+		while (!animator && tick() < deadline) {
+			task.wait(0.05);
+			animator = humanoid.FindFirstChildOfClass("Animator");
+		}
+	}
 	if (!animator) {
 		warn(`Animator not found in humanoid of character ${character.Name}`);
 		return undefined;
@@ -84,13 +106,17 @@ function loadAnimationTrack(character: Model, key: AnimationKey): AnimationTrack
 	}
 }
 function registerAnimationTrack(character: Model, key: AnimationKey): AnimationTrack | undefined {
+	// Skip if already loaded
+	const existing = AnimationTracks.get(character)?.get(key);
+	if (existing) return existing;
+
 	const track = loadAnimationTrack(character, key);
 	if (!track) return undefined;
 
 	if (!AnimationTracks.has(character)) {
 		AnimationTracks.set(character, new Map());
 	}
-	AnimationTracks.get(character)?.set(key, track);
+	AnimationTracks.get(character)!.set(key, track);
 
 	return track;
 }
@@ -100,7 +126,17 @@ export function LoadCharacterAnimations(character: Model, keys: AnimationKey[]):
 		AnimationTracks.set(character, new Map());
 	}
 
+	// De-duplicate keys to avoid extra work
+	const seen = new Set<AnimationKey>();
 	for (const key of keys) {
+		if (seen.has(key)) continue;
+		seen.add(key);
+
+		// Skip reload if already present
+		if (AnimationTracks.get(character)?.has(key)) {
+			continue;
+		}
+
 		const track = registerAnimationTrack(character, key);
 		if (track) {
 			warn(`Loaded animation track for ${key} on character ${character.Name}`);
@@ -142,28 +178,107 @@ function findAnimationKeyById(animationId: string): string | undefined {
 }
 
 /**
+ * Options to control how an animation plays
+ */
+export interface PlayOptions {
+	/** Desired duration in seconds to fit the animation into (adjusts speed). Ignored if speed is provided. */
+	duration?: number;
+	/** Blend-in time in seconds. */
+	fadeTime?: number;
+	/** Play weight (0..1). */
+	weight?: number;
+	/** Explicit speed override (1 = normal speed). */
+	speed?: number;
+	/** If true and the track is already playing, stop and restart it. */
+	forceRestart?: boolean;
+	/** Tag this track with a group name for future cancellation. */
+	group?: string;
+	/** Cancel any currently playing tracks tagged with this group before playing. */
+	cancelGroup?: string;
+}
+
+/**
  * Plays an animation on a character
+ * - Backwards compatible: passing a number as the 3rd arg keeps prior duration behavior
  * @param character The character to play the animation on
  * @param key The animation key to play
+ * @param options Either a duration number (legacy) or PlayOptions
  * @returns True if the animation was played successfully
  */
-export function PlayAnimation(character: Model, key: AnimationKey, duration: number = 1): boolean {
+export function PlayAnimation(character: Model, key: AnimationKey, options?: number | PlayOptions): boolean {
 	const track = AnimationTracks.get(character)?.get(key) as AnimationTrack;
 	if (!track) {
 		warn(`Animation track for ${key} not found on character ${character.Name}`);
 		return false;
 	}
 
+	// Parse options
+	let fadeTime: number | undefined;
+	let weight: number | undefined;
+	let speed: number | undefined;
+	let duration: number | undefined;
+	let forceRestart = false;
+	let group: string | undefined;
+	let cancelGroup: string | undefined;
+
+	if (typeOf(options) === "number") {
+		duration = options as number;
+	} else if (options !== undefined) {
+		const o = options as PlayOptions;
+		fadeTime = o.fadeTime;
+		weight = o.weight;
+		speed = o.speed;
+		duration = o.duration;
+		forceRestart = o.forceRestart === true;
+		group = o.group;
+		cancelGroup = o.cancelGroup;
+	} else {
+		// Maintain legacy behavior: default duration = 1 when no options provided
+		duration = 1;
+	}
+
+	// Cancel any group requested before playing
+	if (cancelGroup !== undefined) {
+		const groups = AnimationGroups.get(character);
+		if (groups) {
+			for (const [k, g] of groups) {
+				if (g === cancelGroup) {
+					const t = AnimationTracks.get(character)?.get(k);
+					if (t && t.IsPlaying) {
+						t.Stop(fadeTime ?? 0.1);
+					}
+				}
+			}
+		}
+	}
+
 	if (track.IsPlaying) {
-		warn(`Animation ${key} is already playing on character ${character.Name}`);
-		return false;
+		if (forceRestart) {
+			track.Stop(fadeTime ?? 0);
+		} else {
+			warn(`Animation ${key} is already playing on character ${character.Name}`);
+			return false;
+		}
 	}
 
 	try {
-		const length = track.Length;
-		const speed = length / duration; // Adjust speed based on desired duration
-		track.Play();
-		track.AdjustSpeed(speed);
+		// Compute speed: prefer explicit speed, else compute from duration (if provided)
+		let finalSpeed: number | undefined = speed;
+		if (finalSpeed === undefined && duration !== undefined) {
+			const length = track.Length;
+			if (length > 0) finalSpeed = length / duration;
+		}
+
+		track.Play(fadeTime ?? 0.1, weight ?? 1);
+		if (finalSpeed !== undefined && finalSpeed !== 1) {
+			track.AdjustSpeed(finalSpeed);
+		}
+
+		// Tag group if provided
+		if (group !== undefined) {
+			if (!AnimationGroups.has(character)) AnimationGroups.set(character, new Map());
+			AnimationGroups.get(character)!.set(key, group);
+		}
 		warn(`Playing animation ${key} on character ${character.Name}`);
 		return true;
 	} catch (error) {
@@ -181,7 +296,7 @@ export function PlayAnimation(character: Model, key: AnimationKey, duration: num
 export function PlayRandomAnimationFromSet(
 	character: Model,
 	animationSet: readonly string[],
-	duration: number = 1,
+	options?: number | PlayOptions,
 ): boolean {
 	if (animationSet.size() === 0) {
 		warn(`No animations in set for character ${character.Name}`);
@@ -199,5 +314,5 @@ export function PlayRandomAnimationFromSet(
 		return false;
 	}
 
-	return PlayAnimation(character, animationKey as AnimationKey);
+	return PlayAnimation(character, animationKey as AnimationKey, options);
 }

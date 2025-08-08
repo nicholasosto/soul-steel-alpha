@@ -116,13 +116,14 @@ function loadEffectToRig(key: VFXKey, rig: Model): Instance[] | undefined {
 	return resultInstances;
 }
 
-export function RunEffect(key: VFXKey, rig: Model) {
+export function RunEffect(key: VFXKey, rig: Model, durationOverride?: number) {
 	/* Clones and attaches the effect to the character rig */
 	const vfxParts = loadEffectToRig(key, rig);
 	/* Get meta information for the effect */
 	const effectMeta = getEffectMeta(key) as EffectMeta;
 	if (!vfxParts || !effectMeta) return undefined;
-	task.delay(effectMeta.defaultDuration, () => {
+	const duration = durationOverride !== undefined ? durationOverride : effectMeta.defaultDuration;
+	task.delay(duration, () => {
 		warn(`Removing effect ${key} from rig after duration`);
 		vfxParts.forEach((part) => {
 			if (part.Parent) {

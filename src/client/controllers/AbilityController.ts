@@ -88,6 +88,9 @@ export class AbilityController {
 				warn(`${abilityKey} requires a valid target`);
 				return false;
 			}
+
+			// Visual feedback: briefly highlight the selected target locally
+			this.showTargetHighlight(target, 1.25);
 		}
 		// Check if ability is on cooldown
 		if (this.isOnCooldown(abilityKey)) {
@@ -130,6 +133,30 @@ export class AbilityController {
 			return model;
 		}
 		return undefined;
+	}
+
+	/**
+	 * Briefly show a local-only highlight on the selected target for feedback.
+	 */
+	private showTargetHighlight(target: SSEntity, duration = 1): void {
+		const player = Players.LocalPlayer;
+		if (player === undefined) return;
+		const playerGui = player.FindFirstChildOfClass("PlayerGui");
+		if (!playerGui) return;
+
+		const highlight = new Instance("Highlight");
+		highlight.Name = "AbilityTargetHighlight";
+		highlight.Adornee = target;
+		highlight.FillColor = Color3.fromRGB(255, 204, 64);
+		highlight.FillTransparency = 0.65;
+		highlight.OutlineColor = Color3.fromRGB(255, 255, 255);
+		highlight.OutlineTransparency = 0.1;
+		highlight.DepthMode = Enum.HighlightDepthMode.Occluded;
+		highlight.Parent = playerGui;
+
+		task.delay(duration, () => {
+			if (highlight.Parent) highlight.Destroy();
+		});
 	}
 
 	/**

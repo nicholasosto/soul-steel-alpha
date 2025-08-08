@@ -58,6 +58,10 @@ class AbilityService {
 	/** Map storing cooldown timers for each entity's abilities */
 	private abilityCooldowns: Map<string, CooldownTimer> = new Map();
 
+	/** Simple per-player rate limit tracker for ability activation */
+	private lastAbilityRequestAt = new Map<Player, number>();
+	private ABILITY_REQUEST_WINDOW_SEC = 0.15; // allow ~6 per second
+
 	/**
 	 * Gets or creates the singleton instance of AbilityService.
 	 * Initializes the service on first call.
@@ -101,6 +105,13 @@ class AbilityService {
 	private initializeRemotes(): void {
 		try {
 			AbilityRemotes.Server.Get(SIGNAL_KEYS.ABILITY_ACTIVATE).SetCallback((player, abilityKey) => {
+				// Rate limit guard
+				const now = tick();
+				const last = this.lastAbilityRequestAt.get(player);
+				if (last !== undefined && now - last < this.ABILITY_REQUEST_WINDOW_SEC) {
+					return false;
+				}
+				this.lastAbilityRequestAt.set(player, now);
 				return this.handleAbilityStart(player, abilityKey);
 			});
 		} catch (error) {
@@ -255,7 +266,8 @@ class AbilityService {
 			warn(`Player ${player.Name} does not have a valid profile`);
 			return false;
 		}
-		if (profile.Data.Abilities[abilityKey] === undefined || !profile.Data.Abilities[abilityKey]) {
+		const hasAbilityDefined = profile.Data.Abilities[abilityKey] !== undefined;
+		if (!hasAbilityDefined) {
 			warn(`Ability ${abilityKey} is not defined in player profile`, profile.Data.Abilities);
 			return false;
 		}
