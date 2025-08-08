@@ -11,7 +11,7 @@
 import { Players, RunService, Workspace } from "@rbxts/services";
 import { cloneNPCModel, NPC_MODEL_CATALOG, type NPCModelKey } from "shared/catalogs/npc-model-catalog";
 import { isSSEntity } from "shared/helpers/type-guards";
-import { SSEntity } from "shared/types"
+import { SSEntity } from "shared/types";
 // Import services for enhanced mode
 //import { CombatServiceInstance } from "./combat-service";
 import { ResourceServiceInstance } from "./resource-service";
@@ -73,7 +73,7 @@ export interface BaseNPCEntity {
 }
 
 // Enhanced NPC Entity (for enhanced mode)
-export interface EnhancedNPCEntity extends BaseNPCEntity, SSEntity {
+export interface EnhancedNPCEntity extends BaseNPCEntity {
 	// Combat integration
 	isCombatant: boolean;
 	currentTarget?: SSEntity;
@@ -84,6 +84,9 @@ export interface EnhancedNPCEntity extends BaseNPCEntity, SSEntity {
 		lastAbilityTime: number;
 		lastTargetSeen: number;
 	};
+
+	// Back-reference to the actual model with rich SSEntity typing
+	entityModel: SSEntity;
 }
 
 // Union type for all NPCs
@@ -168,6 +171,8 @@ class UnifiedNPCService {
 	private static instance?: UnifiedNPCService;
 	private npcs = new Map<string, UnifiedNPCEntity>();
 	private npcCounter = 0;
+	// Single scheduler connection for all NPC AI ticks
+	private aiConnection?: RBXScriptConnection;
 
 	private constructor() {}
 
@@ -225,8 +230,8 @@ class UnifiedNPCService {
 			// Setup features based on configuration
 			this.setupNPCFeatures(npcEntity);
 
-			// Start AI
-			this.startNPCAI(npcEntity);
+			// Ensure global AI scheduler is running
+			this.ensureAIScheduler();
 
 			const modeStr = resolvedConfig.mode === "enhanced" ? "Enhanced" : "Basic";
 			const featuresStr = this.getFeaturesString(resolvedConfig);
@@ -295,9 +300,9 @@ class UnifiedNPCService {
 			maxHealth: humanoid.MaxHealth,
 			level: config.level,
 			isActive: true,
-			spawnTime: tick(),
+			spawnTime: time(),
 			homePosition: rootPart.Position,
-			lastActionTime: tick(),
+			lastActionTime: time(),
 			config,
 		};
 	}
@@ -336,9 +341,6 @@ class UnifiedNPCService {
 		const ssEntity = model as SSEntity;
 
 		return {
-			// Spread SSEntity properties
-			...ssEntity,
-
 			// Base NPC properties
 			Model: model,
 			Humanoid: humanoid,
@@ -350,9 +352,9 @@ class UnifiedNPCService {
 			maxHealth: humanoid.MaxHealth,
 			level: config.level,
 			isActive: true,
-			spawnTime: tick(),
+			spawnTime: time(),
 			homePosition: rootPart.Position,
-			lastActionTime: tick(),
+			lastActionTime: time(),
 			config,
 
 			// Enhanced properties
@@ -362,6 +364,7 @@ class UnifiedNPCService {
 				lastAbilityTime: 0,
 				lastTargetSeen: 0,
 			},
+			entityModel: ssEntity,
 		};
 	}
 
@@ -369,55 +372,43 @@ class UnifiedNPCService {
 	 * Setup NPC features based on configuration
 	 */
 	private setupNPCFeatures(npc: UnifiedNPCEntity): void {
-		// const { config } = npc;
+		const { config } = npc;
 
-		// // Combat system integration
-		// if (config.enableCombat && isEnhancedNPC(npc)) {
-		// 	try {
-		// 		const success = CombatServiceInstance.RegisterCombatant(npc);
-		// 		if (success) {
-		// 			npc.isCombatant = true;
-		// 			print(`⚔️ Registered ${npc.npcId} with combat system`);
-		// 		}
-		// 	} catch (error) {
-		// 		warn(`❌ Failed to register ${npc.npcId} with combat system: ${error}`);
-		// 	}
-		// }
+		// Combat system integration (soft-enable until combat service is wired)
+		if (config.enableCombat && isEnhancedNPC(npc)) {
+			// If a combat service exists, register here and set isCombatant accordingly.
+			// For now, allow advanced combat behaviors by default.
+			npc.isCombatant = true;
+		}
 
-		// // Resource system integration
+		// Resource system integration placeholder
 		// if (config.enableResourceManagement && isEnhancedNPC(npc)) {
-		// 	try {
-		// 		//ResourceServiceInstance.initializeEntityHealth(npc);
-		// 		print(`💙 Initialized resources for ${npc.npcId}`);
-		// 	} catch (error) {
-		// 		warn(`❌ Failed to initialize resources for ${npc.npcId}: ${error}`);
-		// 	}
+		// 	// Initialize resources via ResourceService here when available
 		// }
 	}
 
 	/**
 	 * Start AI behavior for an NPC
 	 */
-	private startNPCAI(npc: UnifiedNPCEntity): void {
-		const connection = RunService.Heartbeat.Connect(() => {
-			if (!npc.isActive || !npc.Model.Parent) {
-				connection.Disconnect();
-				return;
-			}
+	private ensureAIScheduler(): void {
+		if (this.aiConnection) return;
+		this.aiConnection = RunService.Heartbeat.Connect(() => {
+			const currentTime = time();
+			for (const [, npc] of this.npcs) {
+				if (!npc.isActive || npc.Model.Parent === undefined || npc.aiState === "dead") {
+					// Handle death once
+					if (npc.aiState !== "dead" && npc.Humanoid.Health <= 0) {
+						this.handleNPCDeath(npc);
+					}
+					continue;
+				}
 
-			const currentTime = tick();
-
-			// Death check
-			if (npc.Humanoid.Health <= 0 && npc.aiState !== "dead") {
-				this.handleNPCDeath(npc);
-				return;
-			}
-
-			// Enhanced AI for enhanced NPCs
-			if (npc.config.enableAdvancedAI && isEnhancedNPC(npc)) {
-				this.executeAdvancedAI(npc, currentTime);
-			} else {
-				this.executeBasicAI(npc, currentTime);
+				// Enhanced AI for enhanced NPCs
+				if (npc.config.enableAdvancedAI && isEnhancedNPC(npc)) {
+					this.executeAdvancedAI(npc, currentTime);
+				} else {
+					this.executeBasicAI(npc, currentTime);
+				}
 			}
 		});
 	}
@@ -458,11 +449,15 @@ class UnifiedNPCService {
 			case "combat": {
 				// Basic combat - just face nearest player
 				const nearestPlayer = this.findNearestPlayer(npc.HumanoidRootPart.Position, config.aggroRange);
-				if (nearestPlayer) {
-					const playerPos = (nearestPlayer.Character!.FindFirstChild("HumanoidRootPart") as BasePart)
-						.Position;
-					const lookDirection = CFrame.lookAt(npc.HumanoidRootPart.Position, playerPos);
-					npc.HumanoidRootPart.CFrame = lookDirection;
+				if (nearestPlayer && nearestPlayer.Character) {
+					const hrp = nearestPlayer.Character.FindFirstChild("HumanoidRootPart") as BasePart | undefined;
+					if (hrp !== undefined) {
+						const playerPos = hrp.Position;
+						const lookDirection = CFrame.lookAt(npc.HumanoidRootPart.Position, playerPos);
+						npc.HumanoidRootPart.CFrame = lookDirection;
+					} else {
+						this.SetAIState(npc.npcId, "idle");
+					}
 				} else {
 					this.SetAIState(npc.npcId, "idle");
 				}
@@ -474,7 +469,7 @@ class UnifiedNPCService {
 		if (config.isHostile && npc.aiState === "idle") {
 			const nearestPlayer = this.findNearestPlayer(npc.HumanoidRootPart.Position, config.aggroRange);
 			if (nearestPlayer) {
-				this.SetAIState(npc.npcId, "patrol");
+				this.SetAIState(npc.npcId, "pursuit");
 			}
 		}
 	}
@@ -497,7 +492,7 @@ class UnifiedNPCService {
 		if (config.isHostile && npc.aiState !== "dead" && npc.aiState !== "retreat") {
 			nearestTarget = this.findNearestTarget(npc);
 			if (nearestTarget && npc.aiState === "idle") {
-				this.SetAIState(npc.npcId, "combat");
+				this.SetAIState(npc.npcId, "pursuit");
 				npc.currentTarget = nearestTarget;
 			}
 		}
@@ -505,7 +500,7 @@ class UnifiedNPCService {
 		// Execute state-specific advanced behavior
 		switch (npc.aiState) {
 			case "combat":
-				if (nearestTarget && npc.isCombatant) {
+				if (nearestTarget && (npc.isCombatant || npc.config.enableCombat === true)) {
 					this.executeAdvancedCombat(npc, nearestTarget, currentTime);
 				} else {
 					this.SetAIState(npc.npcId, "patrol");
@@ -670,7 +665,7 @@ class UnifiedNPCService {
 
 		const oldState = npc.aiState;
 		npc.aiState = state;
-		npc.lastActionTime = tick();
+		npc.lastActionTime = time();
 
 		print(`🧠 ${npcId}: ${oldState} → ${state}`);
 		return true;
