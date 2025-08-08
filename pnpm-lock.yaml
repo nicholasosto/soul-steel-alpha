@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@modelcontextprotocol/sdk':
-        specifier: ^1.17.1
-        version: 1.17.1
+        specifier: ^1.17.2
+        version: 1.17.2
       '@rbxts/fusion':
         specifier: ^0.2.0
         version: 0.2.0
@@ -36,8 +36,8 @@ importers:
         specifier: 1.0.0-alpha.3
         version: 1.0.0-alpha.3
       '@trembus/ss-fusion':
-        specifier: ^1.0.4
-        version: 1.0.4
+        specifier: ^1.1.0
+        version: 1.1.0
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -112,8 +112,8 @@ packages:
     resolution: {integrity: sha512-93zYdMES/c1D69yZiKDBj0V24vqNzB/koF26KPaagAfd3P/4gUlh3Dys5ogAK+Exi9QyzlD8x/08Zt7wIKcDcA==}
     deprecated: Use @eslint/object-schema instead
 
-  '@modelcontextprotocol/sdk@1.17.1':
-    resolution: {integrity: sha512-CPle1OQehbWqd25La9Ack5B07StKIxh4+Bf19qnpZKJC1oI22Y0czZHbifjw1UoczIfKBwBDAp/dFxvHG13B5A==}
+  '@modelcontextprotocol/sdk@1.17.2':
+    resolution: {integrity: sha512-EFLRNXR/ixpXQWu6/3Cu30ndDFIFNaqUXcTqsGebujeMan9FzhAaFFswLRiFj61rgygDRr8WO1N+UijjgRxX9g==}
     engines: {node: '>=18'}
 
   '@nodelib/fs.scandir@2.1.5':
@@ -171,8 +171,8 @@ packages:
   '@trembus/rpg-attributes@1.0.0-alpha.3':
     resolution: {integrity: sha512-b+xxyRcDRS3YH10dx+bIbmMdM3iK8VAUrDti2BbMIosgJkkCGzgXI+ofVaONY3Cb0xiQTAUlfMdHT9RQssPUWw==}
 
-  '@trembus/ss-fusion@1.0.4':
-    resolution: {integrity: sha512-jHuDl8DFYrZqgb+smXf3iTfRw66EnXjSV1DxnnRfZsEIY/W4Xk24ma6p33Abbf8dOZw+xDPMHZmTEpSdU66PBA==}
+  '@trembus/ss-fusion@1.1.0':
+    resolution: {integrity: sha512-lrPd5F6TfOtZzFDx0vtqaV8rNMMZOC3Li/PjDi2EeLAKZIV5KRB8GrcXsf597UMIbrE3sx0OVZleV8dHwAG65A==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -1204,7 +1204,7 @@ snapshots:
 
   '@humanwhocodes/object-schema@2.0.3': {}
 
-  '@modelcontextprotocol/sdk@1.17.1':
+  '@modelcontextprotocol/sdk@1.17.2':
     dependencies:
       ajv: 6.12.6
       content-type: 1.0.5
@@ -1269,7 +1269,7 @@ snapshots:
     dependencies:
       '@rbxts/fusion': 0.2.0
 
-  '@trembus/ss-fusion@1.0.4':
+  '@trembus/ss-fusion@1.1.0':
     dependencies:
       '@rbxts/fusion': 0.2.0
 
