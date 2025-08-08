@@ -24,8 +24,9 @@ import { SSEntity } from "shared/types";
 import { isSSEntity } from "shared/helpers/type-guards";
 import { CombatRemotes, CombatHitEvent, WeaponEquipEvent } from "shared/network";
 import { MessageType, MessageMetaRecord } from "shared/types";
-import { ResourceServiceInstance } from "./resource-service";
+// import { ResourceServiceInstance } from "./resource-service"; // Avoid direct coupling
 import { MessageServiceInstance } from "./message-service";
+import { DamageServiceInstance } from "./damage-service";
 import { NPCDemoServiceInstance } from "./npc-demo-service";
 import { AbilityCatalog, AbilityKey } from "shared/catalogs/ability-catalog";
 import { AbilityServiceInstance } from "./ability-service";
@@ -233,7 +234,7 @@ class CombatService {
 		if (success) {
 			// Emit combat events for other services to react to
 			SignalServiceInstance.emit("PlayerDamaged", {
-				victim: target.IsA("Player") ? target : undefined,
+				victim: target,
 				attacker: attacker,
 				damage: finalDamage,
 			});
@@ -359,9 +360,9 @@ class CombatService {
 
 		// Handle special ability effects
 		if (abilityKey === "Soul-Drain" && target) {
-			// Heal attacker for 30% of damage dealt
+			// Heal attacker for 30% of damage dealt via signal
 			const healAmount = math.floor(finalDamage * 0.3);
-			ResourceServiceInstance.ModifyResource(attacker, "health", healAmount);
+			DamageServiceInstance.requestHealthHeal(attacker, healAmount, "Soul-Drain");
 			MessageServiceInstance.SendMessageToPlayer(
 				attacker,
 				this.createMessage(`Soul Drain healed you for ${healAmount} health!`, "success"),

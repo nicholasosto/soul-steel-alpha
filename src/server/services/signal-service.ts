@@ -10,6 +10,7 @@
 
 import Signal from "@rbxts/signal";
 import { ZoneKey } from "shared/keys";
+import { SSEntity } from "shared/types";
 
 // Service event types
 export interface ServiceEvents {
@@ -22,7 +23,7 @@ export interface ServiceEvents {
 	ZoneDeactivated: { zoneKey: ZoneKey };
 
 	// Combat events (examples for future use)
-	PlayerDamaged: { victim: Player; attacker?: Player; damage: number };
+	PlayerDamaged: { victim: SSEntity; attacker?: Player; damage: number };
 	AbilityActivated: { player: Player; abilityKey: string };
 
 	// Resource events - Enhanced for better resource management
@@ -46,7 +47,7 @@ export interface ServiceEvents {
 
 export class SignalService {
 	private static instance: SignalService;
-	private signals = new Map<string, Signal>();
+	private signals = new Map<keyof ServiceEvents, Signal<(data: unknown) => void>>();
 
 	public static getInstance(): SignalService {
 		if (SignalService.instance === undefined) {
@@ -61,7 +62,7 @@ export class SignalService {
 	}
 
 	private initializeSignals(): void {
-		const eventKeys = [
+		const eventKeys: (keyof ServiceEvents)[] = [
 			"ZonePlayerEntered",
 			"ZonePlayerExited",
 			"ZoneCreated",
@@ -82,24 +83,26 @@ export class SignalService {
 		];
 
 		for (const eventKey of eventKeys) {
-			this.signals.set(eventKey, new Signal());
+			this.signals.set(eventKey, new Signal<(data: unknown) => void>());
 		}
 	}
 
 	/**
 	 * Get a signal for the specified event type
 	 */
-	public getSignal(eventType: string): Signal | undefined {
-		return this.signals.get(eventType);
+	public getSignal<K extends keyof ServiceEvents>(
+		eventType: K,
+	): Signal<(data: ServiceEvents[K]) => void> | undefined {
+		return this.signals.get(eventType) as unknown as Signal<(data: ServiceEvents[K]) => void> | undefined;
 	}
 
 	/**
 	 * Emit an event to all listeners
 	 */
-	public emit(eventType: string, data: unknown): void {
-		const signal = this.signals.get(eventType);
+	public emit<K extends keyof ServiceEvents>(eventType: K, data: ServiceEvents[K]): void {
+		const signal = this.signals.get(eventType) as unknown as Signal<(data: ServiceEvents[K]) => void> | undefined;
 		if (signal !== undefined) {
-			(signal as Signal<(data: unknown) => void>).Fire(data);
+			signal.Fire(data);
 		} else {
 			warn(`Attempted to emit unknown event type: ${eventType}`);
 		}
@@ -108,10 +111,13 @@ export class SignalService {
 	/**
 	 * Connect to an event
 	 */
-	public connect(eventType: string, callback: (data: unknown) => void): RBXScriptConnection | undefined {
-		const signal = this.signals.get(eventType);
+	public connect<K extends keyof ServiceEvents>(
+		eventType: K,
+		callback: (data: ServiceEvents[K]) => void,
+	): RBXScriptConnection | undefined {
+		const signal = this.signals.get(eventType) as unknown as Signal<(data: ServiceEvents[K]) => void> | undefined;
 		if (signal !== undefined) {
-			return (signal as Signal<(data: unknown) => void>).Connect(callback);
+			return signal.Connect(callback);
 		}
 		warn(`Attempted to connect to unknown event type: ${eventType}`);
 		return undefined;
@@ -120,10 +126,13 @@ export class SignalService {
 	/**
 	 * Connect to an event once
 	 */
-	public connectOnce(eventType: string, callback: (data: unknown) => void): RBXScriptConnection | undefined {
-		const signal = this.signals.get(eventType);
+	public connectOnce<K extends keyof ServiceEvents>(
+		eventType: K,
+		callback: (data: ServiceEvents[K]) => void,
+	): RBXScriptConnection | undefined {
+		const signal = this.signals.get(eventType) as unknown as Signal<(data: ServiceEvents[K]) => void> | undefined;
 		if (signal !== undefined) {
-			return (signal as Signal<(data: unknown) => void>).Once(callback);
+			return signal.Once(callback);
 		}
 		warn(`Attempted to connect once to unknown event type: ${eventType}`);
 		return undefined;

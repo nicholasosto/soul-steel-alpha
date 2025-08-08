@@ -24,8 +24,9 @@ import { isSSEntity } from "shared/helpers/type-guards";
 import { AbilityCatalog, AbilityKey } from "shared/catalogs";
 import { DataServiceInstance } from "./data-service";
 import { MessageServiceInstance } from "./message-service";
-import { ResourceServiceInstance } from "./resource-service";
+// import { ResourceServiceInstance } from "./resource-service"; // Avoid direct coupling
 import { SignalServiceInstance } from "./signal-service";
+import { ServiceRegistryInstance } from "./service-registry";
 
 /**
  * Server-side ability management service.
@@ -268,7 +269,8 @@ class AbilityService {
 
 		// Check resource costs
 		const manaCost = AbilityCatalog[abilityKey]?.cost ?? 0;
-		const currentMana = ResourceServiceInstance.GetResources(player)?.Mana.current ?? 0;
+		const resourceOps = ServiceRegistryInstance.getResourcePlayerOperations();
+		const currentMana = resourceOps.getResourceValue(player, "mana");
 		if (currentMana < manaCost) {
 			warn(`Player ${player.Name} does not have enough mana for ability ${abilityKey}`);
 			return false;

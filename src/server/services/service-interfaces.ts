@@ -23,6 +23,15 @@ export interface IResourceOperations {
 }
 
 /**
+ * Player-centric resource operations (for services that operate on Player rather than SSEntity)
+ */
+export interface IResourcePlayerOperations {
+	modifyResource: (player: Player, resourceType: "health" | "mana" | "stamina", amount: number) => boolean;
+	getResourceValue: (player: Player, resourceType: "health" | "mana" | "stamina") => number;
+	setResourceValue: (player: Player, resourceType: "health" | "mana" | "stamina", value: number) => boolean;
+}
+
+/**
  * Interface for signal-based resource requests
  * Preferred approach - services should emit signals instead of direct calls
  */

@@ -16,29 +16,29 @@ export const ssFusionUI = New("ScreenGui")({
 	DisplayOrder: 10,
 	Parent: playerGui,
 	[Children]: {
-		ProgressBar: ProgressBar({
-			currentValue: playerMana.current,
-			maxValue: playerMana.max,
-			Size: new UDim2(0.3, 0, 0.05, 0),
-			Position: new UDim2(0.35, 0, 0.1, 0),
-		}),
-		TextBox: TextBox({
-			Size: new UDim2(0.3, 0, 0.05, 0),
-			Position: new UDim2(0.35, 0, 0.2, 0),
-		}),
-		Button: Button({
-			text: "Click Me",
-			Size: new UDim2(0.3, 0, 0.05, 0),
-			Position: new UDim2(0.35, 0, 0.3, 0),
-			onClick: () => {
-				print("Button clicked!");
-			},
-		}),
-		CooldownButton: CooldownButton({
-			icon: ImageConstants.Ability.Blood_Siphon,
-			Size: UDim2.fromOffset(70, 90),
-			cooldown: 3,
-			Position: new UDim2(0.35, 0, 0.4, 0),
-		}),
+		// ProgressBar: ProgressBar({
+		// 	currentValue: playerMana.current,
+		// 	maxValue: playerMana.max,
+		// 	Size: new UDim2(0.3, 0, 0.05, 0),
+		// 	Position: new UDim2(0.35, 0, 0.1, 0),
+		// }),
+		// TextBox: TextBox({
+		// 	Size: new UDim2(0.3, 0, 0.05, 0),
+		// 	Position: new UDim2(0.35, 0, 0.2, 0),
+		// }),
+		// Button: Button({
+		// 	text: "Click Me",
+		// 	Size: new UDim2(0.3, 0, 0.05, 0),
+		// 	Position: new UDim2(0.35, 0, 0.3, 0),
+		// 	onClick: () => {
+		// 		print("Button clicked!");
+		// 	},
+		// }),
+		// CooldownButton: CooldownButton({
+		// 	icon: ImageConstants.Ability.Blood_Siphon,
+		// 	Size: UDim2.fromOffset(70, 90),
+		// 	cooldown: 3,
+		// 	Position: new UDim2(0.35, 0, 0.4, 0),
+		// }),
 	},
 });

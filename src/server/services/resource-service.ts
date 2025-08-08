@@ -14,6 +14,8 @@ import { SSEntity } from "shared/types";
 import { makeDefaultResourceDTO, ResourceDTO, ResourceRemotes } from "shared/catalogs/resources-catalog";
 import { DataServiceInstance } from "./data-service";
 import { SignalServiceInstance } from "./signal-service";
+import { ServiceRegistryInstance } from "./service-registry";
+import { IResourcePlayerOperations } from "./service-interfaces";
 
 /**
  * Resource Service - Manages health, mana, stamina, and combat for all entities
@@ -71,17 +73,31 @@ export class ResourceService {
 		});
 
 		// Listen to damage requests through signals
+
 		const damageRequestConnection = SignalServiceInstance.connect("HealthDamageRequested", (data) => {
 			const { player, amount, source } = data as { player: Player; amount: number; source?: string };
 			print(`ResourceService: Damage requested for ${player.Name}: ${amount} from ${source ?? "unknown"}`);
-			this.ModifyResource(player, "health", -amount);
+			// Apply at Humanoid (source of truth), HumanoidMonitor will reflect to Resource DTO
+			const humanoid = player.Character?.FindFirstChildOfClass("Humanoid");
+			if (humanoid !== undefined) {
+				humanoid.TakeDamage(math.max(0, amount));
+			} else {
+				// Fallback to DTO to avoid dropping the event
+				this.ModifyResource(player, "health", -amount);
+			}
 		});
 
 		// Listen to heal requests through signals
 		const healRequestConnection = SignalServiceInstance.connect("HealthHealRequested", (data) => {
 			const { player, amount, source } = data as { player: Player; amount: number; source?: string };
 			print(`ResourceService: Heal requested for ${player.Name}: ${amount} from ${source ?? "unknown"}`);
-			this.ModifyResource(player, "health", amount);
+			const humanoid = player.Character?.FindFirstChildOfClass("Humanoid");
+			if (humanoid !== undefined) {
+				const newValue = math.min(humanoid.Health + amount, humanoid.MaxHealth);
+				humanoid.Health = newValue;
+			} else {
+				this.ModifyResource(player, "health", amount);
+			}
 		});
 
 		// Listen to mana consumption through signals
@@ -109,6 +125,20 @@ export class ResourceService {
 			const resources = this.entityResources.get(player) ?? makeDefaultResourceDTO();
 			return resources;
 		});
+
+		// Register player-centric resource operations with the service registry
+		const ops: IResourcePlayerOperations = {
+			modifyResource: (player, resourceType, amount) => this.ModifyResource(player, resourceType, amount),
+			getResourceValue: (player, resourceType) => {
+				const dto = this.entityResources.get(player);
+				if (!dto) return 0;
+				if (resourceType === "health") return dto.Health.current;
+				if (resourceType === "mana") return dto.Mana.current;
+				return dto.Stamina.current;
+			},
+			setResourceValue: (player, resourceType, value) => this.SetResourceValue(player, resourceType, value),
+		};
+		ServiceRegistryInstance.registerService<IResourcePlayerOperations>("ResourcePlayerOperations", ops);
 	}
 
 	public GetResources(player: Player): ResourceDTO | undefined {

@@ -11,6 +11,7 @@
 import { SignalServiceInstance } from "./signal-service";
 import {
 	IResourceOperations,
+	IResourcePlayerOperations,
 	IAbilityOperations,
 	IMessageOperations,
 	IDataOperations,
@@ -68,6 +69,10 @@ export class ServiceRegistry {
 	 */
 	public getResourceOperations(): IResourceOperations {
 		return this.getService<IResourceOperations>("ResourceOperations");
+	}
+
+	public getResourcePlayerOperations(): IResourcePlayerOperations {
+		return this.getService<IResourcePlayerOperations>("ResourcePlayerOperations");
 	}
 
 	public getAbilityOperations(): IAbilityOperations {
