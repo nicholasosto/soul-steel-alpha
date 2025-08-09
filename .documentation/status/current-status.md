@@ -144,12 +144,12 @@
 
 ### Build & Development Scripts
 
-- **`npm run build`**: Compile TypeScript to Lua (rbxtsc)
-- **`npm run watch`**: Development mode with auto-compilation
-- **`npm run lint`**: ESLint code quality checks
-- **`npm run lint:fix`**: Automatic code formatting and fixes
-- **`npm run build:mcp`**: Build Model Context Protocol server
-- **`npm run mcp:server`**: Run MCP server for AI development assistance
+- **`pnpm run build`**: Compile TypeScript to Lua (rbxtsc)
+- **`pnpm run watch`**: Development mode with auto-compilation
+- **`pnpm run lint`**: ESLint code quality checks
+- **`pnpm run lint:fix`**: Automatic code formatting and fixes
+- **`pnpm run build:mcp`**: Build Model Context Protocol server
+- **`pnpm run mcp:server`**: Run MCP server for AI development assistance
 
 ### Code Quality Features
 

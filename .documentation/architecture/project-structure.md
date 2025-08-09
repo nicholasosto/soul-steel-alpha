@@ -220,8 +220,8 @@ soul-steel-alpha/
 ## Development Workflow
 
 1. **Code Development**: Write TypeScript in `src/` directories
-2. **Building**: Run `npm run build` or `npm run watch` for auto-compilation
-3. **Linting**: Use `npm run lint` for code quality checks
+2. **Building**: Run `pnpm run build` or `pnpm run watch` for auto-compilation
+3. **Linting**: Use `pnpm run lint` for code quality checks
 4. **Roblox Integration**: Import generated Lua files into Roblox Studio
 5. **Testing**: Test in Roblox Studio environment
 6. **MCP Integration**: Use built MCP server for AI assistant support

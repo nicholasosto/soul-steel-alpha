@@ -4,7 +4,7 @@
 		{
 			"label": "Build MCP Server",
 			"type": "shell",
-			"command": "npm",
+			"command": "pnpm",
 			"args": [
 				"run",
 				"build:mcp"
@@ -17,7 +17,7 @@
 		{
 			"label": "Build rbxts",
 			"type": "shell",
-			"command": "npm",
+			"command": "pnpm",
 			"args": [
 				"run",
 				"build"

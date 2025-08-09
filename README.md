@@ -74,19 +74,25 @@ A Roblox TypeScript project with Model Context Protocol (MCP) server integration
 
 ## Development
 
+### Prerequisites
+This project uses **pnpm** as the package manager for better performance and disk efficiency. Install dependencies with:
+```bash
+pnpm install
+```
+
 ### Roblox Development
 ```bash
 # Build the Roblox project
-npm run build
+pnpm run build
 
 # Watch for changes and auto-build
-npm run watch
+pnpm run watch
 
 # Lint the code
-npm run lint
+pnpm run lint
 
 # Auto-fix linting issues
-npm run lint:fix
+pnpm run lint:fix
 ```
 
 ### MCP Server
@@ -96,13 +102,13 @@ The MCP (Model Context Protocol) server allows AI assistants to understand and i
 #### Building the MCP Server
 ```bash
 # Build the MCP server
-npm run build:mcp
+pnpm run build:mcp
 ```
 
 #### Running the MCP Server
 ```bash
 # Run the MCP server
-npm run mcp:server
+pnpm run mcp:server
 ```
 
 #### MCP Server Capabilities

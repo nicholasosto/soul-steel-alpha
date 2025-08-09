@@ -100,12 +100,23 @@ Client uses Fusion reactive states in `src/client/states/`:
 
 ## Development Workflow
 
-### 🔨 Build Commands
+### � Package Management
+This project uses **pnpm** as the preferred package manager for better performance and disk efficiency.
+
+### �🔨 Build Commands
 ```bash
-npm run build        # Build Roblox project
-npm run watch        # Auto-build on changes
-npm run build:mcp    # Build MCP server for AI integration
-npm run lint         # ESLint with roblox-ts rules
+pnpm run build        # Build Roblox project
+pnpm run watch        # Auto-build on changes
+pnpm run build:mcp    # Build MCP server for AI integration
+pnpm run lint         # ESLint with roblox-ts rules
+```
+
+### 📋 Package Commands
+```bash
+pnpm install         # Install dependencies
+pnpm add <package>   # Add new dependency
+pnpm update          # Update dependencies
+pnpm list            # List installed packages
 ```
 
 ### 🤖 MCP Server Integration
