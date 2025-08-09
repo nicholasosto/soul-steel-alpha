@@ -1,10 +1,11 @@
-import { New } from "@rbxts/fusion";
+// No Fusion New needed here; using ss-fusion IconButton directly
 import { MenuButtonCatalog } from "shared/catalogs/menu-catalog";
 import { MenuKey } from "shared/keys/menu-keys";
 import { IconButton } from "@trembus/ss-fusion";
 
 export interface MenuButtonProps {
 	menuKey: MenuKey;
+	onClick?: () => void;
 }
 
 export function MenuButton(props: MenuButtonProps): ImageButton {
@@ -16,8 +17,12 @@ export function MenuButton(props: MenuButtonProps): ImageButton {
 	const button = IconButton({
 		icon: icon,
 		onClick: () => {
-			// Menu button click handler can be added here
-			print(`${displayName} menu clicked`);
+			if (props.onClick) {
+				props.onClick();
+			} else {
+				// Default menu button click handler
+				print(`${displayName} menu clicked`);
+			}
 		},
 	});
 

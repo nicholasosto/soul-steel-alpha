@@ -1,3 +1,7 @@
+/**
+ * DEPRECATED: Use SlicedImage from @trembus/ss-fusion instead.
+ * This file is kept temporarily for reference and will be removed.
+ */
 import Fusion, { New } from "@rbxts/fusion";
 const AssetId = "rbxassetid://80375133768026";
 

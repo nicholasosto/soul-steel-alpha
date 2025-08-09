@@ -81,8 +81,20 @@ class PlayerState {
 
 	public SetResources(resources: ResourceStateMap): void {
 		if (resources) {
-			this.Resources = resources;
-			print("Player resources set:", resources);
+			// Important: Do NOT replace the map reference.
+			// Mutate existing Value objects so any already-mounted UI keeps updating.
+			ForKeys(resources, (key) => {
+				const incoming = resources[key];
+				const current = this.Resources[key];
+				if (current !== undefined) {
+					current.current.set(incoming.current.get());
+					current.max.set(incoming.max.get());
+				} else {
+					// Fallback: if a new resource appears, adopt it
+					this.Resources[key] = incoming;
+				}
+			});
+			print("Player resources set (merged into existing state):", resources);
 		} else {
 			warn("No player resources provided.");
 		}

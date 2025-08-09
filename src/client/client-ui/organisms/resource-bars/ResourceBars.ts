@@ -9,13 +9,12 @@
  * @lastUpdated 2025-08-04 - Added layout, dynamic keys, and props for simplification
  */
 
-import Fusion, { Children, Computed, New } from "@rbxts/fusion";
+import Fusion, { Children, New } from "@rbxts/fusion";
 import { ProgressBar } from "@trembus/ss-fusion";
-import { ResourceKey } from "shared/catalogs/resources-catalog";
-import { ResourcesCatalog } from "shared/catalogs/resources-catalog";
+import { ResourceKey, ResourcesCatalog } from "shared/catalogs/resources-catalog";
 import { PlayerStateInstance } from "client/states";
 
-const PlayerResources = PlayerStateInstance.Resources;
+// Do not capture a snapshot; always read from PlayerStateInstance.Resources
 
 export interface ResourceBarProps extends Fusion.PropertyTable<Frame> {
 	resourceKey: ResourceKey;
@@ -28,19 +27,15 @@ export function ResourceBar(props: ResourceBarProps): Frame | undefined {
 		return undefined; // Return undefined if no key is provided
 	}
 	const resourceMeta = ResourcesCatalog[props.resourceKey];
-	const resourceState = PlayerResources[props.resourceKey];
-	const currentProgress = Computed(() => {
-		resourceState.current.get();
-	});
+	const resourceState = PlayerStateInstance.Resources[props.resourceKey];
 	warn(`ResourceBar: Creating bar for resource "${props.resourceKey}" with state:`, resourceState, resourceMeta);
 	if (resourceMeta === undefined || resourceState === undefined) {
 		warn(`ResourceBar: Invalid resource key "${props.resourceKey}"`);
 		return New("Frame")({}); // Return empty frame if invalid
 	}
-	const computedResource = PlayerStateInstance.getComputedResource(props.resourceKey);
 	const resourceBar = ProgressBar({
-		currentValue: PlayerStateInstance.Resources[props.resourceKey].current,
-		maxValue: PlayerStateInstance.Resources[props.resourceKey].max,
+		currentValue: resourceState.current,
+		maxValue: resourceState.max,
 		fillColor: resourceMeta.color,
 		showLabel: props.showLabel ?? true, // Default to true if not specified
 		Size: props.Size ?? UDim2.fromOffset(200, 30), //

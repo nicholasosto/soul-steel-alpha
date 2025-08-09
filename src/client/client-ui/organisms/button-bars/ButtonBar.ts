@@ -1,8 +1,6 @@
 import Fusion, { New } from "@rbxts/fusion";
-import { IconButton } from "@trembus/ss-fusion";
-import { ImageConstants, MenuButtonImageMap } from "shared/asset-ids";
+import { SlicedImage } from "@trembus/ss-fusion";
 import { HorizontalLayout, makePadding } from "../../helpers";
-import { SliceImageFrame } from "client/client-ui/atoms/SliceImageFrame";
 
 const { Value } = Fusion;
 
@@ -41,7 +39,12 @@ export function HorizontalButtonBar(props: ButtonBarProps) {
 					HorizontalLayout(5),
 				],
 			}),
-			SliceImageFrame(),
+			SlicedImage({
+				imageId: "rbxassetid://80375133768026",
+				sliceCenter: new Rect(130, 130, 130, 130),
+				sliceScale: 0.5,
+				Size: new UDim2(1, 0, 1, 0),
+			}),
 		],
 	});
 	return uiComponent;

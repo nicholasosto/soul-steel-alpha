@@ -11,11 +11,10 @@
 
 import { ClientController } from "./controllers";
 import { PlayerHUD } from "./screens";
-import { CharacterPanelDemo } from "./client-ui";
+// Demo imports moved under client/demos. Remove or update if needed.
 // Initialize the main client controller (this initializes all sub-controllers)
 const clientController = ClientController.initialize();
 clientController.getAbilityController();
 
 const playerHud = PlayerHUD;
-const characterPanelDemo = CharacterPanelDemo({});
 print("Main client initialized with consolidated controller architecture");
