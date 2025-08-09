@@ -3,6 +3,7 @@ import { Function } from "@rbxts/net/out/client";
 import { Players } from "@rbxts/services";
 import { AbilityButtonBar, ResourceBars } from "client/client-ui/organisms";
 import { PlayerStateInstance } from "client/states";
+import { CreateTabGroupExample } from "@trembus/ss-fusion";
 
 const player = Players.LocalPlayer;
 const playerGui = player.WaitForChild("PlayerGui") as PlayerGui;
@@ -13,6 +14,7 @@ export const PlayerHUD = New("ScreenGui")({
 	Parent: playerGui,
 	DisplayOrder: 10,
 	[Children]: {
+		TabExample: CreateTabGroupExample(),
 		AbilityBar: AbilityButtonBar({
 			keys: ["Earthquake", "Ice-Rain", "Melee", "Soul-Drain"],
 		}),

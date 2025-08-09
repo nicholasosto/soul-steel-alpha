@@ -4,7 +4,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { promises as fs } from "fs";
-import { join, relative, extname } from "path";
+import { join, relative, extname, resolve, isAbsolute, sep } from "path";
 
 const PROJECT_ROOT = process.cwd();
 
@@ -90,10 +90,11 @@ server.tool(
   },
   async ({ path }) => {
     try {
-      const fullPath = join(PROJECT_ROOT, path);
+  const fullPath = resolve(PROJECT_ROOT, path);
       
       // Security check - ensure path is within project
-      if (!fullPath.startsWith(PROJECT_ROOT)) {
+  const rel = relative(resolve(PROJECT_ROOT), fullPath);
+  if (rel.startsWith("..") || rel === "" && isAbsolute(path)) {
         return {
           content: [
             {
@@ -202,31 +203,69 @@ server.tool(
       .string()
       .optional()
       .describe("Optional file pattern to limit search (e.g., '*.ts', 'client/**')"),
+    case_sensitive: z.boolean().optional().describe("Whether the search is case sensitive (default: false)"),
+    regex: z.boolean().optional().describe("Treat query as a regular expression (default: false)"),
   },
-  async ({ query, file_pattern }) => {
+  async ({ query, file_pattern, case_sensitive = false, regex = false }) => {
     try {
       const files = await findTsFiles(PROJECT_ROOT);
       const results: string[] = [];
       
-      for (const file of files) {
-        // Apply file pattern filter if specified
-        if (file_pattern && !file.includes(file_pattern.replace("*", ""))) {
-          continue;
+      const relPath = (p: string) => relative(PROJECT_ROOT, p).replace(/\\/g, "/");
+      const toRegex = (glob: string) => {
+        // Very small glob -> regex converter supporting **, *, ? and path separators
+        let pattern = glob.replace(/[.+^${}()|[\]\\]/g, "\\$&");
+        pattern = pattern
+          .replace(/\*\*/g, ".*")
+          .replace(/\*/g, "[^/]*")
+          .replace(/\?/g, ".");
+        return new RegExp("^" + pattern + "$", "i");
+      };
+      const fileFilter = file_pattern ? toRegex(file_pattern.replace(/\\/g, "/")) : undefined;
+      
+      const makeMatcher = () => {
+        if (regex) {
+          const flags = case_sensitive ? "" : "i";
+          return { type: "regex" as const, re: new RegExp(query, flags) };
         }
-        
-        try {
-          const content = await fs.readFile(file, "utf-8");
-          const lines = content.split("\n");
-          
-          lines.forEach((line, index) => {
-            if (line.toLowerCase().includes(query.toLowerCase())) {
-              const relativePath = relative(PROJECT_ROOT, file);
-              results.push(`${relativePath}:${index + 1}: ${line.trim()}`);
+        return {
+          type: "text" as const,
+          needle: case_sensitive ? query : query.toLowerCase(),
+        };
+      };
+      const matcher = makeMatcher();
+      
+      // Concurrency-limited scanning
+      const LIMIT = 16;
+      for (let i = 0; i < files.length; i += LIMIT) {
+        const batch = files.slice(i, i + LIMIT);
+        const batchResults = await Promise.all(
+          batch.map(async (file) => {
+            const rp = relPath(file);
+            if (fileFilter && !fileFilter.test(rp)) return [] as string[];
+            try {
+              const content = await fs.readFile(file, "utf-8");
+              const lines = content.split("\n");
+              const matches: string[] = [];
+              for (let idx = 0; idx < lines.length; idx++) {
+                const line = lines[idx];
+                let hit = false;
+                if (matcher.type === "regex") {
+                  hit = matcher.re.test(line);
+                } else {
+                  hit = (case_sensitive ? line : line.toLowerCase()).includes(matcher.needle);
+                }
+                if (hit) {
+                  matches.push(`${rp}:${idx + 1}: ${line.trim()}`);
+                }
+              }
+              return matches;
+            } catch {
+              return [] as string[];
             }
-          });
-        } catch (error) {
-          // Skip files that can't be read
-        }
+          })
+        );
+        batchResults.forEach((arr) => results.push(...arr));
       }
       
       return {
@@ -313,32 +352,34 @@ server.tool(
   {},
   async () => {
     try {
-      // Read ability catalog
-      const abilityKeysPath = join(PROJECT_ROOT, "src/shared/keys/ability-keys.ts");
-      const abilityCatalogPath = join(PROJECT_ROOT, "src/shared/catalogs/ability-catalog.ts");
+      // Discover ability catalog dynamically
+      const catalogsDir = join(PROJECT_ROOT, "src/shared/catalogs");
+  const catalogFiles = (await findTsFiles(catalogsDir)).filter((f) => /ability-?catalog\.ts$/.test(f));
+      const abilityCatalogFile = catalogFiles[0];
+      const catalogContent = abilityCatalogFile ? await fs.readFile(abilityCatalogFile, "utf-8") : "Not found";
       
-      const [keysContent, catalogContent] = await Promise.all([
-        fs.readFile(abilityKeysPath, "utf-8").catch(() => "Not found"),
-        fs.readFile(abilityCatalogPath, "utf-8").catch(() => "Not found")
-      ]);
-      
+      // Extract top-level ability keys from object-literal style catalogs
+      const abilityKeys: string[] = [];
+      if (catalogContent !== "Not found") {
+        const objKeyRegex1 = /^\s*["'`]([A-Za-z0-9_-]+)["'`]\s*:\s*\{/gm;
+        const objKeyRegex2 = /^\s*([A-Za-z0-9_]+)\s*:\s*\{/gm;
+        let m: RegExpExecArray | null;
+        while ((m = objKeyRegex1.exec(catalogContent)) !== null) abilityKeys.push(m[1]);
+        while ((m = objKeyRegex2.exec(catalogContent)) !== null) abilityKeys.push(m[1]);
+      }
+      const uniqKeys = Array.from(new Set(abilityKeys));
+
       return {
         content: [
           {
             type: "text",
-            text: `🎯 **Ability System Analysis**
+            text: `🎯 Ability System Analysis
 
-📋 **Ability Keys** (${abilityKeysPath}):
-\`\`\`typescript
-${keysContent}
-\`\`\`
+� Catalog File: ${abilityCatalogFile ? relative(PROJECT_ROOT, abilityCatalogFile) : "Not found"}
+${uniqKeys.length > 0 ? `\n🔑 Parsed Ability Keys (${uniqKeys.length}):\n- ${uniqKeys.join("\n- ")}` : "\nNo ability keys parsed (catalog may be empty or a non-object format)."}
 
-⚡ **Ability Catalog** (${abilityCatalogPath}):
-\`\`\`typescript
-${catalogContent.length > 1000 ? catalogContent.substring(0, 1000) + "...[truncated]" : catalogContent}
-\`\`\`
-
-This shows all available abilities in your game and their configurations.`,
+📄 Catalog Preview:\n\n\`\`\`typescript\n${catalogContent !== "Not found" ? (catalogContent.length > 1200 ? catalogContent.slice(0, 1200) + "\n...[truncated]" : catalogContent) : "Not found"}\n\`\`\`
+`,
           },
         ],
       };
@@ -362,38 +403,50 @@ server.tool(
   {},
   async () => {
     try {
+      // Collect event keys if present
       const eventKeysPath = join(PROJECT_ROOT, "src/shared/keys/event-keys.ts");
-      const abilityRemotesPath = join(PROJECT_ROOT, "src/shared/network/ability-remotes.ts");
-      const gameCycleRemotesPath = join(PROJECT_ROOT, "src/shared/network/game-cycle-remotes.ts");
-      
-      const [eventKeys, abilityRemotes, gameCycleRemotes] = await Promise.all([
-        fs.readFile(eventKeysPath, "utf-8").catch(() => "Not found"),
-        fs.readFile(abilityRemotesPath, "utf-8").catch(() => "Not found"),
-        fs.readFile(gameCycleRemotesPath, "utf-8").catch(() => "Not found")
-      ]);
-      
+      const eventKeys = await fs.readFile(eventKeysPath, "utf-8").catch(() => "Not found");
+
+      // Discover all *-remotes.ts in shared/network
+      const networkDir = join(PROJECT_ROOT, "src/shared/network");
+      const networkFiles = (await findTsFiles(networkDir)).filter((f) => /-remotes\.ts$/.test(f));
+      const summaries: string[] = [];
+      for (const f of networkFiles) {
+        const content = await fs.readFile(f, "utf-8").catch(() => "");
+        if (!content) continue;
+        // Extract Definitions.Create blocks and remote kinds
+        const createBlock = content.match(/Definitions\.Create\([\s\S]*?\)\s*\)/);
+        const remotes: string[] = [];
+        const kinds = [
+          "ServerAsyncFunction",
+          "ServerFunction",
+          "ClientAsyncFunction",
+          "ClientFunction",
+          "ServerEvent",
+          "ClientEvent",
+        ];
+        kinds.forEach((k) => {
+          const re = new RegExp(`(${k})<`, "g");
+          const reNoGen = new RegExp(`(${k})\\(`, "g");
+          let c1 = 0;
+          let m1: RegExpExecArray | null;
+          while ((m1 = re.exec(content)) !== null) c1++;
+          let c2 = 0;
+          let m2: RegExpExecArray | null;
+          while ((m2 = reNoGen.exec(content)) !== null) c2++;
+          if (c1 + c2 > 0) remotes.push(`${k}: ${c1 + c2}`);
+        });
+        summaries.push(`• ${relative(PROJECT_ROOT, f)}\n  - Remotes: ${remotes.join(", ") || "None detected"}`);
+      }
+
       return {
         content: [
           {
             type: "text",
-            text: `🔄 **Event System Analysis**
+            text: `🔄 Event System Analysis
 
-🔑 **Event & Signal Keys**:
-\`\`\`typescript
-${eventKeys}
-\`\`\`
-
-⚡ **Ability Remotes**:
-\`\`\`typescript
-${abilityRemotes}
-\`\`\`
-
-🎮 **Game Cycle Remotes**:
-\`\`\`typescript
-${gameCycleRemotes}
-\`\`\`
-
-This shows your complete client-server communication setup.`,
+🔑 Event & Signal Keys (if present):\n\n\`\`\`typescript\n${eventKeys}\n\`\`\`\n
+📡 Discovered Remotes (${networkFiles.length} files):\n${summaries.join("\n") || "None found in src/shared/network"}\n`,
           },
         ],
       };
@@ -406,6 +459,49 @@ This shows your complete client-server communication setup.`,
           },
         ],
       };
+    }
+  }
+);
+
+// Validate @rbxts/net remote definitions against project guidelines
+server.tool(
+  "validate_network_remotes",
+  "Validate that @rbxts/net remotes follow guidelines (no Promise-wrapped return types for ServerAsyncFunction/ClientAsyncFunction and explicit generics present)",
+  {},
+  async () => {
+    try {
+      const networkDir = join(PROJECT_ROOT, "src/shared/network");
+      const networkFiles = (await findTsFiles(networkDir)).filter((f) => /-remotes\.ts$/.test(f));
+      const violations: string[] = [];
+      for (const f of networkFiles) {
+        let content = "";
+        try {
+          content = await fs.readFile(f, "utf-8");
+        } catch {
+          continue;
+        }
+        const lines = content.split("\n");
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          // Promise-wrapped return type in AsyncFunction
+          if (/Definitions\.(ServerAsyncFunction|ClientAsyncFunction)\s*<[^>]*Promise\s*</.test(line)) {
+            violations.push(`${relative(PROJECT_ROOT, f)}:${i + 1}: Do not wrap return type in Promise<> for ${line.includes("ServerAsyncFunction") ? "ServerAsyncFunction" : "ClientAsyncFunction"}`);
+          }
+          // Missing explicit generic typing
+          const missingGenericMatch = line.match(/Definitions\.(ServerAsyncFunction|ClientAsyncFunction)\s*\(/);
+          if (missingGenericMatch && !/Definitions\.(ServerAsyncFunction|ClientAsyncFunction)\s*</.test(line)) {
+            violations.push(`${relative(PROJECT_ROOT, f)}:${i + 1}: Missing explicit generic type for ${missingGenericMatch[1]}`);
+          }
+        }
+      }
+
+      const header = `@rbxts/net Remote Validation`;
+      const body = violations.length === 0
+        ? "✅ All remotes follow the guideline: no Promise-wrapped return types and explicit generics present."
+        : `❌ Found ${violations.length} issue(s):\n\n${violations.join("\n")}`;
+      return { content: [{ type: "text", text: `${header}\n\n${body}` }] };
+    } catch (error) {
+      return { content: [{ type: "text", text: `Error validating network remotes: ${error}` }] };
     }
   }
 );
