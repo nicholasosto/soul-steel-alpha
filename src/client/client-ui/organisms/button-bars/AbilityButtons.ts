@@ -23,6 +23,7 @@ export function AbilityButtonBar(props: AbilityBarProps) {
 
 	return HorizontalButtonBar({
 		buttons: buttons,
+		Size: new UDim2(0, buttons[0].Size.X.Offset * buttons.size(), 0, buttons[0].Size.Y.Offset),
 		Position: new UDim2(0.5, 0, 1, -50),
 	});
 }
