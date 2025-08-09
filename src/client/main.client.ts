@@ -14,7 +14,7 @@ import { ClientController } from "./controllers";
 import { PlayerStateInstance } from "./states/player-state";
 import { DataRemotes } from "shared/network/data-remotes";
 import { Players } from "@rbxts/services";
-import { TextAndLabelDemo } from "./screens";
+import { PlayerHUD } from "./screens";
 
 // Initialize the main client controller (this initializes all sub-controllers)
 // const clientController = ClientController.initialize();
@@ -40,7 +40,6 @@ import { TextAndLabelDemo } from "./screens";
 // 	}
 // });
 
-// const playerHud = PlayerHUD;
-const textAndLabelDemo = TextAndLabelDemo;
+const playerHud = PlayerHUD;
 
 print("Main client initialized with consolidated controller architecture");

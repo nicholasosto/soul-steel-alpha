@@ -1,2 +1,2 @@
-//export * from "./PlayerHUD";
+export * from "./PlayerHUD";
 export * from "./TextAndLabelDemo";

@@ -1,0 +1,12 @@
+# Ignore migration folder - components moved to @trembus/ss-fusion package
+migration-to-ss-fusion/**/*
+
+# Ignore build outputs
+out/
+mcp-build/
+
+# Ignore node_modules
+node_modules/
+
+# Ignore roblox-ts generated files
+include/
