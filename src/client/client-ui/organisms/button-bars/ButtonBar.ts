@@ -1,5 +1,5 @@
 import Fusion, { New } from "@rbxts/fusion";
-import { IconButton } from "../../atoms/IconButton";
+import { IconButton } from "@trembus/ss-fusion";
 import { ImageConstants, MenuButtonImageMap } from "shared/asset-ids";
 import { HorizontalLayout, makePadding } from "../../helpers";
 import { SliceImageFrame } from "client/client-ui/atoms/SliceImageFrame";

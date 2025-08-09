@@ -1,3 +1,72 @@
+---
+project: Soul Steel Alpha
+version: 1.0
+milestones:
+  - id: M1
+    title: Core Foundation
+  - id: M2
+    title: Combat Enhancement
+  - id: M3
+    title: Player Progression
+  - id: M4
+    title: Community Features
+features:
+  - id: F-ABILITY-CORE
+    title: Basic Ability System
+    milestone: M1
+    priority: P1
+    acceptance:
+      - "Four core abilities usable with cooldowns and resource costs"
+      - "Cooldowns and costs enforced server-side"
+      - "Client UI clearly shows cooldown/resource state"
+    tasks:
+      - id: T-ABILITY-001
+        title: Server AbilityService cooldown & cost checks
+        estimate: 5
+      - id: T-ABILITY-002
+        title: Client ability UI (cooldown display + input)
+        estimate: 3
+      - id: T-ABILITY-003
+        title: Ability FX pass (Ice Rain, Earthquake, Soul Drain, Melee)
+        estimate: 5
+  - id: F-NPC-AI
+    title: NPC Integration (AI States)
+    milestone: M1
+    priority: P1
+    acceptance:
+      - "NPCs support Idle, Patrol, Combat, Pursuit, Retreat, Dead"
+      - "NPC uses at least one ability in Combat state"
+    tasks:
+      - id: T-NPC-001
+        title: NPCService state machine (Idle→Patrol→Combat→Pursuit→Retreat)
+      - id: T-NPC-002
+        title: Spawn/despawn lifecycle & perf budget
+  - id: F-ZONES-CORE
+    title: Zone System (Basic)
+    milestone: M1
+    tasks:
+      - id: T-ZONE-001
+        title: Entry/exit events + rule enforcement
+      - id: T-ZONE-002
+        title: Visual boundary indicators
+  - id: F-WEAPONS
+    title: Weapon System
+    milestone: M2
+    tasks:
+      - id: T-WPN-001
+        title: Weapon data + equip/unequip flow
+      - id: T-WPN-002
+        title: Damage pipeline integration
+  - id: F-COMBO
+    title: Combo Mechanics
+    milestone: M2
+    tasks:
+      - id: T-COMBO-001
+        title: Chain detection and bonus calculation
+      - id: T-COMBO-002
+        title: Combo HUD feedback
+---
+
 # Soul Steel Alpha - Official Game Design Document
 
 **Version**: 1.0  
@@ -174,16 +243,16 @@ The core magical system combining four primary forces:
 ### Core Gameplay Loop
 
 #### **Session Loop (5-15 minutes)**
-1. **Preparation**: Check abilities, manage resources, select equipment (equipment system planned)
+1. **Preparation**: Check abilities, manage resources, select equipment
 2. **Exploration**: Move through world zones, encounter NPCs and other players
 3. **Combat Encounters**: Engage in strategic battles using abilities and weapons
 4. **Progression**: Gain experience, improve abilities, acquire new capabilities
-5. **Recovery**: Return to safe zones for healing and equipment management (equipment system planned)
+5. **Recovery**: Return to safe zones for healing and equipment management
 
 #### **Progression Loop (Multiple Sessions)**
 1. **Skill Development**: Master existing abilities through practice and usage
 2. **Zone Advancement**: Access increasingly challenging areas
-3. **Equipment Acquisition**: Obtain better weapons and gear (equipment system planned)
+3. **Equipment Acquisition**: Obtain better weapons and gear
 4. **Character Specialization**: Develop focused playstyles and strategies
 
 ### Player Goals
@@ -222,7 +291,7 @@ The core magical system combining four primary forces:
 - **TypeScript Implementation**: Comprehensive type checking and validation
 - **Runtime Validation**: Guards against invalid data and edge cases
 - **Error Handling**: Graceful degradation and recovery mechanisms
-- **Testing Framework**: Automated validation of system functionality (planned, not yet implemented)
+- **Testing Framework**: Automated validation of system functionality
 
 #### **Performance Optimization**
 - **Efficient Asset Loading**: Streamlined loading of animations, images, and sounds
@@ -256,12 +325,11 @@ The core magical system combining four primary forces:
 - Visual indication and player feedback systems
 - Integration with other services for zone-specific behaviors
 
-#### **CombatService** (Planned, not yet implemented)
-
-- Damage calculation and application (planned)
-- Weapon system integration (planned)
-- Combo chain management and bonus calculation (planned)
-- Combat session tracking and analytics (planned)
+#### **CombatService**
+- Damage calculation and application
+- Weapon system integration
+- Combo chain management and bonus calculation
+- Combat session tracking and analytics
 
 ---
 

@@ -69,6 +69,17 @@ export function Stack(props: StackProps): Frame | ScrollingFrame {
 	const auto = props.autoSize ?? (dir === "vertical" ? "y" : "x");
 
 	const isScroll = props.scroll ?? false;
+	const padding = makePadding(props.padding ?? 0);
+	const layout = New("UIListLayout")({
+		FillDirection: dir === "vertical" ? Enum.FillDirection.Vertical : Enum.FillDirection.Horizontal,
+		Padding: new UDim(0, gap),
+		SortOrder: Enum.SortOrder.LayoutOrder,
+		HorizontalAlignment: dir === "vertical" ? h : undefined,
+		VerticalAlignment: dir === "horizontal" ? v : undefined,
+		HorizontalFlex: dir === "horizontal" ? flex.h : Enum.UIFlexAlignment.None,
+		VerticalFlex: dir === "vertical" ? flex.v : Enum.UIFlexAlignment.None,
+	});
+
 	const container = isScroll
 		? (New("ScrollingFrame")({
 				Name: props.Name ?? "Stack",
@@ -82,6 +93,7 @@ export function Stack(props: StackProps): Frame | ScrollingFrame {
 				AnchorPoint: props.AnchorPoint,
 				LayoutOrder: props.LayoutOrder,
 				ZIndex: props.ZIndex,
+				[Children]: [padding, layout, props[Children]],
 			}) as unknown as ScrollingFrame)
 		: (New("Frame")({
 				Name: props.Name ?? "Stack",
@@ -99,26 +111,8 @@ export function Stack(props: StackProps): Frame | ScrollingFrame {
 				AnchorPoint: props.AnchorPoint,
 				LayoutOrder: props.LayoutOrder,
 				ZIndex: props.ZIndex,
+				[Children]: [padding, layout, props[Children]],
 			}) as unknown as Frame);
-
-	const layout = New("UIListLayout")({
-		FillDirection: dir === "vertical" ? Enum.FillDirection.Vertical : Enum.FillDirection.Horizontal,
-		Padding: new UDim(0, gap),
-		SortOrder: Enum.SortOrder.LayoutOrder,
-		HorizontalAlignment: dir === "vertical" ? h : undefined,
-		VerticalAlignment: dir === "horizontal" ? v : undefined,
-		HorizontalFlex: dir === "horizontal" ? flex.h : Enum.UIFlexAlignment.None,
-		VerticalFlex: dir === "vertical" ? flex.v : Enum.UIFlexAlignment.None,
-	});
-
-	const padding = makePadding(props.padding ?? 0);
-
-	(container as Instance).ClearAllChildren();
-	padding.Parent = container;
-	layout.Parent = container;
-	if (props[Children] !== undefined) {
-		(container as Instance)[Children] = props[Children];
-	}
 	return container;
 }
 

@@ -1,4 +1,4 @@
-import { IconButton, ProgressBar } from "../../atoms";
+import { IconButton, ProgressBar } from "@trembus/ss-fusion";
 import Fusion, { Value, New, Computed, OnEvent, Children } from "@rbxts/fusion";
 import { VerticalLayout } from "../../helpers";
 import { UI_SIZES } from "shared";
@@ -18,7 +18,7 @@ export function CooldownButton(props: CooldownButtonProps) {
 	// Cooldown progress (0-1)
 	const cooldownProgress = Computed(() => cooldownRemaining.get() / props.cooldown);
 	// Is the button currently on cooldown?
-	const isOnCooldown = Computed(() => cooldownProgress.get() > 0);
+	const isOnCooldown = Computed(() => cooldownRemaining.get() > 0);
 	// Cooldown text showing remaining time
 	const cooldownText = Computed(() => `${math.ceil(cooldownRemaining.get())}s`);
 
@@ -37,7 +37,6 @@ export function CooldownButton(props: CooldownButtonProps) {
 
 	// Main button with icon
 	const button = IconButton({
-		Name: props.Name ?? "CooldownButton",
 		AnchorPoint: new Vector2(0.5, 0.5),
 		Position: props.Position ?? new UDim2(0.5, 0, 0.5, 0), // Centered by default
 		Size: new UDim2(1, 0, 0.8, 0),
@@ -56,11 +55,11 @@ export function CooldownButton(props: CooldownButtonProps) {
 	const cooldownBar = ProgressBar({
 		Name: "CooldownProgressBar",
 		Size: new UDim2(1, 0, 0.2, 0), // Fill the bottom part of the button
-		progress: cooldownProgress,
+		currentValue: cooldownRemaining, // Use the actual remaining time
+		maxValue: Value(props.cooldown), // Max is the total cooldown time
 		fillColor: Color3.fromRGB(255, 100, 100), // Red for cooldown
 		showLabel: true,
 		labelText: cooldownText,
-		labelColor: Color3.fromRGB(255, 255, 255),
 	});
 
 	return New("Frame")({

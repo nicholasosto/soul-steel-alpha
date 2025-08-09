@@ -1,7 +1,7 @@
 import Fusion, { PropertyTable } from "@rbxts/fusion";
 import { AbilityCatalog, AbilityKey } from "shared/catalogs";
 import { UI_SIZES } from "shared/constants/ui-constants";
-import { CooldownButton } from "./CooldownButton";
+import { CooldownButton } from "@trembus/ss-fusion";
 
 export interface AbilityButtonProps extends PropertyTable<Frame> {
 	abilityKey: AbilityKey;
@@ -14,7 +14,6 @@ export function AbilityButton(props: AbilityButtonProps) {
 
 	// Container frame to hold all components
 	const containerFrame = CooldownButton({
-		Name: `AbilityButton_${props.abilityKey}`,
 		Size: UI_SIZES.BUTTON_COOLDOWN, // Default size if not provided
 		icon: ability.icon,
 		cooldown: ability.cooldown,

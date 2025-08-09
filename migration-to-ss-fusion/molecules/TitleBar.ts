@@ -1,5 +1,6 @@
 import Fusion, { Children, New, Value } from "@rbxts/fusion";
-import { Label, CloseButton } from "@trembus/ss-fusion";
+import { Label } from "@trembus/ss-fusion";
+import { CloseButton } from "../atoms/CloseButton";
 
 export interface TitleBarProps extends Fusion.PropertyTable<Frame> {
 	title: string | Value<string>;

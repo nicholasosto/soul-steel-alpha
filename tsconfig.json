@@ -30,6 +30,7 @@
 	},
 	"exclude": [
 		"mcp-server.ts",
-		"mcp-build/**/*"
+		"mcp-build/**/*",
+		"migration-to-ss-fusion/**/*"
 	]
 }

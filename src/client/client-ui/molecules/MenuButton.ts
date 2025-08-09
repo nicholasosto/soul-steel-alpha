@@ -1,7 +1,7 @@
 import { New } from "@rbxts/fusion";
 import { MenuButtonCatalog } from "shared/catalogs/menu-catalog";
 import { MenuKey } from "shared/keys/menu-keys";
-import { IconButton } from "../atoms";
+import { IconButton } from "@trembus/ss-fusion";
 
 export interface MenuButtonProps {
 	menuKey: MenuKey;
@@ -14,8 +14,11 @@ export function MenuButton(props: MenuButtonProps): ImageButton {
 	const displayName = catalog ? catalog.displayName : "Unknown Menu";
 
 	const button = IconButton({
-		Name: `${displayName}Button`,
 		icon: icon,
+		onClick: () => {
+			// Menu button click handler can be added here
+			print(`${displayName} menu clicked`);
+		},
 	});
 
 	return button;
