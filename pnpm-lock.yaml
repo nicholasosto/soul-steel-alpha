@@ -36,8 +36,8 @@ importers:
         specifier: 1.0.0-alpha.3
         version: 1.0.0-alpha.3
       '@trembus/ss-fusion':
-        specifier: ^1.1.1
-        version: 1.1.1
+        specifier: ^1.1.2
+        version: 1.1.2
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -49,8 +49,8 @@ importers:
         specifier: ^1.0.868
         version: 1.0.868
       '@types/node':
-        specifier: ^24.2.0
-        version: 24.2.0
+        specifier: ^24.2.1
+        version: 24.2.1
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.39.0
         version: 8.39.0(@typescript-eslint/parser@8.39.0(eslint@8.57.1)(typescript@5.9.2))(eslint@8.57.1)(typescript@5.9.2)
@@ -171,17 +171,17 @@ packages:
   '@trembus/rpg-attributes@1.0.0-alpha.3':
     resolution: {integrity: sha512-b+xxyRcDRS3YH10dx+bIbmMdM3iK8VAUrDti2BbMIosgJkkCGzgXI+ofVaONY3Cb0xiQTAUlfMdHT9RQssPUWw==}
 
-  '@trembus/ss-fusion@1.1.1':
-    resolution: {integrity: sha512-SylSvVfBy4OqbbJTKwHiPCPrJYF+lnuKVCdIdbOThKMK6RyJgv8y64JVu3e41xXOTc57WE48C0e/3EBTZLgoAA==}
+  '@trembus/ss-fusion@1.1.2':
+    resolution: {integrity: sha512-CjXSmVx13OX148xrUmdP9nn4NDh394suqoVeo/w7fiDBYt/e0mhnZyUNvN80jPo9CIeCEti5CRRukJ/FqTJDpA==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
-  '@types/node@20.19.9':
-    resolution: {integrity: sha512-cuVNgarYWZqxRJDQHEB58GEONhOK79QVR/qYx4S7kcUObQvUwvFnYxJuuHUKm2aieN9X3yZB4LZsuYNU1Qphsw==}
+  '@types/node@20.19.10':
+    resolution: {integrity: sha512-iAFpG6DokED3roLSP0K+ybeDdIX6Bc0Vd3mLW5uDqThPWtNos3E+EqOM11mPQHKzfWHqEBuLjIlsBQQ8CsISmQ==}
 
-  '@types/node@24.2.0':
-    resolution: {integrity: sha512-3xyG3pMCq3oYCNg7/ZP+E1ooTaGB4cG8JWRsqqOYQdbWNY4zbaV0Ennrd7stjiJEFZCaybcIgpTjJWHRfBSIDw==}
+  '@types/node@24.2.1':
+    resolution: {integrity: sha512-DRh5K+ka5eJic8CjH7td8QpYEV6Zo10gfRkjHCO3weqZHWDtAaSTFtl4+VMqOJ4N5jcuhZ9/l+yy8rVgw7BQeQ==}
 
   '@types/semver@7.7.0':
     resolution: {integrity: sha512-k107IF4+Xr7UHjwDc7Cfd6PRQfbdkiRabXGRjo07b4WyPahFBZCZ1sE+BNxYIJPPg73UkfOsVOLwqVc/6ETrIA==}
@@ -1269,17 +1269,17 @@ snapshots:
     dependencies:
       '@rbxts/fusion': 0.2.0
 
-  '@trembus/ss-fusion@1.1.1':
+  '@trembus/ss-fusion@1.1.2':
     dependencies:
       '@rbxts/fusion': 0.2.0
 
   '@types/json-schema@7.0.15': {}
 
-  '@types/node@20.19.9':
+  '@types/node@20.19.10':
     dependencies:
       undici-types: 6.21.0
 
-  '@types/node@24.2.0':
+  '@types/node@24.2.1':
     dependencies:
       undici-types: 7.10.0
 
@@ -1623,7 +1623,7 @@ snapshots:
 
   eslint-plugin-roblox-ts@0.0.36(eslint@8.57.1):
     dependencies:
-      '@types/node': 20.19.9
+      '@types/node': 20.19.10
       '@typescript-eslint/experimental-utils': 5.62.0(eslint@8.57.1)(typescript@5.9.2)
       typescript: 5.9.2
     transitivePeerDependencies:
