@@ -13,6 +13,19 @@
 			"problemMatcher": [
 				"$tsc"
 			]
+		},
+		{
+			"label": "Build rbxts",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build"
+			],
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
 		}
 	]
 }

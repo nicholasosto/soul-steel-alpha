@@ -44,7 +44,7 @@ export function ResourceBar(props: ResourceBarProps): Frame | undefined {
 		fillColor: resourceMeta.color,
 		showLabel: props.showLabel ?? true, // Default to true if not specified
 		Size: props.Size ?? UDim2.fromOffset(200, 30), //
-	})
+	});
 
 	return resourceBar;
 }
