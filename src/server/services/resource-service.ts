@@ -12,6 +12,7 @@
 import { Players } from "@rbxts/services";
 import { SSEntity } from "shared/types";
 import { makeDefaultResourceDTO, ResourceDTO, ResourceRemotes } from "shared/catalogs/resources-catalog";
+import { DataRemotes } from "shared/network/data-remotes";
 import { DataServiceInstance } from "./data-service";
 import { SignalServiceInstance } from "./signal-service";
 import { ServiceRegistryInstance } from "./service-registry";
@@ -22,6 +23,7 @@ import { IResourcePlayerOperations } from "./service-interfaces";
  */
 
 const SendResourceUpdate = ResourceRemotes.Server.Get("ResourcesUpdated");
+const PlayerDataUpdated = DataRemotes.Server.Get("PLAYER_DATA_UPDATED");
 export class ResourceService {
 	private static instance?: ResourceService;
 
@@ -244,6 +246,43 @@ export class ResourceService {
 		// Send update to client
 		SendResourceUpdate.SendToPlayer(player, resources);
 		return true;
+	}
+
+	/**
+	 * Award experience to a player, handle level-ups, and notify the client
+	 */
+	public AwardExperience(player: Player, amount: number): void {
+		if (amount <= 0) return;
+		const dto = this.entityResources.get(player);
+		if (!dto) return;
+		const profile = DataServiceInstance.GetProfile(player);
+		if (!profile) return;
+
+		// Experience resource exists in DTO
+		const exp = dto.Experience;
+		let newCurrent = exp.current + amount;
+		let max = exp.max;
+		let levelsGained = 0;
+
+		// Basic leveling: rollover and increase cap
+		while (newCurrent >= max) {
+			newCurrent -= max;
+			levelsGained += 1;
+			max = math.floor(max * 1.2 + 5);
+		}
+
+		// Apply to DTO
+		exp.current = newCurrent;
+		exp.max = max;
+
+		// Notify client about resource change first
+		SendResourceUpdate.SendToPlayer(player, dto);
+
+		// If leveled up, persist and emit player data update with full payload
+		if (levelsGained > 0) {
+			profile.Data.Level = (profile.Data.Level ?? 1) + levelsGained;
+			PlayerDataUpdated.SendToPlayer(player, profile.Data);
+		}
 	}
 }
 

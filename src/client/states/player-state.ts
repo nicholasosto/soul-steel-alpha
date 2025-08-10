@@ -1,16 +1,26 @@
-import Fusion, { Computed, ForKeys, Value } from "@rbxts/fusion";
+import { Computed, Value } from "@rbxts/fusion";
 import { Players } from "@rbxts/services";
-import { AbilitiesState, createAbilitiesState, PersistantPlayerData, PlayerDTO } from "shared";
+import {
+	ABILITY_KEYS,
+	AbilitiesState,
+	AbilityKey,
+	createAbilitiesState,
+	PersistantPlayerData,
+	PlayerDTO,
+} from "shared";
 import {
 	makeDefaultResourceDTO,
 	makeResourceStateFromDTO,
 	ResourceRemotes,
 	ResourceStateMap,
 	ResourceDTO,
+	RESOURCE_KEYS,
+	ResourceKey,
 } from "shared/catalogs/resources-catalog";
 import { DataRemotes } from "shared/network/data-remotes";
 
 const fetchPersistantData = DataRemotes.Client.Get("GET_PLAYER_DATA");
+const PlayerDataUpdated = DataRemotes.Client.Get("PLAYER_DATA_UPDATED");
 const FetchResources = ResourceRemotes.Client.Get("FetchResources");
 const ResourcesUpdated = ResourceRemotes.Client.Get("ResourcesUpdated");
 
@@ -21,14 +31,30 @@ class PlayerState {
 	public Abilities: AbilitiesState = createAbilitiesState();
 	public Level: Value<number> = Value(1); // Default level, can be adjusted
 
+	// Helper: apply a single resource update safely
+	private applyResource(key: ResourceKey, dto?: { current: number; max: number }): void {
+		if (dto === undefined) return;
+		const state = this.Resources[key];
+		if (state !== undefined) {
+			state.current.set(dto.current);
+			state.max.set(dto.max);
+		}
+	}
+
 	private constructor(playerData?: PlayerDTO) {
 		warn("PlayerState initialized for", this.player.Name, "with data:", playerData);
-
 		// Setup resource update listener immediately in constructor
 		ResourcesUpdated.Connect((resources) => {
-			if (resources) {
+			if (resources !== undefined) {
 				this.UpdateResources(resources);
 				print("Real-time resource update received:", resources);
+			}
+		});
+		// Listen for server-pushed player data updates (level, abilities)
+		PlayerDataUpdated.Connect((data) => {
+			if (data !== undefined) {
+				this.SetPersistentData(data);
+				print("Player data updated (push):", data);
 			}
 		});
 	}
@@ -45,34 +71,43 @@ class PlayerState {
 		const dataPromise = fetchPersistantData.CallServerAsync();
 		const resourcesPromise = FetchResources.CallServerAsync();
 
-		dataPromise.then((data) => {
-			if (data) {
-				const playerData = data as PlayerDTO;
-				this.instance?.SetPersistentData(playerData);
-				print("Player data initialized:", playerData);
-			} else {
-				warn("No player data received.");
-			}
-		});
-		resourcesPromise.then((resources) => {
-			if (resources) {
-				this.instance?.SetResources(makeResourceStateFromDTO(resources));
-				print("Player resources initialized:", resources);
-			} else {
-				warn("No player resources received.");
-			}
-		});
+		dataPromise
+			.then((data) => {
+				if (data !== undefined) {
+					const playerData = data as PlayerDTO;
+					this.instance?.SetPersistentData(playerData);
+					print("Player data initialized:", playerData);
+				} else {
+					warn("No player data received.");
+				}
+			})
+			.catch((err) => warn("GET_PLAYER_DATA failed:", err));
+		resourcesPromise
+			.then((resources) => {
+				if (resources !== undefined) {
+					this.instance?.SetResources(makeResourceStateFromDTO(resources));
+					print("Player resources initialized:", resources);
+				} else {
+					warn("No player resources received.");
+				}
+			})
+			.catch((err) => warn("FetchResources failed:", err));
 		return this.GetInstance();
 	}
 
 	public SetPersistentData(data: PersistantPlayerData): void {
-		if (data) {
+		if (data !== undefined) {
 			this.Level.set(data.Level);
 			const abilities = data.Abilities;
 
-			ForKeys(abilities, (key) => {
-				this.Abilities[key].set(abilities[key]);
-			});
+			// Iterate known ability keys for type-safe updates
+			for (const abilityKey of ABILITY_KEYS) {
+				const value = abilities[abilityKey];
+				const abilityState = this.Abilities[abilityKey];
+				if (value !== undefined && abilityState !== undefined) {
+					abilityState.set(value);
+				}
+			}
 			print("Player data set:", data);
 		} else {
 			warn("No player data provided.");
@@ -80,20 +115,19 @@ class PlayerState {
 	}
 
 	public SetResources(resources: ResourceStateMap): void {
-		if (resources) {
-			// Important: Do NOT replace the map reference.
-			// Mutate existing Value objects so any already-mounted UI keeps updating.
-			ForKeys(resources, (key) => {
+		if (resources !== undefined) {
+			// Do NOT replace the map reference; mutate existing Values using known keys
+			for (const key of RESOURCE_KEYS) {
 				const incoming = resources[key];
 				const current = this.Resources[key];
-				if (current !== undefined) {
+				if (incoming !== undefined && current !== undefined) {
 					current.current.set(incoming.current.get());
 					current.max.set(incoming.max.get());
-				} else {
+				} else if (incoming !== undefined && current === undefined) {
 					// Fallback: if a new resource appears, adopt it
 					this.Resources[key] = incoming;
 				}
-			});
+			}
 			print("Player resources set (merged into existing state):", resources);
 		} else {
 			warn("No player resources provided.");
@@ -104,21 +138,13 @@ class PlayerState {
 		if (resourceDTO !== undefined) {
 			print("UpdateResources called with:", resourceDTO);
 
-			// Update existing resource states with new values from server
-			if (this.Resources.Health && resourceDTO.Health) {
-				print(`Setting Health: ${resourceDTO.Health.current}/${resourceDTO.Health.max}`);
-				this.Resources.Health.current.set(resourceDTO.Health.current);
-				this.Resources.Health.max.set(resourceDTO.Health.max);
-			}
-			if (this.Resources.Mana && resourceDTO.Mana) {
-				print(`Setting Mana: ${resourceDTO.Mana.current}/${resourceDTO.Mana.max}`);
-				this.Resources.Mana.current.set(resourceDTO.Mana.current);
-				this.Resources.Mana.max.set(resourceDTO.Mana.max);
-			}
-			if (this.Resources.Stamina && resourceDTO.Stamina) {
-				print(`Setting Stamina: ${resourceDTO.Stamina.current}/${resourceDTO.Stamina.max}`);
-				this.Resources.Stamina.current.set(resourceDTO.Stamina.current);
-				this.Resources.Stamina.max.set(resourceDTO.Stamina.max);
+			// Update existing resource states with new values from server generically
+			for (const key of RESOURCE_KEYS) {
+				const dto = resourceDTO[key];
+				if (dto !== undefined) {
+					print(`Setting ${key}: ${dto.current}/${dto.max}`);
+					this.applyResource(key, dto);
+				}
 			}
 			print("Player resources updated successfully");
 		} else {
@@ -129,7 +155,7 @@ class PlayerState {
 	public getComputedLabel(key: keyof ResourceStateMap): Computed<string> {
 		return Computed(() => {
 			const resource = this.Resources[key];
-			if (resource) {
+			if (resource !== undefined) {
 				const current = math.floor(resource.current.get());
 				const max = math.floor(resource.max.get());
 				// Ensure values are valid numbers
@@ -144,9 +170,8 @@ class PlayerState {
 	}
 
 	public getComputedResource(key: keyof ResourceStateMap): Computed<number> {
-		warn(`getComputedResource called for key: ${key}`);
 		const resource = this.Resources[key];
-		if (resource) {
+		if (resource !== undefined) {
 			return Computed(() => resource.current.get());
 		} else {
 			warn(`Resource ${key} does not exist.`);
