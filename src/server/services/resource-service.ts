@@ -9,9 +9,14 @@
  * @lastUpdated 2025-07-31 - Renamed from HealthService to ResourceService
  */
 
-import { Players } from "@rbxts/services";
+import { Players, RunService } from "@rbxts/services";
 import { SSEntity } from "shared/types";
-import { makeDefaultResourceDTO, ResourceDTO, ResourceRemotes } from "shared/catalogs/resources-catalog";
+import {
+	makeDefaultResourceDTO,
+	ResourceDTO,
+	ResourceRemotes,
+	ResourceRegenConfig,
+} from "shared/catalogs/resources-catalog";
 import { DataRemotes } from "shared/network/data-remotes";
 import { DataServiceInstance } from "./data-service";
 import { SignalServiceInstance } from "./signal-service";
@@ -30,9 +35,12 @@ export class ResourceService {
 	// Entity resource tracking
 	private entityResources = new Map<Player, ResourceDTO>();
 	private signalConnections: RBXScriptConnection[] = [];
+	private lastChangeTimestampMs = new Map<Player, { health?: number; mana?: number; stamina?: number }>();
+	private heartbeatConn?: RBXScriptConnection;
 
 	private constructor() {
 		this.initializeConnections();
+		this.startRegenLoop();
 	}
 
 	public static getInstance(): ResourceService {
@@ -54,12 +62,14 @@ export class ResourceService {
 
 			const resources = makeDefaultResourceDTO();
 			this.entityResources.set(player, resources);
+			this.lastChangeTimestampMs.set(player, {});
 			SendResourceUpdate.SendToPlayer(player, resources);
 		});
 
 		// Handle player leaving
 		Players.PlayerRemoving.Connect((player) => {
 			this.entityResources.delete(player);
+			this.lastChangeTimestampMs.delete(player);
 		});
 
 		// Listen to Humanoid health changes through signals
@@ -87,6 +97,7 @@ export class ResourceService {
 				// Fallback to DTO to avoid dropping the event
 				this.ModifyResource(player, "health", -amount);
 			}
+			this.markPaused(player, "health");
 		});
 
 		// Listen to heal requests through signals
@@ -107,6 +118,7 @@ export class ResourceService {
 			const { player, amount, source } = data as { player: Player; amount: number; source?: string };
 			print(`ResourceService: Mana consumed for ${player.Name}: ${amount} from ${source ?? "unknown"}`);
 			this.ModifyResource(player, "mana", -amount);
+			this.markPaused(player, "mana");
 		});
 
 		// Listen to mana restoration through signals
@@ -116,12 +128,25 @@ export class ResourceService {
 			this.ModifyResource(player, "mana", amount);
 		});
 
+		// Stamina hooks
+		const staminaConsumedConnection = SignalServiceInstance.connect("StaminaConsumed", (data) => {
+			const { player, amount } = data as { player: Player; amount: number };
+			this.ModifyResource(player, "stamina", -amount);
+			this.markPaused(player, "stamina");
+		});
+		const staminaRestoredConnection = SignalServiceInstance.connect("StaminaRestored", (data) => {
+			const { player, amount } = data as { player: Player; amount: number };
+			this.ModifyResource(player, "stamina", amount);
+		});
+
 		// Store connections for potential cleanup
 		if (healthChangeConnection) this.signalConnections.push(healthChangeConnection);
 		if (damageRequestConnection) this.signalConnections.push(damageRequestConnection);
 		if (healRequestConnection) this.signalConnections.push(healRequestConnection);
 		if (manaConsumedConnection) this.signalConnections.push(manaConsumedConnection);
 		if (manaRestoredConnection) this.signalConnections.push(manaRestoredConnection);
+		if (staminaConsumedConnection) this.signalConnections.push(staminaConsumedConnection);
+		if (staminaRestoredConnection) this.signalConnections.push(staminaRestoredConnection);
 
 		ResourceRemotes.Server.Get("FetchResources").SetCallback((player) => {
 			const resources = this.entityResources.get(player) ?? makeDefaultResourceDTO();
@@ -141,6 +166,71 @@ export class ResourceService {
 			setResourceValue: (player, resourceType, value) => this.SetResourceValue(player, resourceType, value),
 		};
 		ServiceRegistryInstance.registerService<IResourcePlayerOperations>("ResourcePlayerOperations", ops);
+	}
+
+	/** Mark a resource as recently changed to pause regen until the configured delay passes */
+	private markPaused(player: Player, resource: "health" | "mana" | "stamina") {
+		let entry = this.lastChangeTimestampMs.get(player);
+		if (entry === undefined) {
+			entry = {};
+			this.lastChangeTimestampMs.set(player, entry);
+		}
+		const now = os.clock() * 1000;
+		if (resource === "health") entry.health = now;
+		else if (resource === "mana") entry.mana = now;
+		else entry.stamina = now;
+	}
+
+	/** Start heartbeat loop to regenerate resources over time */
+	private startRegenLoop() {
+		if (this.heartbeatConn) this.heartbeatConn.Disconnect();
+		this.heartbeatConn = RunService.Heartbeat.Connect((dt) => {
+			for (const [player, dto] of this.entityResources) {
+				if (!player.Parent) continue;
+				const nowMs = os.clock() * 1000;
+				let changed = false;
+				// Health (optional)
+				const healthRule = ResourceRegenConfig.Health;
+				if (healthRule && healthRule.regenPerSecond > 0) {
+					const lastChanged = this.lastChangeTimestampMs.get(player)?.health;
+					if (lastChanged === undefined || nowMs - lastChanged >= healthRule.pauseDelayMs) {
+						const before = dto.Health.current;
+						if (before < dto.Health.max) {
+							dto.Health.current = math.min(dto.Health.max, before + healthRule.regenPerSecond * dt);
+							changed = changed || dto.Health.current !== before;
+						}
+					}
+				}
+				// Mana
+				const manaRule = ResourceRegenConfig.Mana;
+				if (manaRule && manaRule.regenPerSecond > 0) {
+					const lastChanged = this.lastChangeTimestampMs.get(player)?.mana;
+					if (lastChanged === undefined || nowMs - lastChanged >= manaRule.pauseDelayMs) {
+						const before = dto.Mana.current;
+						if (before < dto.Mana.max) {
+							dto.Mana.current = math.min(dto.Mana.max, before + manaRule.regenPerSecond * dt);
+							changed = changed || dto.Mana.current !== before;
+						}
+					}
+				}
+				// Stamina
+				const staminaRule = ResourceRegenConfig.Stamina;
+				if (staminaRule && staminaRule.regenPerSecond > 0) {
+					const lastChanged = this.lastChangeTimestampMs.get(player)?.stamina;
+					if (lastChanged === undefined || nowMs - lastChanged >= staminaRule.pauseDelayMs) {
+						const before = dto.Stamina.current;
+						if (before < dto.Stamina.max) {
+							dto.Stamina.current = math.min(dto.Stamina.max, before + staminaRule.regenPerSecond * dt);
+							changed = changed || dto.Stamina.current !== before;
+						}
+					}
+				}
+
+				if (changed) {
+					SendResourceUpdate.SendToPlayer(player, dto);
+				}
+			}
+		});
 	}
 
 	public GetResources(player: Player): ResourceDTO | undefined {

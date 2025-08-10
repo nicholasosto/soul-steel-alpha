@@ -57,6 +57,23 @@ export const ResourcesCatalog: Record<ResourceKey, ResourceMeta> = {
 	},
 } satisfies Record<ResourceKey, ResourceMeta>;
 
+/**
+ * Regeneration configuration for each resource type that supports regen.
+ * Values are per-second rates and pause delays in milliseconds.
+ */
+export type ResourceRegenRule = {
+	regenPerSecond: number;
+	pauseDelayMs: number; // how long to wait after consumption/damage before resuming regen
+};
+
+export const ResourceRegenConfig: Partial<Record<ResourceKey, ResourceRegenRule>> = {
+	// Health regen is typically handled by Humanoid in Roblox; set to 0 here unless you choose to manage it yourself.
+	Health: { regenPerSecond: 0, pauseDelayMs: 4000 },
+	Mana: { regenPerSecond: 5, pauseDelayMs: 2000 },
+	Stamina: { regenPerSecond: 10, pauseDelayMs: 1000 },
+	// Experience does not regenerate
+};
+
 // Helper: make a default ResourceDTO
 export const makeDefaultResourceDTO = (): ResourceDTO => {
 	const resourceDTO: ResourceDTO = {} as ResourceDTO;
