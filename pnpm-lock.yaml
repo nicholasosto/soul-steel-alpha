@@ -46,8 +46,8 @@ importers:
         specifier: 2.3.0-types.2
         version: 2.3.0-types.2
       '@rbxts/types':
-        specifier: ^1.0.868
-        version: 1.0.868
+        specifier: ^1.0.875
+        version: 1.0.875
       '@types/node':
         specifier: ^24.2.1
         version: 24.2.1
@@ -153,8 +153,8 @@ packages:
   '@rbxts/signal@1.1.1':
     resolution: {integrity: sha512-WX+ONE+ld4pG9PvRkR8OgDld9NpaV1RfXyUIw+Q2oXP/5rehkYzvt20NWtrLAP3NhMc5inYInLd+hnufey6nFw==}
 
-  '@rbxts/types@1.0.868':
-    resolution: {integrity: sha512-pwVEzdw3Zy6FbCQywBEudYvw8yiUEhv0pUqMlqszb75gsMj8ltJ3dUkvsKKVix+H4uoNF/dKWnwIfpsfGCHwmg==}
+  '@rbxts/types@1.0.875':
+    resolution: {integrity: sha512-b+EQE/E5WtWw3MAgSb5tumg5oX9Iv0OR+pY709zhKW73Ep2KNxRZ/Xj5uU45sP9zCyebRe+u+yaf57pO+dK5EA==}
 
   '@rbxts/zone-plus@3.2.0':
     resolution: {integrity: sha512-myxs7QXMVCCPhOpUzaoA/01ZCEG/6TBYRNk6LwksUvSp9bONnIpvEZYEazuWnIDwiOEIw/T9kCPY/7FGjMOvsA==}
@@ -1249,7 +1249,7 @@ snapshots:
 
   '@rbxts/signal@1.1.1': {}
 
-  '@rbxts/types@1.0.868': {}
+  '@rbxts/types@1.0.875': {}
 
   '@rbxts/zone-plus@3.2.0': {}
 
