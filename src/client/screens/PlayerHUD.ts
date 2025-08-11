@@ -1,12 +1,14 @@
 import { Children, New, OnEvent } from "@rbxts/fusion";
 import { AbilityController } from "client/controllers";
-
+import { RunEffect } from "shared/packages";
+const abilityController = AbilityController.getInstance();
 /* ---------------------------------- TEXT BOXES ---------------------------------- */
 export function createPlayerHUD(parent: Instance): ScreenGui {
 	return New("ScreenGui")({
 		Name: "PlayerHUD",
 		ResetOnSpawn: false,
 		Parent: parent,
+		Enabled: true,
 		DisplayOrder: 10,
 		[Children]: {
 			AbilityButton: New("TextButton")({
@@ -17,7 +19,7 @@ export function createPlayerHUD(parent: Instance): ScreenGui {
 				AnchorPoint: new Vector2(0.5, 0.5),
 				BackgroundColor3: Color3.fromRGB(255, 0, 0),
 				[OnEvent("Activated")]: () => {
-					AbilityController.getInstance().activateAbility("Melee");
+					abilityController.activateAbility("Melee");
 				},
 			}),
 		},

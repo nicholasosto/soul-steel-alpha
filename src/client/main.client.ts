@@ -11,6 +11,7 @@
 import { Players } from "@rbxts/services";
 import { ClientController } from "./controllers";
 import { createPlayerHUD } from "./screens";
+import { PlayerStateInstance } from "./states/player-state";
 
 // Player GUI
 const localPlayer = Players.LocalPlayer;
@@ -20,4 +21,8 @@ const playerGui = localPlayer.WaitForChild("PlayerGui") as PlayerGui;
 const clientController = ClientController.initialize();
 clientController.getAbilityController();
 
+// Initialize player state early to subscribe to resource updates
+const _playerState = PlayerStateInstance;
+
 const playerHUD = createPlayerHUD(playerGui);
+print("Player HUD created", playerHUD);

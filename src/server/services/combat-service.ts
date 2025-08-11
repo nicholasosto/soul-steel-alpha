@@ -298,6 +298,7 @@ class CombatService {
 	 * Handle ability-based attack execution
 	 */
 	private handleAbilityAttack(attacker: Player, abilityKey: string, target?: SSEntity): void {
+		warn(`CombatService: Handling ability attack ${abilityKey} from ${attacker.Name}`);
 		// Get attacker character
 		const attackerCharacter = attacker.Character;
 		if (!attackerCharacter || !isSSEntity(attackerCharacter)) {
@@ -320,6 +321,7 @@ class CombatService {
 		const abilitySuccess = AbilityServiceInstance.ActivateAbilityForCombat(attacker, abilityKey as AbilityKey);
 		if (abilitySuccess === false) {
 			// AbilityService already sent failure messages
+			warn(`CombatService: ${attacker.Name} failed to activate ${ability.displayName}`);
 			return;
 		}
 
@@ -367,6 +369,7 @@ class CombatService {
 		// Calculate final damage with variance
 		const variance = 0.85 + math.random() * 0.3; // 85%-115% damage variance
 		let finalDamage = math.floor(baseDamage * variance);
+		warn(`CombatService: ${attacker.Name} used ${ability.displayName} for ${finalDamage} damage`);
 		if (isCritical) {
 			finalDamage = math.floor(finalDamage * critMultiplier);
 		}
@@ -374,15 +377,18 @@ class CombatService {
 		// Handle different ability types
 		if (abilityKey === "Earthquake") {
 			// Area effect - find nearby targets
+			warn("Handling area effect ability");
 			this.handleAreaAbility(attackerCharacter, ability, finalDamage, isCritical);
 		} else if (target) {
 			// Single target ability
+			warn("Handling single target ability");
 			this.handleSingleTargetAbility(attackerCharacter, target, ability, finalDamage, isCritical);
 		}
 
 		// Handle special ability effects
 		if (abilityKey === "Soul-Drain" && target) {
 			// Heal attacker for 30% of damage dealt via signal
+			warn("Handling Soul Drain ability");
 			const healAmount = math.floor(finalDamage * 0.3);
 			DamageServiceInstance.requestHealthHeal(attacker, healAmount, "Soul-Drain");
 			MessageServiceInstance.SendMessageToPlayer(

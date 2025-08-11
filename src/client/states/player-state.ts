@@ -40,7 +40,6 @@ class PlayerState {
 		ResourcesUpdated.Connect((resources) => {
 			if (resources !== undefined) {
 				this.UpdateResources(resources);
-				print("Real-time resource update received:", resources);
 			}
 		});
 		// Listen for server-pushed player data updates (level, abilities)
@@ -128,20 +127,11 @@ class PlayerState {
 	}
 
 	public UpdateResources(resourceDTO: ResourceDTO): void {
-		if (resourceDTO !== undefined) {
-			print("UpdateResources called with:", resourceDTO);
+		if (resourceDTO === undefined) return;
 
-			// Update existing resource states with new values from server generically
-			for (const key of RESOURCE_KEYS) {
-				const dto = resourceDTO[key];
-				if (dto !== undefined) {
-					print(`Setting ${key}: ${dto.current}/${dto.max}`);
-					this.applyResource(key, dto);
-				}
-			}
-			print("Player resources updated successfully");
-		} else {
-			warn("No resource DTO provided for update.");
+		for (const key of RESOURCE_KEYS) {
+			const dto = resourceDTO[key];
+			if (dto !== undefined) this.applyResource(key, dto);
 		}
 	}
 

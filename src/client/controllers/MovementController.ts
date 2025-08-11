@@ -44,6 +44,7 @@ export class MovementController {
 	 * Start running
 	 */
 	public startRunning(): void {
+		print("Player started running");
 		this.runningState.set(true);
 	}
 
@@ -58,6 +59,7 @@ export class MovementController {
 	 * Handle jump request with double-jump mechanics
 	 */
 	public jump(): void {
+		print("Player jumped");
 		const character = LocalPlayer.Character as SSEntity;
 		if (!character) {
 			return;

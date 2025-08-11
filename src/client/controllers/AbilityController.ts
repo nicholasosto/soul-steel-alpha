@@ -103,13 +103,19 @@ export class AbilityController {
 			// Ask server to validate and start ability (cooldown/cost)
 			const success = await this.abilityRemote.CallServerAsync(abilityKey);
 
-			// If server confirms activation, start cooldown
+			// If server confirms activation, start cooldown and notify combat server
 			if (success) {
 				this.startCooldown(abilityKey);
 
-				// If targeted ability, send the ability attack with selected target
-				if (abilityMeta.requiresTarget === true && target !== undefined) {
-					CombatRemotes.Client.Get("ExecuteAbilityAttack").SendToServer(abilityKey, target);
+				const remote = CombatRemotes.Client.Get("ExecuteAbilityAttack");
+				if (abilityMeta.requiresTarget === true) {
+					// Already validated target above
+					if (target !== undefined) {
+						remote.SendToServer(abilityKey, target);
+					}
+				} else {
+					// Non-targeted abilities still need to be sent
+					remote.SendToServer(abilityKey);
 				}
 			}
 
