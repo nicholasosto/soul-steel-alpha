@@ -8,9 +8,16 @@
  * @since 1.0.0
  * @lastUpdated 2025-08-07 - Updated to use consolidated controller architecture
  */
-
+import { Players } from "@rbxts/services";
 import { ClientController } from "./controllers";
+import { createPlayerHUD } from "./screens";
+
+// Player GUI
+const localPlayer = Players.LocalPlayer;
+const playerGui = localPlayer.WaitForChild("PlayerGui") as PlayerGui;
 
 // Initialize the main client controller (this initializes all sub-controllers)
 const clientController = ClientController.initialize();
 clientController.getAbilityController();
+
+const playerHUD = createPlayerHUD(playerGui);
