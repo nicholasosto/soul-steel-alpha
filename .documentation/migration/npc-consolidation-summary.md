@@ -9,7 +9,7 @@ We have successfully consolidated your NPC services into a single, feature-confi
 ### New Files:
 1. **`src/server/services/unified-npc-service.ts`** - Main unified service
 2. **`src/server/services/npc-migration-helper.ts`** - Migration utilities
-3. **`src/server/demos/unified-npc-demo.server.ts`** - Updated demo
+3. (Demo scripts removed) - Use UnifiedNPCService API directly in ad-hoc tests
 4. **`UNIFIED_NPC_SERVICE.md`** - Comprehensive documentation
 
 ### Modified Files:
@@ -58,7 +58,7 @@ const enemy = UnifiedNPCServiceInstance.SpawnNPC("goblin", position, {
 - Automatic cleanup when NPCs are despawned
 
 ### Backward Compatibility:
-- Your existing `npc-demo.server.ts` still works
+// Legacy demo scripts have been removed; use UnifiedNPCService directly
 - Migration helpers for easy transition
 - Old services remain available during transition
 
@@ -145,7 +145,7 @@ const boss = UnifiedNPCServiceInstance.SpawnNPC("skeleton", position, {
 
 ### Phase 1: Test in Parallel (Current)
 - New unified service available alongside old services
-- Use `unified-npc-demo.server.ts` to test features
+// For testing, create a minimal server script that calls UnifiedNPCServiceInstance.SpawnNPC()
 - Compare performance and functionality
 
 ### Phase 2: Gradual Migration (Recommended Next)
@@ -189,7 +189,7 @@ const boss = UnifiedNPCServiceInstance.SpawnNPC("skeleton", position, {
 
 ## 🔮 **Next Steps**
 
-1. **Test the unified demo**: Run `unified-npc-demo.server.ts`
+1. Create a minimal test: call `UnifiedNPCServiceInstance.SpawnNPC(...)` from a temporary server script
 2. **Performance testing**: Spawn mixed NPC configurations
 3. **Gradual adoption**: Start using for new NPCs
 4. **Monitor stats**: Check `GetStats()` regularly

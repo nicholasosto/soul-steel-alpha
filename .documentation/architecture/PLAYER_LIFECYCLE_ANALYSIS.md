@@ -26,7 +26,6 @@ This document provides a comprehensive analysis of all player lifecycle events i
 | **Animation Loading** | `animation-service.ts:85` | AnimationService | Character animation setup | 0% | Essential for visual feedback |
 | **Zone Detection Setup** | `zone-controller.ts` | ZoneController | Spatial gameplay mechanics | 0% | Core zone system functionality |
 | **Movement State Init** | `movement-controller.ts` | MovementController | Movement mechanics setup | 0% | Essential player control |
-| **NPC Demo Spawn** | `npc-demo-service.ts:88` | NPCDemoService | Development/testing feature | 90% | Demo code, should be removed in production |
 
 ## ⚔️ **TAKING DAMAGE**
 
@@ -73,7 +72,7 @@ This document provides a comprehensive analysis of all player lifecycle events i
 | **Humanoid Disconnection** | `humanoid-services.ts:62` | HumanoidServices | Event cleanup | 20% | Could be consolidated with other cleanup |
 | **Zone Cleanup** | `zone-service.ts:363` | ZoneService | Spatial state cleanup | 0% | Essential zone system |
 | **Ability Cleanup** | `ability-service.ts:110` | AbilityService | Ability system cleanup | 0% | Essential ability system |
-| **NPC Cleanup** | `npc-demo-service.ts:96` | NPCDemoService | Demo NPC removal | 90% | Demo code, should be removed in production |
+| **NPC Spawning** | `unified-npc-service.ts` | UnifiedNPCService | Production NPC spawning | 0% | Standard gameplay system |
 
 ## 📊 **Refactoring Priority Analysis**
 

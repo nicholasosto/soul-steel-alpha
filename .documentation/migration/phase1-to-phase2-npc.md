@@ -68,30 +68,13 @@ if (npc) {
 }
 ```
 
-## 🎮 Try the Demo
-
-Run the included demo script to see the NPC service in action:
-
-1. The demo script is located at: `src/server/npc-demo.server.ts`
-2. It automatically spawns NPCs when players join
-3. Shows player detection and proximity awareness
-4. Demonstrates basic patrolling behavior
-
-## 🎯 AI Behavior Details
+## AI Behavior Details
 
 ### Idle State
-- NPCs stand still at their spawn position
-- Occasionally turn to face random directions
-- Switch to patrol mode when players are nearby
 
-### Patrol State  
-- NPCs walk to random positions near their home location
-- Stay within a 20-stud radius of spawn point
-- Return to idle when no players are nearby
+### Patrol State
 
 ### Combat State
-- Currently just makes NPCs stand still
-- **Phase 2 will add actual combat behaviors**
 
 ## 🔧 Current Limitations (Phase 1)
 
@@ -104,17 +87,20 @@ Run the included demo script to see the NPC service in action:
 ## 🚀 What's Coming Next
 
 ### Phase 2: Combat Integration
+
 - NPCs will use your existing combat service
 - Weapon selection and usage
 - Ability casting (Melee, Soul-Drain, etc.)
 - Health/damage integration
 
 ### Phase 3: Smart Behaviors
+
 - Behavior trees for complex decision making
 - Target selection and combat tactics
 - Formation fighting and group coordination
 
 ### Phase 4: Advanced AI
+
 - Learning AI that adapts to player behavior
 - Dynamic difficulty scaling
 - Complex group strategies
@@ -122,6 +108,7 @@ Run the included demo script to see the NPC service in action:
 ## 🛠️ Extending Phase 1
 
 ### Adding New NPC Types
+
 ```typescript
 // In npc-service.ts, add to BASIC_NPC_TEMPLATES:
 orc: {
@@ -133,6 +120,7 @@ orc: {
 ```
 
 ### Custom Spawn Configurations
+
 ```typescript
 const powerfulGoblin = NPCServiceInstance.SpawnNPC("goblin", position, {
     level: 15,      // Much higher level
@@ -141,9 +129,10 @@ const powerfulGoblin = NPCServiceInstance.SpawnNPC("goblin", position, {
 ```
 
 ### Hooking into AI States
+
 You can listen for AI state changes by modifying the `SetAIState` method to trigger events that your game systems can respond to.
 
-## 🎉 Success! 
+## 🎉 Success
 
 You now have working NPCs in your game! Players can walk around and see AI characters that react to their presence. This gives you a solid foundation to build upon as we add more sophisticated features in future phases.
 

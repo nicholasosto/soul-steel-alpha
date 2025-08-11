@@ -55,7 +55,7 @@ private handleBasicAI(npc: UnifiedNPCEntity): void
 ```
 
 ### 📋 Phase 3: Update Consumers
-- [x] Updated `npc-demo.server.ts` to use `UnifiedNPCService`
+// Legacy demo scripts have been removed; use UnifiedNPCService directly in tests
 - [ ] Update any other files that import old NPC services
 - [ ] Update documentation and comments
 

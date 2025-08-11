@@ -253,7 +253,7 @@ const newNPC = UnifiedNPCServiceInstance.SpawnNPC("goblin", position, {
 
 ### 🔄 Current State
 - **Service**: `unified-npc-service.ts` (792 lines, production ready)
-- **Demo**: `unified-npc-demo.server.ts` (comprehensive testing)
+Use temporary server scripts that call `UnifiedNPCServiceInstance.SpawnNPC(...)` for ad-hoc testing.
 - **Documentation**: Complete API reference and guides
 - **Testing**: Successfully spawns and manages mixed NPC configurations
 
