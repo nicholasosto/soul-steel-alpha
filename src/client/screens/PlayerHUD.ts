@@ -1,8 +1,11 @@
 import { Children, New, OnEvent } from "@rbxts/fusion";
 import { AbilityController } from "client/controllers";
-import { RunEffect } from "shared/packages";
+import { CooldownButton } from "@trembus/ss-fusion";
+import { AbilityCatalog } from "shared";
 const abilityController = AbilityController.getInstance();
 /* ---------------------------------- TEXT BOXES ---------------------------------- */
+
+const meleeMeta = AbilityCatalog["Melee"];
 export function createPlayerHUD(parent: Instance): ScreenGui {
 	return New("ScreenGui")({
 		Name: "PlayerHUD",
@@ -11,14 +14,10 @@ export function createPlayerHUD(parent: Instance): ScreenGui {
 		Enabled: true,
 		DisplayOrder: 10,
 		[Children]: {
-			AbilityButton: New("TextButton")({
-				Name: "AbilityButton",
-				Text: "Ability",
-				Size: new UDim2(0.1, 0, 0.1, 0),
-				Position: new UDim2(0.5, 0, 0.5, 0),
-				AnchorPoint: new Vector2(0.5, 0.5),
-				BackgroundColor3: Color3.fromRGB(255, 0, 0),
-				[OnEvent("Activated")]: () => {
+			AbilityButton: CooldownButton({
+				cooldown: meleeMeta.cooldown,
+				icon: meleeMeta.icon,
+				onClick: () => {
 					abilityController.activateAbility("Melee");
 				},
 			}),
