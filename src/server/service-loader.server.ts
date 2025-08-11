@@ -6,6 +6,7 @@ import {
 	MessageServiceInstance,
 	ResourceServiceInstance,
 	UnifiedNPCServiceInstance,
+	TargetingServiceInstance,
 	RunLavaParts,
 } from "./services";
 import { Players } from "@rbxts/services";
@@ -21,6 +22,7 @@ const Services = {
 	MessageService: MessageServiceInstance,
 	ResourceService: ResourceServiceInstance,
 	UnifiedNPCService: UnifiedNPCServiceInstance,
+	TargetingService: TargetingServiceInstance,
 };
 
 Players.PlayerAdded.Connect((player) => {

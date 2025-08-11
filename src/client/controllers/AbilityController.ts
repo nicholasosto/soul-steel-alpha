@@ -32,6 +32,7 @@ import { Value } from "@rbxts/fusion";
 import { Players } from "@rbxts/services";
 import { isSSEntity } from "shared/helpers/type-guards";
 import { SSEntity } from "shared/types";
+import { PlayerStateInstance } from "client/states/player-state";
 
 /**
  * AbilityController handles all ability-related functionality:
@@ -83,7 +84,8 @@ export class AbilityController {
 		// If ability requires a target, acquire one before contacting server
 		let target: SSEntity | undefined = undefined;
 		if (abilityMeta.requiresTarget === true) {
-			target = this.getTargetFromMouse();
+			// Prefer locked target from PlayerState, fallback to mouse
+			target = PlayerStateInstance.target.get() ?? this.getTargetFromMouse();
 			if (target === undefined) {
 				warn(`${abilityKey} requires a valid target`);
 				return false;

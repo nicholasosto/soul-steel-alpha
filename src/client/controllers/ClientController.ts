@@ -26,6 +26,7 @@ import { InputController, InputAction } from "./InputController";
 import { MovementController } from "./MovementController";
 import { AbilityController } from "./AbilityController";
 import { ZoneController } from "./ZoneController";
+import { TargetingController } from "./TargetingController";
 
 /**
  * ClientController is the main coordinator for all client-side logic.
@@ -37,6 +38,7 @@ export class ClientController {
 	private movementController: MovementController;
 	private abilityController: AbilityController;
 	private zoneController: ZoneController;
+	private targetingController: TargetingController;
 
 	private constructor() {
 		// Initialize all controllers
@@ -44,6 +46,7 @@ export class ClientController {
 		this.movementController = MovementController.getInstance();
 		this.abilityController = AbilityController.getInstance();
 		this.zoneController = ZoneController.getInstance();
+		this.targetingController = TargetingController.getInstance();
 
 		// Set up action handling
 		this.inputController.onAction((action: InputAction) => {
@@ -86,13 +89,18 @@ export class ClientController {
 				this.abilityController.triggerEffect(action.effectKey);
 				break;
 
-			case "MOUSE_LEFT_CLICK":
+			case "MOUSE_LEFT_CLICK": {
+				// Try lock current hover target; still let abilities listen if needed
+				this.targetingController.tryLockHoverTarget();
 				this.abilityController.handleMouseClick("left");
 				break;
+			}
 
-			case "MOUSE_RIGHT_CLICK":
+			case "MOUSE_RIGHT_CLICK": {
+				this.targetingController.clearTarget("manual");
 				this.abilityController.handleMouseClick("right");
 				break;
+			}
 
 			case "DEBUG_KEY_PRESS":
 				this.abilityController.handleDebugKey(action.keyName);

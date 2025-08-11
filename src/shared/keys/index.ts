@@ -43,3 +43,4 @@ export * from "./force-keys";
 export * from "./menu-keys";
 export * from "./player-data-keys";
 export * from "./zone-keys";
+export * from "./target-keys";

@@ -9,3 +9,4 @@ export { InputController, InputAction } from "./InputController";
 export { MovementController } from "./MovementController";
 export { AbilityController } from "./AbilityController";
 export { ZoneController } from "./ZoneController";
+export { TargetingController, TargetingControllerInstance } from "./TargetingController";

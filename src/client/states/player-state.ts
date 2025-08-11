@@ -1,6 +1,6 @@
 import { Computed, Value } from "@rbxts/fusion";
 import { Players } from "@rbxts/services";
-import { ABILITY_KEYS, AbilitiesState, createAbilitiesState, PersistantPlayerData, PlayerDTO } from "shared";
+import { ABILITY_KEYS, AbilitiesState, createAbilitiesState, PersistantPlayerData, PlayerDTO, SSEntity } from "shared";
 import {
 	makeDefaultResourceDTO,
 	makeResourceStateFromDTO,
@@ -22,6 +22,10 @@ class PlayerState {
 	private player: Player = Players.LocalPlayer;
 	public Resources: ResourceStateMap = makeResourceStateFromDTO(makeDefaultResourceDTO());
 	public Abilities: AbilitiesState = createAbilitiesState();
+	// Currently selected target (locked). Reactive for UI.
+	public target: Value<SSEntity | undefined> = Value<SSEntity | undefined>(undefined);
+	// Current hover/candidate target (aiming). Reactive for UI.
+	public hoverTarget: Value<SSEntity | undefined> = Value<SSEntity | undefined>(undefined);
 	public Level: Value<number> = Value(1); // Default level, can be adjusted
 
 	// Helper: apply a single resource update safely
