@@ -2,7 +2,7 @@
 
 import MessageService from "./services/message-service";
 import { CombatServiceInstance } from "./services/combat-service";
-import { NPCDemoServiceInstance } from "./services/npc-demo-service";
+import { UnifiedNPCServiceInstance } from "./services";
 // Touch singletons so their constructors run and register operations/signals
 import { ResourceServiceInstance } from "./services/resource-service";
 import { AbilityServiceInstance } from "./services/ability-service";
@@ -13,4 +13,4 @@ print("Soul Steel Alpha server initialized successfully");
 MessageService.getInstance();
 // Importing the instances runs their module initializers
 CombatServiceInstance.Initialize();
-NPCDemoServiceInstance.Initialize();
+UnifiedNPCServiceInstance.Initialize();

@@ -34,6 +34,8 @@ Players.PlayerAdded.Connect((player) => {
 });
 
 warn("Services initialized:", Services);
+// Initialize unified NPC spawning on server start
+UnifiedNPCServiceInstance.Initialize();
 Players.GetPlayers().forEach((player) => {
 	const character = player.Character || player.CharacterAdded.Wait()[0];
 	MessageServiceInstance.SendInfoToPlayer(player, `Welcome ${player.Name}! Your character is ready.`);

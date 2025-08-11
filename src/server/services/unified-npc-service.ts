@@ -142,6 +142,19 @@ const NPC_TEMPLATES: Record<string, NPCTemplate> = {
 		combatRole: "caster",
 		defaultRetreatThreshold: 0.15,
 	},
+	blood_toad: {
+		modelKey: "blood_toad",
+		displayName: "Blood Toad",
+		baseHealth: 100,
+		baseMana: 0,
+		baseLevel: 2,
+		walkSpeed: 12,
+		defaultAggroRange: 12,
+		defaultHostile: true,
+		availableAbilities: ["Melee"],
+		combatRole: "damage",
+		defaultRetreatThreshold: 0.2,
+	},
 	guard: {
 		modelKey: "guard",
 		displayName: "Steam Guard",
@@ -173,6 +186,7 @@ class UnifiedNPCService {
 	private npcCounter = 0;
 	// Single scheduler connection for all NPC AI ticks
 	private aiConnection?: RBXScriptConnection;
+	private initialized = false;
 
 	private constructor() {}
 
@@ -181,6 +195,52 @@ class UnifiedNPCService {
 			UnifiedNPCService.instance = new UnifiedNPCService();
 		}
 		return UnifiedNPCService.instance;
+	}
+
+	/** Initialize: spawn default NPCs around SpawnPoints/SpawnLocations */
+	public Initialize(initialTypes: Array<keyof typeof NPC_TEMPLATES> = ["goblin", "skeleton", "blood_toad"]): void {
+		if (this.initialized) return;
+		this.initialized = true;
+
+		const anchors = this.findSpawnAnchors();
+		if (anchors.size() === 0) {
+			warn("UnifiedNPCService: No SpawnLocation or 'SpawnPoint' anchors found in Workspace.");
+			return;
+		}
+
+		for (const anchor of anchors) {
+			this.spawnRingAtAnchor(anchor, initialTypes, 14);
+		}
+
+		print(`UnifiedNPCService: Spawned NPCs at ${anchors.size()} spawn anchor(s).`);
+	}
+
+	/** Find SpawnLocations or parts named 'SpawnPoint' as anchors */
+	private findSpawnAnchors(): BasePart[] {
+		const anchors: BasePart[] = [];
+		for (const inst of Workspace.GetDescendants()) {
+			if (inst.IsA("SpawnLocation")) {
+				anchors.push(inst);
+			} else if (inst.IsA("BasePart") && inst.Name === "SpawnPoint") {
+				anchors.push(inst);
+			}
+		}
+		const rootSpawn = Workspace.FindFirstChildOfClass("SpawnLocation");
+		if (anchors.size() === 0 && rootSpawn) anchors.push(rootSpawn);
+		return anchors;
+	}
+
+	/** Spawn a ring of unified NPCs using template keys */
+	private spawnRingAtAnchor(anchor: BasePart, types: Array<keyof typeof NPC_TEMPLATES>, radius = 14): void {
+		const center = anchor.Position;
+		const count = types.size();
+		if (count === 0) return;
+		for (let i = 0; i < count; i++) {
+			const theta = (i / count) * math.pi * 2;
+			const offset = new Vector3(math.cos(theta) * radius, 0, math.sin(theta) * radius);
+			const pos = center.add(offset);
+			this.SpawnNPC(types[i], pos, { mode: "basic" });
+		}
 	}
 
 	/**

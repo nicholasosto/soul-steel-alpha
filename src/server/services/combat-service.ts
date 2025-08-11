@@ -27,7 +27,6 @@ import { MessageType, MessageMetaRecord } from "shared/types";
 // import { ResourceServiceInstance } from "./resource-service"; // Avoid direct coupling
 import { MessageServiceInstance } from "./message-service";
 import { DamageServiceInstance } from "./damage-service";
-import { NPCDemoServiceInstance } from "./npc-demo-service";
 import { AbilityCatalog, AbilityKey } from "shared/catalogs/ability-catalog";
 import { AbilityServiceInstance } from "./ability-service";
 import { SignalServiceInstance } from "./signal-service";
@@ -187,8 +186,9 @@ class CombatService {
 		});
 
 		// Demo/Testing - NPC spawn handler
-		CombatRemotes.Server.Get("SpawnTestNPCs").Connect((player) => {
-			NPCDemoServiceInstance.SpawnNPCsForPlayer(player);
+		CombatRemotes.Server.Get("SpawnTestNPCs").Connect((_player) => {
+			// For testing: spawn a small group near the first SpawnLocation
+			import("./unified-npc-service").then((m) => m.UnifiedNPCServiceInstance.Initialize());
 		});
 
 		// Combat state query handlers
