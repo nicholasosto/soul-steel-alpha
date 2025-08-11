@@ -2,6 +2,7 @@
 import { MenuButtonCatalog } from "shared/catalogs/menu-catalog";
 import { MenuKey } from "shared/keys/menu-keys";
 import { IconButton } from "@trembus/ss-fusion";
+import { ImageConstants } from "shared";
 
 export interface MenuButtonProps {
 	menuKey: MenuKey;
@@ -15,6 +16,11 @@ export function MenuButton(props: MenuButtonProps): ImageButton {
 	const displayName = catalog ? catalog.displayName : "Unknown Menu";
 
 	const button = IconButton({
+		OnMouseEnter: () => {
+			print(`${displayName} menu hovered`);
+		},
+		backgroundImage: ImageConstants.IconButtonBackground,
+		toggleable: true,
 		icon: icon,
 		onClick: () => {
 			if (props.onClick) {

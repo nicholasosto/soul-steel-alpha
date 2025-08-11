@@ -1,5 +1,4 @@
 import Fusion, { New } from "@rbxts/fusion";
-import { SlicedImage } from "@trembus/ss-fusion";
 import { HorizontalLayout, makePadding } from "../../helpers";
 
 const { Value } = Fusion;
@@ -38,12 +37,6 @@ export function HorizontalButtonBar(props: ButtonBarProps) {
 					makePadding(framePadding), // Add padding around the button bar
 					HorizontalLayout(5),
 				],
-			}),
-			SlicedImage({
-				imageId: "rbxassetid://80375133768026",
-				sliceCenter: new Rect(130, 130, 130, 130),
-				sliceScale: 0.5,
-				Size: new UDim2(1, 0, 1, 0),
 			}),
 		],
 	});

@@ -1,5 +1,6 @@
 import { Computed, Value } from "@rbxts/fusion";
 import { Players } from "@rbxts/services";
+import { CooldownButton } from "@trembus/ss-fusion";
 import {
 	ABILITY_KEYS,
 	AbilitiesState,
@@ -7,6 +8,7 @@ import {
 	createAbilitiesState,
 	PersistantPlayerData,
 	PlayerDTO,
+	AbilityCatalog,
 } from "shared";
 import {
 	makeDefaultResourceDTO,
@@ -23,6 +25,16 @@ const fetchPersistantData = DataRemotes.Client.Get("GET_PLAYER_DATA");
 const PlayerDataUpdated = DataRemotes.Client.Get("PLAYER_DATA_UPDATED");
 const FetchResources = ResourceRemotes.Client.Get("FetchResources");
 const ResourcesUpdated = ResourceRemotes.Client.Get("ResourcesUpdated");
+
+
+function makeAbilityButton(abilityKey: AbilityKey): Frame {
+	const ability = AbilityCatalog[abilityKey];
+	const abilityButton = CooldownButton({
+		Name: `AbilityButton_${abilityKey}`,
+		cooldown: ability.cooldown,
+	});
+	return abilityButton;
+}
 
 class PlayerState {
 	private static instance?: PlayerState;
