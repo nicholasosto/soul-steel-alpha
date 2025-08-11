@@ -58,8 +58,6 @@ export class ResourceService {
 		Players.PlayerAdded.Connect((player) => {
 			print(`ResourceService: Player added - ${player.Name}`);
 			const profile = DataServiceInstance.GetProfile(player); // Ensure profile is loaded
-			print(`ResourceService: Called DataService for player ${player.Name}`, profile);
-
 			const resources = makeDefaultResourceDTO();
 			this.entityResources.set(player, resources);
 			this.lastChangeTimestampMs.set(player, {});
@@ -80,7 +78,6 @@ export class ResourceService {
 				newHealth: number;
 				maxHealth: number;
 			};
-			print(`ResourceService: Health changed for ${player.Name} to ${newHealth} (via signal)`);
 			this.SetResourceValue(player, "health", newHealth);
 		});
 

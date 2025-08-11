@@ -313,6 +313,7 @@ class AbilityService {
 
 		try {
 			if (!this.validateAbility(player, abilityKey)) {
+				warn("ABILITY-VALIDATE-FAILED");
 				abilityMeta.OnStartFailure?.(player.Character as SSEntity);
 				return false;
 			}
