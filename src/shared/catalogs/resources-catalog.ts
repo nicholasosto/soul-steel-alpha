@@ -1,7 +1,6 @@
-import { Computed, ForKeys, Value } from "@rbxts/fusion";
+import { Computed, Value } from "@rbxts/fusion";
 import { Definitions } from "@rbxts/net";
-import ServerAsyncFunction from "@rbxts/net/out/server/ServerAsyncFunction";
-export const RESOURCE_KEYS = ["Health", "Mana", "Stamina", "Experience"] as const;
+export const RESOURCE_KEYS = ["Health", "Mana", "Stamina"] as const;
 export type ResourceKey = (typeof RESOURCE_KEYS)[number];
 
 /* Resource Meta - UI Display Shape for Resources */
@@ -49,12 +48,6 @@ export const ResourcesCatalog: Record<ResourceKey, ResourceMeta> = {
 		icon: "rbxassetid://123458",
 		color: Color3.fromRGB(220, 220, 50),
 	},
-	Experience: {
-		displayName: "Experience",
-		description: "The experience points of the player.",
-		icon: "rbxassetid://123459",
-		color: Color3.fromRGB(50, 220, 50),
-	},
 } satisfies Record<ResourceKey, ResourceMeta>;
 
 /**
@@ -71,7 +64,6 @@ export const ResourceRegenConfig: Partial<Record<ResourceKey, ResourceRegenRule>
 	Health: { regenPerSecond: 0, pauseDelayMs: 4000 },
 	Mana: { regenPerSecond: 5, pauseDelayMs: 2000 },
 	Stamina: { regenPerSecond: 10, pauseDelayMs: 1000 },
-	// Experience does not regenerate
 };
 
 // Helper: make a default ResourceDTO

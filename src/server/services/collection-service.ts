@@ -2,91 +2,167 @@
  * @file src/server/services/collection-service.ts
  * @module CollectionService
  * @layer Server/Services
- * @description Manages CollectionService-tagged objects and their behaviors
+ * @description Clean manager for CollectionService-tagged objects and their behaviors
  *
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
- * @lastUpdated 2025-08-12 - Added comprehensive signal documentation
+ * @lastUpdated 2025-08-12 - Refactored into clean manager with modular collection items
+ *
+ * ## Architecture
+ * The CollectionService now acts as a clean coordinator/manager that:
+ * - Initializes all registered collection items
+ * - Provides centralized lifecycle management
+ * - Handles cleanup and error recovery
+ * - Offers debugging and monitoring capabilities
+ *
+ * Individual collection item logic is now contained in separate modules under:
+ * `src/server/collection-items/`
  *
  * ## Server Signals (Inter-Service Communication)
- * - `HealthDamageRequested` - Emits damage requests when players touch lava parts
+ * - Depends on collection items (e.g., HealthDamageRequested, ExperienceAwarded)
+ * - No direct signal emission - delegates to individual collection items
  *
  * ## Client Events (Network Communication)
- * - None - Environmental effects are server-side only
+ * - None - All collection items are server-side environmental effects
  *
  * ## Roblox Events (Engine Integration)
- * - `CollectionService.GetTagged("LavaPart")` - Gets all lava-tagged parts
- * - `CollectionService.GetInstanceAddedSignal("LavaPart")` - Monitors new lava parts
- * - `CollectionService.GetInstanceRemovedSignal("LavaPart")` - Monitors removed lava parts
- * - `part.Touched` - Roblox part touch events for damage detection
+ * - Managed by individual collection item modules
+ * - Centralized error handling and monitoring
  */
 
-import { CollectionService } from "@rbxts/services";
-import { SignalServiceInstance } from "./signal-service";
+import { getEnabledCollectionItems, ICollectionItem } from "../collection-items";
 
-export const LavaParts: Array<Instance> = CollectionService.GetTagged("LavaPart") as Array<Instance>;
-const partConnections: Map<Part, RBXScriptConnection> = new Map();
+export class CollectionServiceManager {
+	private static instance?: CollectionServiceManager;
+	private collectionItems: ICollectionItem[] = [];
+	private isInitialized = false;
 
-function addLavaTouchHandler(part: Part) {
-	if (partConnections.has(part)) {
-		print(`Lava part ${part.Name} already has a touch handler.`);
-		return; // Prevent duplicate connections
+	private constructor() {}
+
+	public static getInstance(): CollectionServiceManager {
+		if (!CollectionServiceManager.instance) {
+			CollectionServiceManager.instance = new CollectionServiceManager();
+		}
+		return CollectionServiceManager.instance;
 	}
-	const connection = part.Touched.Connect((hit) => {
-		if (hit.Parent?.IsA("Model") && hit.Parent.FindFirstChildOfClass("Humanoid")) {
-			const humanoid = hit.Parent.FindFirstChildOfClass("Humanoid") as Humanoid;
-			if (humanoid?.HasTag("LavaTouched")) {
-				print(`Lava already touched by ${hit.Parent.Name}, skipping damage.`);
-				return; // Prevent double damage if already tagged
+
+	/**
+	 * Initialize all enabled collection items
+	 */
+	public initialize(): void {
+		if (this.isInitialized) {
+			warn("CollectionServiceManager is already initialized");
+			return;
+		}
+
+		try {
+			// Get all enabled collection items
+			this.collectionItems = getEnabledCollectionItems();
+
+			// Initialize each collection item
+			for (const item of this.collectionItems) {
+				try {
+					item.initialize();
+					print(`✅ Initialized collection item: ${item.config.name} (${item.config.tag})`);
+				} catch (error) {
+					warn(`❌ Failed to initialize collection item ${item.config.name}:`, error);
+				}
 			}
 
-			// Find the player associated with this character
-			const player = game.GetService("Players").GetPlayerFromCharacter(hit.Parent);
-			if (player) {
-				// Use signal-based damage request instead of direct humanoid damage
-				SignalServiceInstance.emit("HealthDamageRequested", {
-					player,
-					amount: 10,
-					source: "Lava",
-				});
+			this.isInitialized = true;
+			print(`🎯 CollectionServiceManager initialized with ${this.collectionItems.size()} collection items`);
+		} catch (error) {
+			warn("❌ Failed to initialize CollectionServiceManager:", error);
+		}
+	}
+
+	/**
+	 * Get status of all collection items
+	 */
+	public getStatus(): string {
+		if (!this.isInitialized) {
+			return "❌ CollectionServiceManager not initialized";
+		}
+
+		const status = ["📊 Collection Service Status:", `Total items: ${this.collectionItems.size()}`, ""];
+
+		for (const item of this.collectionItems) {
+			const instanceCount = item.instances.size();
+			const connectionCount = item.connections.size();
+			status.push(
+				`🏷️  ${item.config.name} (${item.config.tag}):`,
+				`   📦 Instances: ${instanceCount}`,
+				`   🔗 Connections: ${connectionCount}`,
+				`   ✅ Enabled: ${item.config.enabled !== false}`,
+				"",
+			);
+		}
+
+		return status.join("\n");
+	}
+
+	/**
+	 * Get a specific collection item by tag
+	 */
+	public getCollectionItem(tag: string): ICollectionItem | undefined {
+		return this.collectionItems.find((item) => item.config.tag === tag);
+	}
+
+	/**
+	 * Cleanup all collection items
+	 */
+	public cleanup(): void {
+		for (const item of this.collectionItems) {
+			try {
+				item.cleanup();
+				print(`🧹 Cleaned up collection item: ${item.config.name}`);
+			} catch (error) {
+				warn(`❌ Failed to cleanup collection item ${item.config.name}:`, error);
+			}
+		}
+
+		this.collectionItems = [];
+		this.isInitialized = false;
+		print("🧹 CollectionServiceManager cleanup complete");
+	}
+
+	/**
+	 * Get collection items grouped by their enabled status
+	 */
+	public getItemsSummary(): { enabled: string[]; disabled: string[] } {
+		const enabled: string[] = [];
+		const disabled: string[] = [];
+
+		for (const item of this.collectionItems) {
+			if (item.config.enabled !== false) {
+				enabled.push(`${item.config.name} (${item.config.tag})`);
 			} else {
-				// Fallback to direct damage for NPCs or other entities
-				humanoid.TakeDamage(10);
+				disabled.push(`${item.config.name} (${item.config.tag})`);
 			}
-
-			humanoid.AddTag("LavaTouched");
-			task.delay(1, () => {
-				humanoid.RemoveTag("LavaTouched");
-			});
-			print(`Lava touched by ${hit.Parent.Name}, dealt damage.`);
 		}
-	});
-	partConnections.set(part, connection);
-	print(`Added touch handler for lava part: ${part.Name}`);
-}
-LavaParts.forEach((part) => {
-	if (part.IsA("Part")) {
-		addLavaTouchHandler(part);
+
+		return { enabled, disabled };
 	}
-});
-export function RunLavaParts() {
-	CollectionService.GetInstanceAddedSignal("LavaPart").Connect((part) => {
-		if (part.IsA("Part")) {
-			LavaParts.push(part);
-			addLavaTouchHandler(part);
-			print(`Lava part added: ${part.Name}`);
-		}
-	});
+}
 
-	CollectionService.GetInstanceRemovedSignal("LavaPart").Connect((part) => {
-		if (part.IsA("Part")) {
-			const index = LavaParts.indexOf(part);
-			if (index !== -1) {
-				LavaParts.remove(index);
-				partConnections.get(part)?.Disconnect();
-				partConnections.delete(part);
-				print(`Lava part removed: ${part.Name}`);
-			}
-		}
-	});
+// Export singleton instance
+export const CollectionServiceManagerInstance = CollectionServiceManager.getInstance();
+
+/**
+ * Convenience function for initializing the collection service system
+ * Call this from your service loader
+ */
+export function RunCollectionService(): void {
+	CollectionServiceManagerInstance.initialize();
+}
+
+// Legacy exports for backwards compatibility
+export function RunLavaParts(): void {
+	warn("RunLavaParts() is deprecated. Use RunCollectionService() instead.");
+	RunCollectionService();
+}
+
+export function RunExperienceOrbs(): void {
+	warn("RunExperienceOrbs() is deprecated. Use RunCollectionService() instead.");
+	RunCollectionService();
 }
