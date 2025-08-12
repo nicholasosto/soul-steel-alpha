@@ -1,6 +1,6 @@
 ---
 project: Soul Steel Alpha
-version: 1.0
+version: 1
 milestones:
   - id: M1
     title: Core Foundation
@@ -16,39 +16,59 @@ features:
     milestone: M1
     priority: P1
     acceptance:
-      - "Four core abilities usable with cooldowns and resource costs"
-      - "Cooldowns and costs enforced server-side"
-      - "Client UI clearly shows cooldown/resource state"
+      - Four core abilities usable with cooldowns and resource costs
+      - Cooldowns and costs enforced server-side
+      - Client UI clearly shows cooldown/resource state
     tasks:
       - id: T-ABILITY-001
-        title: Server AbilityService cooldown & cost checks
+        title: Server AbilityService cooldown & cost checks - COMPLETED
         estimate: 5
       - id: T-ABILITY-002
-        title: Client ability UI (cooldown display + input)
+        title: Client ability UI with reactive cooldown progress - COMPLETED
         estimate: 3
       - id: T-ABILITY-003
         title: Ability FX pass (Ice Rain, Earthquake, Soul Drain, Melee)
         estimate: 5
+      - id: T-ABILITY-004
+        title: Add ability sound effects and audio feedback
+        estimate: 2
+      - id: T-ABILITY-005
+        title: Test targeting system integration with abilities
+        estimate: 1
   - id: F-NPC-AI
     title: NPC Integration (AI States)
     milestone: M1
     priority: P1
     acceptance:
-      - "NPCs support Idle, Patrol, Combat, Pursuit, Retreat, Dead"
-      - "NPC uses at least one ability in Combat state"
+      - NPCs support Idle, Patrol, Combat, Pursuit, Retreat, Dead states
+      - UnifiedNPCService with basic/enhanced modes
+      - NPCs use abilities in Combat state
+      - Template-based NPC configuration
+      - Advanced AI behaviors for enhanced NPCs
     tasks:
-      - id: T-NPC-001
-        title: NPCService state machine (Idle→Patrol→Combat→Pursuit→Retreat)
-      - id: T-NPC-002
-        title: Spawn/despawn lifecycle & perf budget
+      - estimate: 1
+        id: T-NPC-003
+        title: Document NPC template system
+      - estimate: 2
+        id: T-NPC-004
+        title: Test enhanced vs basic NPC modes
   - id: F-ZONES-CORE
     title: Zone System (Basic)
     milestone: M1
     tasks:
-      - id: T-ZONE-001
-        title: Entry/exit events + rule enforcement
-      - id: T-ZONE-002
-        title: Visual boundary indicators
+      - estimate: 1
+        id: T-ZONE-003
+        title: Test zone player tracking
+      - estimate: 1
+        id: T-ZONE-004
+        title: Verify zone signal integration
+    priority: P1
+    acceptance:
+      - ZoneService with ZonePlus integration
+      - Entry/exit events with signal system
+      - Zone activation/deactivation system
+      - Player zone tracking and history
+      - Zone statistics and management
   - id: F-WEAPONS
     title: Weapon System
     milestone: M2
@@ -65,6 +85,70 @@ features:
         title: Chain detection and bonus calculation
       - id: T-COMBO-002
         title: Combo HUD feedback
+  - id: F-COMBAT-CORE
+    title: Combat & Damage System
+    milestone: M1
+    priority: P1
+    acceptance:
+      - CombatService handles damage calculations and combat flow
+      - DamageService manages damage application and effects
+      - TargetingService enables precise combat targeting
+      - Integration with ability system for combat abilities
+    tasks:
+      - id: T-COMBAT-001
+        title: Verify combat damage pipeline
+        estimate: 2
+      - id: T-COMBAT-002
+        title: Test targeting system integration
+        estimate: 1
+  - id: F-DATA-CORE
+    title: Data & Resource Management
+    milestone: M1
+    priority: P1
+    acceptance:
+      - DataService manages player profiles via ProfileService
+      - ResourceService handles mana/health/experience tracking
+      - ProgressionService manages leveling and XP
+      - Data persistence across sessions
+    tasks:
+      - id: T-DATA-001
+        title: Verify ProfileService integration
+        estimate: 1
+      - id: T-DATA-002
+        title: Test resource tracking accuracy
+        estimate: 2
+  - id: F-SERVICE-CORE
+    title: Service Architecture & Communication
+    milestone: M1
+    priority: P2
+    acceptance:
+      - MessageService handles player notifications and UI messages
+      - SignalService enables inter-service communication
+      - ServiceRegistry coordinates service dependencies
+      - Clean service lifecycle management
+    tasks:
+      - id: T-SERVICE-001
+        title: Document service communication patterns
+        estimate: 1
+      - id: T-SERVICE-002
+        title: Test service registry coordination
+        estimate: 1
+  - id: F-ANIMATION-CORE
+    title: Animation System
+    milestone: M1
+    priority: P2
+    acceptance:
+      - AnimationService handles character animations
+      - Ability animation integration
+      - NPC animation support
+      - Animation cleanup and management
+    tasks:
+      - id: T-ANIM-001
+        title: Verify animation service integration
+        estimate: 1
+      - id: T-ANIM-002
+        title: Test ability animation triggers
+        estimate: 2
 ---
 
 # Soul Steel Alpha - Official Game Design Document

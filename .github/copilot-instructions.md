@@ -140,6 +140,37 @@ The project includes Model Context Protocol server (`mcp-server.ts`) for AI assi
 - Be mindful of Roblox script performance limits
 - Use Maid pattern for cleanup in services
 
+## Game Design Document Management
+The project uses a living GDD at `.documentation/soul_steel_gdd.md` managed via MCP tools.
+
+### 📋 When to Use GDD Manager
+- **Feature Planning**: Query milestones and features before implementing new systems
+- **Task Tracking**: Add tasks when breaking down features into implementation steps
+- **Progress Reports**: Export summaries for sprint reviews and project updates
+- **Validation**: Check document structure and ensure all features have proper acceptance criteria
+- **Priority Management**: Query P1/P2/P3 features to guide development focus
+
+### 🛠️ Key GDD Operations
+```typescript
+// Always check current milestone status before major work
+gdd-manager: query_milestones (include_features: true)
+
+// Add tasks when implementing features
+gdd-manager: add_task (feature_id, task details with estimates)
+
+// Validate document health regularly
+gdd-manager: validate_structure (check_type: all)
+
+// Generate progress reports for stakeholders
+gdd-manager: export_summary (format: markdown, include: all)
+```
+
+### 📈 Integration with Development
+- Before starting features: Query related tasks and acceptance criteria
+- During implementation: Add technical tasks as they emerge
+- After completion: Update task status and validate feature completion
+- For planning: Export summaries to identify bottlenecks and dependencies
+
 ## File Organization Conventions
 - Use kebab-case for all file names: `enhanced-combat-service.ts`, `ability-remotes.ts`
 - Exception: Fusion UI components use PascalCase: `PlayerHealthBar.tsx`, `AbilityButton.tsx`
