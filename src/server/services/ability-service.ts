@@ -377,7 +377,6 @@ class AbilityService {
 
 			// Play Success Effects
 			abilityMeta.OnStartSuccess?.(character, undefined);
-			abilityMeta.OnHold?.(character, 0, undefined);
 			task.spawn(() => {
 				// Simulate ability duration
 				wait(abilityMeta.duration);

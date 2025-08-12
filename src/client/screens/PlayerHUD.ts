@@ -1,22 +1,14 @@
-import { Children, New, OnEvent } from "@rbxts/fusion";
-import { AbilityController } from "client/controllers";
-import { CooldownButton, CharacterInfoCard } from "@trembus/ss-fusion";
-import { AbilityCatalog } from "shared";
-
-import { PlayerStateInstance } from "client/states";
-import { Players } from "@rbxts/services";
-const abilityController = AbilityController.getInstance();
-const localPlayer = Players.LocalPlayer;
+import { Children, New } from "@rbxts/fusion";
+import { CharacterCardInstance } from "./hud-components";
+import { AbilityBar } from "./hud-components/AbilityBar";
+import { Panel, TextBox } from "@trembus/ss-fusion";
 /* ---------------------------------- TEXT BOXES ---------------------------------- */
-const playerResources = PlayerStateInstance.Resources;
-const meleeMeta = AbilityCatalog["Melee"];
-const characterInfoCard = CharacterInfoCard({
-	userId: localPlayer.UserId,
-	bar1: { currentValue: playerResources.Health.current, maxValue: playerResources.Health.max },
-	bar2: { currentValue: playerResources.Mana.current, maxValue: playerResources.Mana.max },
-	bar3: { currentValue: playerResources.Stamina.current, maxValue: playerResources.Stamina.max },
-	levelBar: { currentValue: playerResources.Experience.current, maxValue: playerResources.Experience.max },
-	nameLabel: localPlayer.Name,
+const PanelTest = Panel({
+	Size: UDim2.fromScale(0.5, 0.5),
+	Position: UDim2.fromScale(0.25, 0.25),
+	shadow: "md",
+	variant: "primary",
+	children: [TextBox({})],
 });
 export function createPlayerHUD(parent: Instance): ScreenGui {
 	return New("ScreenGui")({
@@ -26,7 +18,9 @@ export function createPlayerHUD(parent: Instance): ScreenGui {
 		Enabled: true,
 		DisplayOrder: 10,
 		[Children]: {
-			CharacterInfoCard: characterInfoCard,
+			//Panel: PanelTest,
+			CharacterInfoCard: CharacterCardInstance,
+			AbilityBar: AbilityBar(["Earthquake", "Melee", "Ice-Rain", "Soul-Drain"]),
 		},
 	});
 }

@@ -121,7 +121,7 @@ export const createAbilitiesState = (): AbilitiesState => {
 // Internal Helpers
 function runCastSuccessEffects(abilityKey: AbilityKey, character: Model) {
 	const entity = character as SSEntity;
-	const animationSet = AnimationSets[abilityKey] as readonly string[] | undefined;
+	const animationSet = AbilityCatalog[abilityKey]?.animationSet;
 	const castEffectKey = AbilityCatalog[abilityKey]?.castEffectKey;
 	const duration = AbilityCatalog[abilityKey]?.duration ?? 1;
 
@@ -137,11 +137,8 @@ function runCastSuccessEffects(abilityKey: AbilityKey, character: Model) {
 
 	// Play random animation from set if provided, otherwise play default taunt
 	// Drive animation via client-side effect handler or keep server-triggered animation
-	if (animationSet && animationSet.size() > 0) {
-		PlayRandomAnimationFromSet(entity, animationSet, duration);
-	} else {
-		PlayAnimation(entity, "Taunt");
-	}
+	if (animationSet === undefined) return;
+	PlayRandomAnimationFromSet(entity, animationSet);
 }
 
 function runCastFailEffects(character: Model) {
@@ -172,10 +169,6 @@ export const AbilityCatalog: Record<AbilityKey, AbilityMeta> = {
 		OnStartSuccess: (entity, target) => {
 			runCastSuccessEffects(AbilityCatalog.Melee.abilityKey, entity);
 			print(`Catalog: ${entity.Name} used Melee on: ${target?.Name}`);
-		},
-		OnStartFailure: (entity) => {
-			runCastFailEffects(entity);
-			print(`Catalog: ${entity.Name} failed to use Melee`);
 		},
 	},
 	"Ice-Rain": {
@@ -216,8 +209,8 @@ export const AbilityCatalog: Record<AbilityKey, AbilityMeta> = {
 		icon: ImageConstants.Ability.Earthquake,
 		animationSet: AnimationSets.EarthquakeAnimationSet,
 		OnStartSuccess: (entity, target) => {
-			runCastSuccessEffects(AbilityCatalog.Earthquake.abilityKey, entity);
-			print(`Catalog: ${entity?.Name} used Earthquake on: ${target?.Name}`);
+			warn("MELEE HOOK", "PLAYING PUNCH_01");
+			PlayAnimation(entity, "Punch_01");
 		},
 		OnStartFailure: (entity) => {
 			runCastFailEffects(entity);
