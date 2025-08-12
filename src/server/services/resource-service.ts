@@ -367,7 +367,7 @@ export class ResourceService {
 
 		// If leveled up, persist and emit player data update with full payload
 		if (levelsGained > 0) {
-			profile.Data.Level = (profile.Data.Level ?? 1) + levelsGained;
+			profile.Data.Progression.Level = (profile.Data.Progression.Level ?? 1) + levelsGained;
 			PlayerDataUpdated.SendToPlayer(player, profile.Data);
 		}
 	}

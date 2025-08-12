@@ -93,7 +93,7 @@ class PlayerState {
 
 	public SetPersistentData(data: PersistantPlayerData): void {
 		if (data !== undefined) {
-			this.Level.set(data.Level);
+			this.Level.set(data.Progression.Level);
 			const abilities = data.Abilities;
 
 			// Iterate known ability keys for type-safe updates

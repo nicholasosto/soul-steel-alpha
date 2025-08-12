@@ -11,6 +11,7 @@
 import Signal from "@rbxts/signal";
 import { ZoneKey } from "shared/keys";
 import { SSEntity } from "shared/types";
+import { PlayerProgression } from "shared/types/player-data";
 
 // Service event types
 export interface ServiceEvents {
@@ -43,6 +44,11 @@ export interface ServiceEvents {
 	// Humanoid events - Bridge between Roblox API and our system
 	HumanoidHealthChanged: { player: Player; character: Model; newHealth: number; maxHealth: number };
 	HumanoidDied: { player: Player; character: Model };
+
+	// Progression events - Player experience and leveling
+	ExperienceAwarded: { player: Player; amount: number; source?: string };
+	LevelUp: { player: Player; oldLevel: number; newLevel: number; progression: PlayerProgression };
+	ProgressionUpdated: { player: Player; progression: PlayerProgression };
 }
 
 export class SignalService {
@@ -80,6 +86,9 @@ export class SignalService {
 			"StaminaRestored",
 			"HumanoidHealthChanged",
 			"HumanoidDied",
+			"ExperienceAwarded",
+			"LevelUp",
+			"ProgressionUpdated",
 		];
 
 		for (const eventKey of eventKeys) {

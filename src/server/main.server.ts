@@ -8,9 +8,11 @@ import { ResourceServiceInstance } from "./services/resource-service";
 import { AbilityServiceInstance } from "./services/ability-service";
 import { HumanoidMonitorServiceInstance } from "./services/humanoid-monitor-service";
 import { DataServiceInstance } from "./services/data-service";
+import { ProgressionServiceInstance } from "./services/progression-service";
 
 print("Soul Steel Alpha server initialized successfully");
 MessageService.getInstance();
 // Importing the instances runs their module initializers
+// Initialize progression service to set up signal connections (already instantiated by import)
 CombatServiceInstance.Initialize();
 UnifiedNPCServiceInstance.Initialize();

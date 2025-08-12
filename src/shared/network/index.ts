@@ -41,9 +41,11 @@
 export * from "./ability-remotes";
 export * from "./attribute-remotes";
 export * from "./combat-remotes";
+export * from "./data-remotes";
 export * from "./effect-remotes";
 export * from "./game-cycle-remotes";
 export * from "./message-remotes";
+export * from "./progression-remotes";
 export * from "./targeting-remotes";
 export * from "../catalogs/resources-catalog"; // exposes ResourceRemotes
 // export * from "./game-cycle-remotes"; // Currently unused - uncomment when needed
