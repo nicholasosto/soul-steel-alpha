@@ -6,6 +6,22 @@
  *
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
+ * @lastUpdated 2025-08-12 - Added comprehensive signal documentation
+ *
+ * ## Server Signals (Inter-Service Communication)
+ * - `ZoneCreated` - Emits when new zones are created for system notifications
+ * - `ZoneActivated` - Emits when zones become active for gameplay systems
+ * - `ZoneDeactivated` - Emits when zones become inactive for cleanup systems
+ * - `ZoneDestroyed` - Emits when zones are destroyed for memory management
+ * - `ZonePlayerEntered` - Emits when players enter zones for quest/event systems
+ * - `ZonePlayerExited` - Emits when players exit zones for state management
+ *
+ * ## Client Events (Network Communication)
+ * - None - Zone events are handled through signal system only
+ *
+ * ## Roblox Events (Engine Integration)
+ * - `zone.playerEntered` - ZonePlus library event for player zone entry
+ * - `zone.playerExited` - ZonePlus library event for player zone exit
  */
 
 import { Players, Workspace } from "@rbxts/services";

@@ -3,6 +3,18 @@
  * @module TargetingService
  * @layer Server/Services
  * @description Authoritative validation for player target locking.
+ * @lastUpdated 2025-08-12 - Added comprehensive signal documentation
+ *
+ * ## Server Signals (Inter-Service Communication)
+ * - None - Pure targeting validation service with no signal dependencies
+ *
+ * ## Client Events (Network Communication)
+ * - `TryLockTarget` - Handles client target lock requests with validation
+ * - `ClearTarget` - Handles client target clear requests
+ * - `TargetUpdated` - Sends target updates to clients for UI synchronization
+ *
+ * ## Roblox Events (Engine Integration)
+ * - `Players.PlayerRemoving` - Cleans up target data for leaving players
  */
 
 import { Players, CollectionService, Workspace } from "@rbxts/services";

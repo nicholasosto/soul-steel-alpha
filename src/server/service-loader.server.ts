@@ -4,6 +4,7 @@ import {
 	DataServiceInstance,
 	HumanoidMonitorServiceInstance,
 	MessageServiceInstance,
+	ProgressionServiceInstance,
 	ResourceServiceInstance,
 	UnifiedNPCServiceInstance,
 	TargetingServiceInstance,
@@ -20,6 +21,7 @@ const Services = {
 	DataService: DataServiceInstance,
 	HumanoidMonitorService: HumanoidMonitorServiceInstance, // Use signal-based approach
 	MessageService: MessageServiceInstance,
+	ProgressionService: ProgressionServiceInstance,
 	ResourceService: ResourceServiceInstance,
 	UnifiedNPCService: UnifiedNPCServiceInstance,
 	TargetingService: TargetingServiceInstance,

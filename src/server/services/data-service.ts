@@ -5,6 +5,17 @@
  * This service is responsible for loading, saving, and managing player profiles.
  * It handles the initialization of profiles, data retrieval, and persistence.
  * @module DataService
+ * @lastUpdated 2025-08-12 - Added comprehensive signal documentation
+ *
+ * ## Server Signals (Inter-Service Communication)
+ * - None - Pure data persistence layer with no signal dependencies
+ *
+ * ## Client Events (Network Communication)
+ * - `GET_PLAYER_DATA` - Handles client requests for player profile data
+ *
+ * ## Roblox Events (Engine Integration)
+ * - `Players.PlayerAdded` - Creates and loads player profiles
+ * - `Players.PlayerRemoving` - Saves and releases player profiles
  **/
 
 import ProfileService from "@rbxts/profileservice";
@@ -12,7 +23,6 @@ import { Profile } from "@rbxts/profileservice/globals";
 import { Players } from "@rbxts/services";
 import { makeDefaultAbilityDTO, makeDefaultPlayerProgression, PersistantPlayerData } from "shared";
 import { DataRemotes } from "shared/network/data-remotes";
-import { ProgressionRemotes } from "shared/network/progression-remotes";
 
 /* Remotes */
 DataRemotes.Server.Get("GET_PLAYER_DATA").SetCallback((player) => {
@@ -24,22 +34,6 @@ DataRemotes.Server.Get("GET_PLAYER_DATA").SetCallback((player) => {
 		warn(`No profile found for player ${player.Name} when requesting data.`);
 		return undefined;
 	}
-});
-
-ProgressionRemotes.Server.Get("GET_PROGRESSION").SetCallback((player) => {
-	const progression = DataServiceInstance.GetProgression(player);
-	if (progression !== undefined) {
-		return progression;
-	} else {
-		warn(`No progression found for player ${player.Name}`);
-		return undefined;
-	}
-});
-
-ProgressionRemotes.Server.Get("AWARD_EXPERIENCE").SetCallback((player, amount) => {
-	// This should only be called by admin systems or specific game events
-	// You might want to add additional authorization checks here
-	return DataServiceInstance.AddExperience(player, amount);
 });
 
 const DefaultData: PersistantPlayerData = {
@@ -143,38 +137,6 @@ class DataService {
 		}
 		warn(`No profile found for player ${player.Name}`);
 		return false;
-	}
-
-	public AddExperience(player: Player, experienceToAdd: number): boolean {
-		const profile = this.GetProfile(player);
-		if (profile === undefined) {
-			warn(`No profile found for player ${player.Name}`);
-			return false;
-		}
-
-		const progression = profile.Data.Progression;
-		const oldLevel = progression.Level;
-		progression.Experience += experienceToAdd;
-
-		// Handle level up logic
-		while (progression.Experience >= progression.NextLevelExperience) {
-			progression.Experience -= progression.NextLevelExperience;
-			progression.Level += 1;
-
-			// Calculate next level experience requirement (simple formula - you can customize)
-			progression.NextLevelExperience = progression.Level * 100;
-		}
-
-		// Fire level up event if level changed
-		if (progression.Level > oldLevel) {
-			print(`Player ${player.Name} leveled up to ${progression.Level}!`);
-			ProgressionRemotes.Server.Get("LEVEL_UP").SendToPlayer(player, progression.Level, progression);
-		}
-
-		// Always fire progression updated event
-		ProgressionRemotes.Server.Get("PROGRESSION_UPDATED").SendToPlayer(player, progression);
-
-		return true;
 	}
 }
 export const DataServiceInstance = DataService.getInstance();

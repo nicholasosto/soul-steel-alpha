@@ -12,6 +12,18 @@
  *
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
+ * @lastUpdated 2025-08-12 - Added comprehensive signal documentation
+ *
+ * ## Server Signals (Inter-Service Communication)
+ * - None - Pure animation management service with no signal dependencies
+ *
+ * ## Client Events (Network Communication)
+ * - None - Animation tracks are managed server-side only
+ *
+ * ## Roblox Events (Engine Integration)
+ * - `Players.PlayerAdded` - Loads animations for new players and their characters
+ * - `Players.PlayerRemoving` - Cleans up animation data for leaving players
+ * - `Players.GetPlayers()` - Initializes animations for existing players
  */
 
 import { Players } from "@rbxts/services";

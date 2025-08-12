@@ -12,6 +12,18 @@
  *
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
+ * @lastUpdated 2025-08-12 - Added comprehensive signal documentation
+ *
+ * ## Server Signals (Inter-Service Communication)
+ * - `ManaConsumed` - Emits when abilities consume mana for resource tracking
+ * - `AbilityActivated` - Emits when abilities are successfully activated for analytics
+ *
+ * ## Client Events (Network Communication)
+ * - `ABILITY_ACTIVATE` - Handles client ability activation requests with validation
+ *
+ * ## Roblox Events (Engine Integration)
+ * - `Players.PlayerAdded` - Initializes ability tracking for new players
+ * - `Players.GetPlayers()` - Initializes ability tracking for existing players
  */
 
 import { Players } from "@rbxts/services";

@@ -6,6 +6,18 @@
  *
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
+ * @lastUpdated 2025-08-12 - Added comprehensive signal documentation
+ *
+ * ## Server Signals (Inter-Service Communication)
+ * - **Manages all signals** - This service IS the signal system
+ * - Provides signal registration, connection, and emission functionality
+ * - Maintains type-safe signal definitions through ServiceEvents interface
+ *
+ * ## Client Events (Network Communication)
+ * - None - Pure server-side signal coordination with no client communication
+ *
+ * ## Roblox Events (Engine Integration)
+ * - None - Signal management service with no direct Roblox engine integration
  */
 
 import Signal from "@rbxts/signal";

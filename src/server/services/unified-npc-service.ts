@@ -6,6 +6,17 @@
  *
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
+ * @lastUpdated 2025-08-12 - Added comprehensive signal documentation
+ *
+ * ## Server Signals (Inter-Service Communication)
+ * - None - Self-contained NPC management with direct service integrations
+ *
+ * ## Client Events (Network Communication)
+ * - None - NPC behavior is server-side only with no client communication
+ *
+ * ## Roblox Events (Engine Integration)
+ * - `RunService.Heartbeat` - Drives NPC AI behavior and pathfinding logic
+ * - `Players.GetPlayers()` - Used for proximity detection and targeting systems
  */
 
 import { Players, RunService, Workspace } from "@rbxts/services";

@@ -6,7 +6,27 @@
  *
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
- * @lastUpdated 2025-07-31 - Renamed from HealthService to ResourceService
+ * @lastUpdated 2025-08-12 - Added comprehensive signal documentation
+ *
+ * ## Server Signals (Inter-Service Communication)
+ * - `HumanoidHealthChanged` - Listens for health changes from Roblox Humanoid
+ * - `HealthDamageRequested` - Listens for damage requests from combat/ability systems
+ * - `HealthHealRequested` - Listens for healing requests from ability/item systems
+ * - `ManaConsumed` - Listens for mana consumption from ability systems
+ * - `ManaRestored` - Listens for mana restoration from ability/item systems
+ * - `StaminaConsumed` - Listens for stamina consumption from movement/ability systems
+ * - `StaminaRestored` - Listens for stamina restoration from ability/item systems
+ * - `ResourceChanged` - Emits when any resource value changes for analytics/UI updates
+ *
+ * ## Client Events (Network Communication)
+ * - `ResourcesUpdated` - Sends resource updates to clients for UI synchronization
+ * - `PLAYER_DATA_UPDATED` - Sends player data updates when resources change
+ * - `FetchResources` - Handles client requests for current resource values
+ *
+ * ## Roblox Events (Engine Integration)
+ * - `Players.PlayerAdded` - Initializes resource tracking for new players
+ * - `Players.PlayerRemoving` - Cleans up resource data for leaving players
+ * - `RunService.Heartbeat` - Drives resource regeneration loop every frame
  */
 
 import { Players, RunService } from "@rbxts/services";
@@ -333,43 +353,6 @@ export class ResourceService {
 		// Send update to client
 		SendResourceUpdate.SendToPlayer(player, resources);
 		return true;
-	}
-
-	/**
-	 * Award experience to a player, handle level-ups, and notify the client
-	 */
-	public AwardExperience(player: Player, amount: number): void {
-		if (amount <= 0) return;
-		const dto = this.entityResources.get(player);
-		if (!dto) return;
-		const profile = DataServiceInstance.GetProfile(player);
-		if (!profile) return;
-
-		// Experience resource exists in DTO
-		const exp = dto.Experience;
-		let newCurrent = exp.current + amount;
-		let max = exp.max;
-		let levelsGained = 0;
-
-		// Basic leveling: rollover and increase cap
-		while (newCurrent >= max) {
-			newCurrent -= max;
-			levelsGained += 1;
-			max = math.floor(max * 1.2 + 5);
-		}
-
-		// Apply to DTO
-		exp.current = newCurrent;
-		exp.max = max;
-
-		// Notify client about resource change first
-		SendResourceUpdate.SendToPlayer(player, dto);
-
-		// If leveled up, persist and emit player data update with full payload
-		if (levelsGained > 0) {
-			profile.Data.Progression.Level = (profile.Data.Progression.Level ?? 1) + levelsGained;
-			PlayerDataUpdated.SendToPlayer(player, profile.Data);
-		}
 	}
 }
 

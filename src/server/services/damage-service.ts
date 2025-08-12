@@ -6,6 +6,19 @@
  *
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
+ * @lastUpdated 2025-08-12 - Added comprehensive signal documentation
+ *
+ * ## Server Signals (Inter-Service Communication)
+ * - `HealthDamageRequested` - Emits health damage requests for resource system
+ * - `HealthHealRequested` - Emits health healing requests for resource system
+ * - `ManaConsumed` - Emits mana consumption requests for resource system
+ * - `ManaRestored` - Emits mana restoration requests for resource system
+ *
+ * ## Client Events (Network Communication)
+ * - None - Pure signal emission service with no client communication
+ *
+ * ## Roblox Events (Engine Integration)
+ * - None - Example service with no direct Roblox engine integration
  */
 
 import { SignalServiceInstance } from "./signal-service";

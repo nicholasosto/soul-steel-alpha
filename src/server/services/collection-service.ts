@@ -1,3 +1,26 @@
+/**
+ * @file src/server/services/collection-service.ts
+ * @module CollectionService
+ * @layer Server/Services
+ * @description Manages CollectionService-tagged objects and their behaviors
+ *
+ * @author Soul Steel Alpha Development Team
+ * @since 1.0.0
+ * @lastUpdated 2025-08-12 - Added comprehensive signal documentation
+ *
+ * ## Server Signals (Inter-Service Communication)
+ * - `HealthDamageRequested` - Emits damage requests when players touch lava parts
+ *
+ * ## Client Events (Network Communication)
+ * - None - Environmental effects are server-side only
+ *
+ * ## Roblox Events (Engine Integration)
+ * - `CollectionService.GetTagged("LavaPart")` - Gets all lava-tagged parts
+ * - `CollectionService.GetInstanceAddedSignal("LavaPart")` - Monitors new lava parts
+ * - `CollectionService.GetInstanceRemovedSignal("LavaPart")` - Monitors removed lava parts
+ * - `part.Touched` - Roblox part touch events for damage detection
+ */
+
 import { CollectionService } from "@rbxts/services";
 import { SignalServiceInstance } from "./signal-service";
 

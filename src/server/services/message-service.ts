@@ -3,9 +3,18 @@
  * @module MessageService
  * @owner Trembus
  * @since 0.2.0
- * @lastUpdate 2025-07-12
+ * @lastUpdate 2025-08-12 - Added comprehensive signal documentation
  * @remarks
  * Handles Message data construction and provides utility methods for other services.
+ *
+ * ## Server Signals (Inter-Service Communication)
+ * - None - Pure messaging utility service with no signal dependencies
+ *
+ * ## Client Events (Network Communication)
+ * - `SendMessageToPlayer` - Sends individual messages to specific players
+ *
+ * ## Roblox Events (Engine Integration)
+ * - `Players.GetPlayers()` - Used for broadcasting messages to all players
  */
 
 import { Players, RunService } from "@rbxts/services";

@@ -11,7 +11,21 @@
  * - Signal-based inter-service communication
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
- * @lastUpdated 2025-08-12 - Initial creation for progression refactor
+ * @lastUpdated 2025-08-12 - Added comprehensive signal documentation
+ *
+ * ## Server Signals (Inter-Service Communication)
+ * - `ExperienceAwarded` - Listens for experience award requests from any service
+ * - `ProgressionUpdated` - Emits when player progression data changes
+ * - `LevelUp` - Emits when player gains a level for achievement/reward systems
+ *
+ * ## Client Events (Network Communication)
+ * - `GET_PROGRESSION` - Handles client requests for progression data
+ * - `AWARD_EXPERIENCE` - Handles admin/cheat experience award requests
+ * - `PROGRESSION_UPDATED` - Sends progression updates to clients for UI
+ * - `LEVEL_UP` - Sends level-up notifications to clients for celebration UI
+ *
+ * ## Roblox Events (Engine Integration)
+ * - `Players.PlayerRemoving` - Cleans up progression data for leaving players
  */
 
 import { Players } from "@rbxts/services";

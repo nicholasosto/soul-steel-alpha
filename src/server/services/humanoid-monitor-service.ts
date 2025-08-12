@@ -6,6 +6,21 @@
  *
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
+ * @lastUpdated 2025-08-12 - Added comprehensive signal documentation
+ *
+ * ## Server Signals (Inter-Service Communication)
+ * - `HumanoidHealthChanged` - Emits when Roblox Humanoid health changes for resource tracking
+ * - `HumanoidDied` - Emits when Roblox Humanoid dies for death handling systems
+ *
+ * ## Client Events (Network Communication)
+ * - None - Pure signal emission service with no client communication
+ *
+ * ## Roblox Events (Engine Integration)
+ * - `Players.PlayerAdded` - Monitors new players for character spawning
+ * - `Players.PlayerRemoving` - Cleans up monitoring for leaving players
+ * - `Players.GetPlayers()` - Initializes monitoring for existing players
+ * - `humanoid.HealthChanged` - Roblox Humanoid health change events
+ * - `humanoid.Died` - Roblox Humanoid death events
  */
 
 import { Players } from "@rbxts/services";

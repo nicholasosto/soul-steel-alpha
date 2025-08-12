@@ -17,6 +17,29 @@
  * @author Soul Steel Alpha Development Team
  * @since 2.0.0
  * @created 2025-08-06 - Initial implementation
+ * @lastUpdated 2025-08-12 - Added comprehensive signal documentation
+ *
+ * ## Server Signals (Inter-Service Communication)
+ * - `PlayerDamaged` - Emits when players take damage for analytics/reward systems
+ * - `HealthDamageRequested` - Emits health damage requests for resource system
+ *
+ * ## Client Events (Network Communication)
+ * - `ExecuteBasicAttack` - Handles client basic attack requests
+ * - `ExecuteAbilityAttack` - Handles client ability-based attack requests
+ * - `RequestWeaponEquip` - Handles client weapon equip requests
+ * - `SpawnTestNPCs` - Handles test NPC spawning for combat testing
+ * - `GetCombatStats` - Provides combat statistics to clients
+ * - `GetEquippedWeapon` - Provides equipped weapon data to clients
+ * - `GetActiveCombos` - Provides active combo data to clients
+ * - `CombatHit` - Sends hit events to all clients for visual effects
+ * - `WeaponEquipped` - Sends weapon equip events to all clients
+ * - `WeaponUnequipped` - Sends weapon unequip events to all clients
+ * - `CombatSessionStarted` - Sends combat session start events to all clients
+ * - `CombatSessionEnded` - Sends combat session end events to all clients
+ *
+ * ## Roblox Events (Engine Integration)
+ * - `Players.PlayerRemoving` - Cleans up combat data for leaving players
+ * - `Players.GetPlayers()` - Used for broadcasting combat events to all players
  */
 
 import { Players, Workspace, HttpService } from "@rbxts/services";
