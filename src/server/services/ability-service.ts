@@ -55,8 +55,11 @@ class AbilityService {
 	/** Map storing registered abilities for each entity */
 	private characterAbilityMap: Map<SSEntity, AbilityKey[]> = new Map();
 
-	/** Map storing cooldown timers for each entity's abilities */
-	private abilityCooldowns: Map<string, CooldownTimer> = new Map();
+	/** Map storing cooldown timers per-entity per-ability (instance-keyed to avoid name collisions across respawns) */
+	private abilityCooldowns: Map<SSEntity, Map<AbilityKey, CooldownTimer>> = new Map();
+
+	/** Optional debug toggle for verbose cooldown logs */
+	private readonly DEBUG = false;
 
 	/** Simple per-player rate limit tracker for ability activation */
 	private lastAbilityRequestAt = new Map<Player, number>();
@@ -109,10 +112,18 @@ class AbilityService {
 				const now = tick();
 				const last = this.lastAbilityRequestAt.get(player);
 				if (last !== undefined && now - last < this.ABILITY_REQUEST_WINDOW_SEC) {
+					if (this.DEBUG)
+						warn(
+							`RATE-LIMIT: ${player.Name} ability ${abilityKey} blocked (${string.format(
+								"%.3f",
+								now - last,
+							)}s < window ${this.ABILITY_REQUEST_WINDOW_SEC}s)`,
+						);
 					return false;
 				}
-				this.lastAbilityRequestAt.set(player, now);
-				return this.handleAbilityStart(player, abilityKey);
+				const ok = this.handleAbilityStart(player, abilityKey);
+				if (ok) this.lastAbilityRequestAt.set(player, now);
+				return ok;
 			});
 		} catch (error) {
 			warn(`Failed to initialize ability remotes: ${error}`);
@@ -126,14 +137,21 @@ class AbilityService {
 	 * @private
 	 */
 	private initializeCleanup(): void {
-		// Cleanup when players leave
-		Players.PlayerRemoving.Connect((player) => {
+		// Cleanup cooldowns when characters are removed (respawn or leave)
+		const connectForPlayer = (player: Player) => {
 			player.CharacterRemoving.Connect((character) => {
 				if (isSSEntity(character)) {
 					this.unregisterModel(character);
 				}
 			});
-		});
+		};
+
+		// For new players
+		Players.PlayerAdded.Connect(connectForPlayer);
+		// For players already in-game when the service initializes
+		for (const p of Players.GetPlayers()) {
+			connectForPlayer(p);
+		}
 	}
 
 	/**
@@ -170,9 +188,7 @@ class AbilityService {
 	 * @returns Unique string key for cooldown mapping
 	 * @private
 	 */
-	private getCooldownKey(entity: SSEntity, abilityKey: AbilityKey): string {
-		return `${entity.Name}_${abilityKey}`;
-	}
+	// Removed string-based cooldown keys; using instance-keyed nested maps instead
 
 	/**
 	 * Checks if an ability is currently on cooldown for a specific entity.
@@ -182,9 +198,24 @@ class AbilityService {
 	 * @public
 	 */
 	public isAbilityOnCooldown(entity: SSEntity, abilityKey: AbilityKey): boolean {
-		const cooldownKey = this.getCooldownKey(entity, abilityKey);
-		const timer = this.abilityCooldowns.get(cooldownKey);
-		return timer !== undefined && !timer.isReady();
+		const timers = this.abilityCooldowns.get(entity);
+		const timer = timers?.get(abilityKey);
+		if (timer === undefined) return false;
+
+		const ready = timer.isReady();
+		if (ready) {
+			// Stale timer entry, clean it up just in case
+			timers!.delete(abilityKey);
+			if (this.DEBUG) warn(`COOLDOWN-CLEANUP: ${entity.Name}.${abilityKey} had stale timer; removed.`);
+			return false;
+		}
+
+		if (this.DEBUG) warn(`COOLDOWN-ACTIVE: ${entity.Name}.${abilityKey}`);
+		return true;
+	}
+
+	private getTimer(entity: SSEntity, key: AbilityKey): CooldownTimer | undefined {
+		return this.abilityCooldowns.get(entity)?.get(key);
 	}
 
 	/**
@@ -194,27 +225,41 @@ class AbilityService {
 	 * @private
 	 */
 	private startAbilityCooldown(entity: SSEntity, abilityKey: AbilityKey): void {
-		const cooldownKey = this.getCooldownKey(entity, abilityKey);
 		const abilityMeta = AbilityCatalog[abilityKey];
+		const cd = abilityMeta.cooldown;
+		if (cd <= 0) {
+			if (this.DEBUG) warn(`SKIP-COOLDOWN: ${entity.Name}.${abilityKey} has non-positive duration (${cd}s)`);
+			return;
+		}
+
+		let perEntity = this.abilityCooldowns.get(entity);
+		if (perEntity === undefined) {
+			perEntity = new Map<AbilityKey, CooldownTimer>();
+			this.abilityCooldowns.set(entity, perEntity);
+		}
 
 		// Clean up any existing timer
-		const existingTimer = this.abilityCooldowns.get(cooldownKey);
-		if (existingTimer) {
+		const existingTimer = perEntity.get(abilityKey);
+		if (existingTimer !== undefined) {
 			existingTimer.destroy();
 		}
 
 		// Create and start new cooldown timer
-		const timer = new CooldownTimer(abilityMeta.cooldown);
-		this.abilityCooldowns.set(cooldownKey, timer);
+		const timer = new CooldownTimer(cd);
+		perEntity.set(abilityKey, timer);
 
 		// Auto-cleanup when cooldown completes
 		timer.onComplete(() => {
-			this.abilityCooldowns.delete(cooldownKey);
+			perEntity!.delete(abilityKey);
 			timer.destroy();
+			if ((perEntity! as Map<AbilityKey, CooldownTimer>).size() === 0) {
+				this.abilityCooldowns.delete(entity);
+			}
+			if (this.DEBUG) warn(`COOLDOWN-DONE: ${entity.Name}.${abilityKey}`);
 		});
 
 		timer.start();
-		print(`Started ${abilityMeta.cooldown}s cooldown for ${abilityKey} on ${entity.Name}`);
+		if (this.DEBUG) warn(`COOLDOWN-START: ${entity.Name}.${abilityKey} for ${cd}s`);
 	}
 
 	/**
@@ -226,23 +271,27 @@ class AbilityService {
 	 * @public
 	 */
 	public unregisterModel(entity: SSEntity): boolean {
-		if (this.characterAbilityMap.has(entity)) {
-			// Clean up all cooldown timers for this entity
-			const registeredAbilities = this.characterAbilityMap.get(entity)!;
-			for (const abilityKey of registeredAbilities) {
-				const cooldownKey = this.getCooldownKey(entity, abilityKey);
-				const timer = this.abilityCooldowns.get(cooldownKey);
-				if (timer) {
-					timer.destroy();
-					this.abilityCooldowns.delete(cooldownKey);
-				}
+		let didAnything = false;
+		// Clean up cooldown timers tracked for this entity
+		const perEntity = this.abilityCooldowns.get(entity);
+		if (perEntity !== undefined) {
+			for (const [, timer] of perEntity) {
+				timer.destroy();
 			}
-
-			this.characterAbilityMap.delete(entity);
-			print(`Unregistered entity ${entity.Name} and cleaned up cooldowns`);
-			return true;
+			this.abilityCooldowns.delete(entity);
+			didAnything = true;
 		}
-		return false;
+
+		// Remove from registered abilities map if present
+		if (this.characterAbilityMap.has(entity)) {
+			this.characterAbilityMap.delete(entity);
+			didAnything = true;
+		}
+
+		if (didAnything) {
+			print(`Unregistered entity ${entity.Name} and cleaned up cooldowns`);
+		}
+		return didAnything;
 	}
 
 	/**
@@ -275,6 +324,11 @@ class AbilityService {
 		// Check if ability is on cooldown
 		if (this.isAbilityOnCooldown(character, abilityKey)) {
 			warn(`Ability ${abilityKey} is on cooldown for player ${player.Name}`);
+			if (this.DEBUG) {
+				const t = this.getTimer(character, abilityKey);
+				const progress = t ? t["Progress"].get?.() : undefined;
+				warn(`COOLDOWN-DETAIL: ${character.Name}.${abilityKey} progress=${progress}`);
+			}
 			MessageServiceInstance.SendMessageToPlayer(player, MessageLibrary.AbilityOnCooldown);
 			return false;
 		}
@@ -314,8 +368,8 @@ class AbilityService {
 		try {
 			if (!this.validateAbility(player, abilityKey)) {
 				warn("ABILITY-VALIDATE-FAILED");
-				abilityMeta.OnStartFailure?.(player.Character as SSEntity);
-				return false;
+				//abilityMeta.OnStartFailure?.(player.Character as SSEntity);
+				// return false;
 			}
 
 			// Start cooldown timer

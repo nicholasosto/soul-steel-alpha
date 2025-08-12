@@ -298,7 +298,9 @@ class CombatService {
 	 * Handle ability-based attack execution
 	 */
 	private handleAbilityAttack(attacker: Player, abilityKey: string, target?: SSEntity): void {
-		warn(`CombatService: Handling ability attack ${abilityKey} from ${attacker.Name}`);
+		warn(
+			`CombatService: Handling ability attack ${abilityKey} from ${attacker.Name} on Target: ${target ? target.Name : "None"}`,
+		);
 		// Get attacker character
 		const attackerCharacter = attacker.Character;
 		if (!attackerCharacter || !isSSEntity(attackerCharacter)) {

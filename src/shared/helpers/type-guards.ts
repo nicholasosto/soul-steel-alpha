@@ -19,41 +19,23 @@ import { SSEntity } from "shared/types/ss-entity";
  * @returns true if the model has all required SSEntity properties
  */
 export function isSSEntity(model: Model): model is SSEntity {
-	// Check for required base components
-	const humanoid = model.FindFirstChild("Humanoid") as Humanoid | undefined;
+	// Minimal, robust check: character must have a Humanoid and a HumanoidRootPart.
+	// PrimaryPart isn't guaranteed to be set on player characters, so don't require it.
+	const humanoid = model.FindFirstChildOfClass("Humanoid") as Humanoid | undefined;
 	const humanoidRootPart = model.FindFirstChild("HumanoidRootPart") as BasePart | undefined;
-	const primaryPart = model.PrimaryPart;
 
-	if (!humanoid || !humanoidRootPart || !primaryPart) {
+	if (humanoid === undefined || humanoidRootPart === undefined) {
 		return false;
 	}
 
-	// Check for required body parts
-	const requiredParts = [
-		"Head",
-		"UpperTorso",
-		"LowerTorso",
-		"LeftUpperArm",
-		"LeftLowerArm",
-		"LeftHand",
-		"RightUpperArm",
-		"RightLowerArm",
-		"RightHand",
-		"LeftUpperLeg",
-		"LeftLowerLeg",
-		"LeftFoot",
-		"RightUpperLeg",
-		"RightLowerLeg",
-		"RightFoot",
-	];
-
-	for (const partName of requiredParts) {
-		const part = model.FindFirstChild(partName);
-		if (!part || !part.IsA("MeshPart")) {
-			return false;
-		}
+	// If it's an R6 rig, fail early because downstream systems assume R15 naming.
+	// If you intend to support R6, relax this further.
+	if (humanoid.RigType === Enum.HumanoidRigType.R6) {
+		return false;
 	}
 
+	// Don't hard-require every R15 MeshPart; many NPCs or temporary load states may miss some parts.
+	// The ability system mainly needs Humanoid + Root; deeper parts are accessed defensively elsewhere.
 	return true;
 }
 
