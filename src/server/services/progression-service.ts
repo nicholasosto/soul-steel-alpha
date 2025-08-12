@@ -34,6 +34,8 @@ import { ProgressionRemotes } from "shared/network/progression-remotes";
 import { DataServiceInstance } from "./data-service";
 import { SignalServiceInstance } from "./signal-service";
 import { ServiceRegistryInstance } from "./service-registry";
+import { NPC_MODEL_CATALOG, NPCModelKey } from "shared/catalogs/npc-model-catalog";
+import { SSEntity } from "shared/types";
 
 /**
  * Progression Service - Manages player experience, levels, and progression
@@ -102,6 +104,15 @@ export class ProgressionService {
 			});
 			this.signalConnections.push(connection);
 		}
+
+		// Listen for NPC defeat events to award experience
+		const npcDefeatedSignal = SignalServiceInstance.getSignal("NPCDefeated");
+		if (npcDefeatedSignal) {
+			const connection = npcDefeatedSignal.Connect((data) => {
+				this.handleNPCDefeat(data.killer, data.npc, data.finalDamage, data.npcName);
+			});
+			this.signalConnections.push(connection);
+		}
 	}
 
 	/**
@@ -120,6 +131,82 @@ export class ProgressionService {
 	 */
 	private handleExperienceAwarded(player: Player, amount: number, source?: string): void {
 		this.awardExperience(player, amount, source);
+	}
+
+	/**
+	 * Handle NPC defeat and award experience based on NPC type and combat performance
+	 */
+	private handleNPCDefeat(killer: Player, npc: SSEntity, finalDamage: number, npcName: string): void {
+		// Extract NPC type from the name (assumes NPC names follow pattern like "goblin_1", "skeleton_2", etc.)
+		const npcType = this.extractNPCType(npcName);
+		const npcData = NPC_MODEL_CATALOG[npcType as NPCModelKey];
+
+		if (!npcData) {
+			warn(`ProgressionService: Unknown NPC type "${npcType}" for experience calculation`);
+			return;
+		}
+
+		// Calculate base experience from catalog
+		let finalExp = npcData.rewards.baseExperience;
+
+		// Don't award experience for allies or neutral NPCs with 0 base experience
+		if (finalExp <= 0) {
+			return;
+		}
+
+		// Apply performance-based bonuses
+		// TODO: Could extend this with more combat data (critical hits, combos, etc.)
+		if (finalDamage > 50) {
+			// High damage bonus
+			finalExp += npcData.rewards.bonusExperience;
+		}
+
+		// Award experience through existing signal system
+		SignalServiceInstance.emit("ExperienceAwarded", {
+			player: killer,
+			amount: math.floor(finalExp),
+			source: `npc_kill_${npcType}`,
+		});
+
+		print(`ProgressionService: Awarded ${finalExp} XP to ${killer.Name} for defeating ${npcData.displayName}`);
+	}
+
+	/**
+	 * Extract NPC type from NPC name for catalog lookup
+	 */
+	private extractNPCType(npcName: string): string {
+		// Handle common NPC naming patterns
+		// "goblin_1" -> "goblin"
+		// "TestNPC_skeleton" -> "skeleton"
+		// "Goblin Warrior" -> "goblin" (fallback to first word lowercased)
+
+		const lowercaseName = string.lower(npcName);
+
+		// Check if name contains any known NPC type
+		for (const [key, data] of pairs(NPC_MODEL_CATALOG)) {
+			if (
+				string.find(lowercaseName, key)[0] !== undefined ||
+				string.find(lowercaseName, string.lower(data.displayName))[0] !== undefined
+			) {
+				return key;
+			}
+		}
+
+		// Fallback: extract first word and lowercase it
+		const underscorePos = string.find(npcName, "_")[0];
+		const spacePos = string.find(npcName, " ")[0];
+		let endPos: number | undefined;
+
+		if (underscorePos !== undefined && spacePos !== undefined) {
+			endPos = math.min(underscorePos, spacePos);
+		} else if (underscorePos !== undefined) {
+			endPos = underscorePos;
+		} else if (spacePos !== undefined) {
+			endPos = spacePos;
+		}
+
+		const firstWord = endPos !== undefined ? string.sub(npcName, 1, endPos - 1) : npcName;
+		return firstWord !== "" ? string.lower(firstWord) : "goblin"; // Default fallback
 	}
 
 	/**

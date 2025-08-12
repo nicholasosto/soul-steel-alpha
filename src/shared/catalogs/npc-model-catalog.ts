@@ -15,6 +15,10 @@ export interface NPCModelInfo {
 	category: "enemy" | "ally" | "neutral" | "boss";
 	difficulty: "easy" | "medium" | "hard" | "elite";
 	description: string;
+	rewards: {
+		baseExperience: number;
+		bonusExperience: number;
+	};
 }
 
 // NPC Model Catalog
@@ -26,6 +30,10 @@ export const NPC_MODEL_CATALOG = {
 		category: "enemy",
 		difficulty: "easy",
 		description: "A shambling undead creature, perfect for low-level encounters",
+		rewards: {
+			baseExperience: 25,
+			bonusExperience: 5,
+		},
 	},
 
 	skeleton: {
@@ -34,6 +42,10 @@ export const NPC_MODEL_CATALOG = {
 		category: "enemy",
 		difficulty: "medium",
 		description: "A mystical wendigo creature with supernatural powers",
+		rewards: {
+			baseExperience: 50,
+			bonusExperience: 10,
+		},
 	},
 
 	guard: {
@@ -42,6 +54,10 @@ export const NPC_MODEL_CATALOG = {
 		category: "ally",
 		difficulty: "medium",
 		description: "A mechanical guardian powered by steam technology",
+		rewards: {
+			baseExperience: 0, // Allies don't give experience when killed
+			bonusExperience: 0,
+		},
 	},
 
 	// Additional Enemy Types (for future expansion)
@@ -51,6 +67,10 @@ export const NPC_MODEL_CATALOG = {
 		category: "enemy",
 		difficulty: "easy",
 		description: "A trendy undead with an attitude problem",
+		rewards: {
+			baseExperience: 20,
+			bonusExperience: 4,
+		},
 	},
 
 	blood_toad: {
@@ -59,6 +79,10 @@ export const NPC_MODEL_CATALOG = {
 		category: "enemy",
 		difficulty: "easy",
 		description: "A corrupted amphibian creature",
+		rewards: {
+			baseExperience: 15,
+			bonusExperience: 3,
+		},
 	},
 
 	// Elite/Boss Types
@@ -68,6 +92,10 @@ export const NPC_MODEL_CATALOG = {
 		category: "boss",
 		difficulty: "elite",
 		description: "A powerful entity that has transcended fate itself",
+		rewards: {
+			baseExperience: 200,
+			bonusExperience: 50,
+		},
 	},
 
 	evil_lord: {
@@ -76,6 +104,10 @@ export const NPC_MODEL_CATALOG = {
 		category: "boss",
 		difficulty: "elite",
 		description: "A malevolent AI overlord in mechanical form",
+		rewards: {
+			baseExperience: 250,
+			bonusExperience: 60,
+		},
 	},
 
 	// Mechanical Units
@@ -85,6 +117,10 @@ export const NPC_MODEL_CATALOG = {
 		category: "enemy",
 		difficulty: "medium",
 		description: "An agile mechanical primate warrior",
+		rewards: {
+			baseExperience: 45,
+			bonusExperience: 9,
+		},
 	},
 
 	worker_bot: {
@@ -93,6 +129,10 @@ export const NPC_MODEL_CATALOG = {
 		category: "neutral",
 		difficulty: "easy",
 		description: "A utility robot repurposed for combat",
+		rewards: {
+			baseExperience: 5,
+			bonusExperience: 1,
+		},
 	},
 
 	// Spiritual/Elemental Types
@@ -102,6 +142,10 @@ export const NPC_MODEL_CATALOG = {
 		category: "enemy",
 		difficulty: "hard",
 		description: "A manifestation of pure elemental energy",
+		rewards: {
+			baseExperience: 75,
+			bonusExperience: 15,
+		},
 	},
 
 	dragon_warrior: {
@@ -110,6 +154,10 @@ export const NPC_MODEL_CATALOG = {
 		category: "enemy",
 		difficulty: "hard",
 		description: "A fierce draconic humanoid fighter",
+		rewards: {
+			baseExperience: 80,
+			bonusExperience: 16,
+		},
 	},
 
 	dragon_sorceress: {
@@ -118,6 +166,10 @@ export const NPC_MODEL_CATALOG = {
 		category: "enemy",
 		difficulty: "hard",
 		description: "A powerful draconic spellcaster",
+		rewards: {
+			baseExperience: 85,
+			bonusExperience: 17,
+		},
 	},
 
 	// Neutral/NPC Types
@@ -127,6 +179,10 @@ export const NPC_MODEL_CATALOG = {
 		category: "neutral",
 		difficulty: "easy",
 		description: "A peaceful spiritual entity",
+		rewards: {
+			baseExperience: 0,
+			bonusExperience: 0,
+		},
 	},
 } as const satisfies Record<string, NPCModelInfo>;
 

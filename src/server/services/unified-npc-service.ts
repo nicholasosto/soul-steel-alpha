@@ -757,6 +757,11 @@ class UnifiedNPCService {
 		// 	CombatServiceInstance.unregisterCombatant(npc);
 		// }
 
+		// Clean up combat service dead NPC tracking
+		import("./combat-service").then((m) => {
+			m.CombatServiceInstance.cleanupDeadNPC(npc.Model as SSEntity);
+		});
+
 		// Clean up model
 		if (npc.Model.Parent) {
 			npc.Model.Destroy();

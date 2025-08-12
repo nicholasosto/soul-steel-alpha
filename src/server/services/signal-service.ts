@@ -38,6 +38,7 @@ export interface ServiceEvents {
 	// Combat events (examples for future use)
 	PlayerDamaged: { victim: SSEntity; attacker?: Player; damage: number };
 	AbilityActivated: { player: Player; abilityKey: string };
+	NPCDefeated: { npc: SSEntity; killer: Player; finalDamage: number; npcName: string };
 
 	// Resource events - Enhanced for better resource management
 	ResourceChanged: {
@@ -89,6 +90,7 @@ export class SignalService {
 			"ZoneDeactivated",
 			"PlayerDamaged",
 			"AbilityActivated",
+			"NPCDefeated",
 			"ResourceChanged",
 			"HealthDamageRequested",
 			"HealthHealRequested",

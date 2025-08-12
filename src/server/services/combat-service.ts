@@ -103,6 +103,9 @@ class CombatService {
 	/** Entity weapon mappings */
 	private equippedWeapons = new Map<SSEntity, string>();
 
+	/** Track NPCs that have already been defeated to prevent multiple experience rewards */
+	private deadNPCs = new Set<SSEntity>();
+
 	/** Default weapon catalog */
 	private readonly DEFAULT_WEAPONS: Record<string, WeaponData> = {
 		fists: {
@@ -274,7 +277,7 @@ class CombatService {
 		const finalDamage = isCritical ? damage * weapon.criticalMultiplier : damage;
 
 		// Apply damage through signals
-		const success = this.applyDamage(target, finalDamage);
+		const success = this.applyDamage(target, finalDamage, attacker);
 
 		if (success) {
 			// Emit combat events for other services to react to
@@ -407,7 +410,7 @@ class CombatService {
 		} else if (target) {
 			// Single target ability
 			warn("Handling single target ability");
-			this.handleSingleTargetAbility(attackerCharacter, target, ability, finalDamage, isCritical);
+			this.handleSingleTargetAbility(attackerCharacter, target, ability, finalDamage, isCritical, attacker);
 		}
 
 		// Handle special ability effects
@@ -432,9 +435,10 @@ class CombatService {
 		ability: (typeof AbilityCatalog)[AbilityKey],
 		damage: number,
 		isCritical: boolean,
+		attackerPlayer?: Player,
 	): void {
 		// Apply damage
-		const success = this.applyDamage(target, damage);
+		const success = this.applyDamage(target, damage, attackerPlayer);
 
 		if (success) {
 			// Create combat hit event
@@ -603,7 +607,7 @@ class CombatService {
 	/**
 	 * Apply damage to target through ResourceService
 	 */
-	private applyDamage(target: SSEntity, damage: number): boolean {
+	private applyDamage(target: SSEntity, damage: number, attacker?: Player): boolean {
 		if (target.IsA("Player")) {
 			// Apply damage to player through signals
 			SignalServiceInstance.emit("HealthDamageRequested", {
@@ -613,6 +617,12 @@ class CombatService {
 			});
 			return true;
 		} else {
+			// Check if NPC is already marked as dead
+			if (this.deadNPCs.has(target)) {
+				print(`CombatService: ${target.Name} is already defeated - no damage or rewards`);
+				return false;
+			}
+
 			// Handle NPC damage - could also use signals for consistency
 			const humanoid = target.FindFirstChild("Humanoid") as Humanoid;
 			if (humanoid) {
@@ -627,14 +637,29 @@ class CombatService {
 				// Emit signal for NPC damage (for logging, analytics, etc.)
 				SignalServiceInstance.emit("PlayerDamaged", {
 					victim: target,
-					attacker: undefined, // Could pass attacker if needed
+					attacker: attacker, // Now properly tracks the attacker
 					damage: damage,
 				});
 
-				// Check if NPC died
-				if (newHealth <= 0) {
+				// Check if NPC died (transition from alive to dead)
+				if (newHealth <= 0 && currentHealth > 0) {
 					print(`CombatService: NPC ${target.Name} was defeated!`);
-					// Optional: Add death effects here
+
+					// Mark NPC as dead to prevent multiple experience rewards
+					this.deadNPCs.add(target);
+
+					// Emit NPCDefeated signal for reward systems
+					if (attacker) {
+						SignalServiceInstance.emit("NPCDefeated", {
+							npc: target,
+							killer: attacker,
+							finalDamage: damage,
+							npcName: target.Name,
+						});
+					}
+				} else if (newHealth <= 0) {
+					// NPC is already dead, don't award experience again
+					print(`CombatService: ${target.Name} is already defeated (no additional rewards)`);
 				}
 
 				return true;
@@ -726,6 +751,9 @@ class CombatService {
 		// Remove equipped weapons
 		this.equippedWeapons.delete(player);
 
+		// Remove from dead NPCs set if somehow a player is in there
+		this.deadNPCs.delete(player);
+
 		// End any combat sessions involving this player
 		for (const [sessionId, session] of this.activeSessions) {
 			if (session.participants.includes(player)) {
@@ -734,6 +762,16 @@ class CombatService {
 		}
 
 		print(`CombatService: Cleaned up data for ${player.Name}`);
+	}
+
+	/**
+	 * Clean up dead NPC tracking when NPC is removed from workspace
+	 */
+	public cleanupDeadNPC(npc: SSEntity): void {
+		if (this.deadNPCs.has(npc)) {
+			this.deadNPCs.delete(npc);
+			print(`CombatService: Cleaned up dead NPC tracking for ${npc.Name}`);
+		}
 	}
 
 	/**
