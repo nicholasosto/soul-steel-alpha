@@ -62,6 +62,11 @@ export interface ServiceEvents {
 	ExperienceAwarded: { player: Player; amount: number; source?: string };
 	LevelUp: { player: Player; oldLevel: number; newLevel: number; progression: PlayerProgression };
 	ProgressionUpdated: { player: Player; progression: PlayerProgression };
+
+	// NPC Spawn Management events
+	NPCSpawnAreaCreated: { areaId: string };
+	NPCSpawned: { areaId: string; npcId: string; npcType: string };
+	NPCDespawned: { areaId: string; npcId: string };
 }
 
 export class SignalService {
@@ -93,6 +98,19 @@ export class SignalService {
 			"NPCDefeated",
 			"ResourceChanged",
 			"HealthDamageRequested",
+			"HealthHealRequested",
+			"ManaConsumed",
+			"ManaRestored",
+			"StaminaConsumed",
+			"StaminaRestored",
+			"HumanoidHealthChanged",
+			"HumanoidDied",
+			"ExperienceAwarded",
+			"LevelUp",
+			"ProgressionUpdated",
+			"NPCSpawnAreaCreated",
+			"NPCSpawned",
+			"NPCDespawned",
 			"HealthHealRequested",
 			"ManaConsumed",
 			"ManaRestored",
