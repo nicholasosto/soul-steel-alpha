@@ -46,8 +46,8 @@ importers:
         specifier: 2.3.0-types.2
         version: 2.3.0-types.2
       '@rbxts/types':
-        specifier: ^1.0.875
-        version: 1.0.875
+        specifier: ^1.0.876
+        version: 1.0.876
       '@types/node':
         specifier: ^24.2.1
         version: 24.2.1
@@ -153,8 +153,8 @@ packages:
   '@rbxts/signal@1.1.1':
     resolution: {integrity: sha512-WX+ONE+ld4pG9PvRkR8OgDld9NpaV1RfXyUIw+Q2oXP/5rehkYzvt20NWtrLAP3NhMc5inYInLd+hnufey6nFw==}
 
-  '@rbxts/types@1.0.875':
-    resolution: {integrity: sha512-b+EQE/E5WtWw3MAgSb5tumg5oX9Iv0OR+pY709zhKW73Ep2KNxRZ/Xj5uU45sP9zCyebRe+u+yaf57pO+dK5EA==}
+  '@rbxts/types@1.0.876':
+    resolution: {integrity: sha512-+uSsaOgYAG+OJZNXuDo8YGSPkpTKjYB0C627CPqabE52qmkcQx2KSJZVeMpK9L3qPJKW0J8tZbHLSnH98u+mTQ==}
 
   '@rbxts/zone-plus@3.2.0':
     resolution: {integrity: sha512-myxs7QXMVCCPhOpUzaoA/01ZCEG/6TBYRNk6LwksUvSp9bONnIpvEZYEazuWnIDwiOEIw/T9kCPY/7FGjMOvsA==}
@@ -763,8 +763,8 @@ packages:
   json-stable-stringify-without-jsonify@1.0.1:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
 
-  jsonfile@6.1.0:
-    resolution: {integrity: sha512-5dgndWOriYSm5cnYaJNhalLNDKOqFwyDB/rr1E9ZsGciGvKPs8R2xYGCacuf3z6K1YKDz182fd+fY3cn3pMqXQ==}
+  jsonfile@6.2.0:
+    resolution: {integrity: sha512-FGuPw30AdOIUTRMC2OMRtQV+jkVj2cfPqSeWXv1NEAJ1qZ5zb1X6z1mFhbfOB/iy3ssJCD+3KuZ8r8C3uVFlAg==}
 
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
@@ -1249,7 +1249,7 @@ snapshots:
 
   '@rbxts/signal@1.1.1': {}
 
-  '@rbxts/types@1.0.875': {}
+  '@rbxts/types@1.0.876': {}
 
   '@rbxts/zone-plus@3.2.0': {}
 
@@ -1812,7 +1812,7 @@ snapshots:
   fs-extra@11.3.1:
     dependencies:
       graceful-fs: 4.2.11
-      jsonfile: 6.1.0
+      jsonfile: 6.2.0
       universalify: 2.0.1
 
   fs.realpath@1.0.0: {}
@@ -1954,7 +1954,7 @@ snapshots:
 
   json-stable-stringify-without-jsonify@1.0.1: {}
 
-  jsonfile@6.1.0:
+  jsonfile@6.2.0:
     dependencies:
       universalify: 2.0.1
     optionalDependencies:
