@@ -1,6 +1,6 @@
 ---
 project: Soul Steel Alpha
-version: 1
+version: '1.0'
 milestones:
   - id: M1
     title: Core Foundation
@@ -94,6 +94,8 @@ features:
       - DamageService manages damage application and effects
       - TargetingService enables precise combat targeting
       - Integration with ability system for combat abilities
+      - NPC death detection with single-reward enforcement
+      - Experience rewards for defeating NPCs based on NPC type and difficulty
     tasks:
       - id: T-COMBAT-001
         title: Verify combat damage pipeline
@@ -101,6 +103,9 @@ features:
       - id: T-COMBAT-002
         title: Test targeting system integration
         estimate: 1
+      - id: T-COMBAT-003
+        title: NPC Death Experience Reward System - COMPLETED
+        estimate: 3
   - id: F-DATA-CORE
     title: Data & Resource Management
     milestone: M1
@@ -108,14 +113,19 @@ features:
     acceptance:
       - DataService manages player profiles via ProfileService
       - ResourceService handles mana/health/experience tracking
-      - ProgressionService manages leveling and XP
+      - ProgressionService manages leveling and XP with signal-based experience awards
       - Data persistence across sessions
+      - Dynamic experience calculation based on NPC type and combat performance
+      - Experience multipliers for critical hits and combat bonuses
     tasks:
       - id: T-DATA-001
         title: Verify ProfileService integration
         estimate: 1
       - id: T-DATA-002
         title: Test resource tracking accuracy
+        estimate: 2
+      - id: T-DATA-003
+        title: Signal-based Experience Award System - COMPLETED
         estimate: 2
   - id: F-SERVICE-CORE
     title: Service Architecture & Communication
@@ -149,6 +159,8 @@ features:
       - id: T-ANIM-002
         title: Test ability animation triggers
         estimate: 2
+last_updated: '2025-08-12'
+author: Soul Steel Alpha Development Team
 ---
 
 # Soul Steel Alpha - Official Game Design Document
@@ -536,3 +548,45 @@ The modular architecture ensures the game can grow and evolve while maintaining 
 **Document Status**: Official Game Design Document v1.0  
 **Last Updated**: August 6, 2025  
 **Next Review**: Pending Phase 2 completion
+
+# ## Progression Systems
+
+
+### NPC Death Experience Rewards
+
+The experience reward system provides dynamic progression based on combat performance and NPC difficulty.
+
+#### **Experience Award Mechanics**
+- **Signal-Based**: Uses `NPCDefeated` signal for loose service coupling
+- **Single Reward**: Each NPC awards experience exactly once when transitioning from alive to dead
+- **Performance Bonuses**: High damage attacks provide additional experience
+- **Catalog-Driven**: Experience values configured per NPC type in `NPC_MODEL_CATALOG`
+
+#### **Experience Values by NPC Type**
+
+| NPC Type | Category | Difficulty | Base XP | Bonus XP | Description |
+|----------|----------|------------|---------|----------|-------------|
+| Blood Toad | Enemy | Easy | 15 | 3 | Corrupted amphibian creature |
+| Zombie Hipster | Enemy | Easy | 20 | 4 | Trendy undead with attitude |
+| Goblin Warrior | Enemy | Easy | 25 | 5 | Shambling undead creature |
+| Mecha Monkey | Enemy | Medium | 45 | 9 | Agile mechanical primate |
+| Skeleton Mage | Enemy | Medium | 50 | 10 | Mystical wendigo creature |
+| Elemental Spirit | Enemy | Hard | 75 | 15 | Pure elemental energy manifestation |
+| Dragon Warrior | Enemy | Hard | 80 | 16 | Fierce draconic humanoid |
+| Dragon Sorceress | Enemy | Hard | 85 | 17 | Powerful draconic spellcaster |
+| Fateless Master | Boss | Elite | 200 | 50 | Entity that transcended fate |
+| Evil Lord HAL | Boss | Elite | 250 | 60 | Malevolent AI overlord |
+
+#### **Implementation Architecture**
+
+```
+Player defeats NPC → CombatService detects death → NPCDefeated signal emitted → 
+ProgressionService calculates rewards → ExperienceAwarded signal emitted → 
+Experience added to player progression → Level-up processing if applicable
+```
+
+#### **Anti-Exploitation Features**
+- **Dead NPC Tracking**: Combat service maintains set of defeated NPCs
+- **Attack Prevention**: Dead NPCs cannot be attacked for additional rewards
+- **Memory Management**: Dead NPC tracking cleaned up when NPCs despawn
+- **Single Transition**: Experience only awarded on alive→dead transition

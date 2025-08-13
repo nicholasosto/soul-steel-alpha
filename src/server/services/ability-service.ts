@@ -194,15 +194,6 @@ class AbilityService {
 	}
 
 	/**
-	 * Generates a unique key for entity-ability combination cooldown tracking.
-	 * @param entity - The SSEntity
-	 * @param abilityKey - The ability key
-	 * @returns Unique string key for cooldown mapping
-	 * @private
-	 */
-	// Removed string-based cooldown keys; using instance-keyed nested maps instead
-
-	/**
 	 * Checks if an ability is currently on cooldown for a specific entity.
 	 * @param entity - The SSEntity to check
 	 * @param abilityKey - The ability to check
