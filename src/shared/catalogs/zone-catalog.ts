@@ -69,6 +69,30 @@ export const ZoneCatalog: Record<ZoneKey, ZoneMeta> = {
 			// Remove spawn protection
 		},
 	},
+	FatelessSpawn: {
+		zoneKey: "FatelessSpawn",
+		displayName: "Fateless Spawn",
+		description: "Spawn area for players without a defined faction",
+		category: "safe",
+		accuracy: "High",
+		enterDetection: "Centre",
+		exitDetection: "Centre",
+		settingsGroup: "SafeZones",
+		priority: 10,
+		visual: {
+			showBounds: false,
+			color: Color3.fromRGB(0, 255, 0),
+			transparency: 0.8,
+		},
+		onPlayerEnter: (player: Player, zone: IZone) => {
+			const playerEntity = player.Character as SSEntity;
+			print(`${player.Name} entered the fateless spawn zone Entity: ${playerEntity}`);
+		},
+		onPlayerExit: (player: Player, zone: IZone) => {
+			print(`${player.Name} left the fateless spawn zone`);
+			// Remove spawn protection
+		},
+	},
 
 	SafeZone: {
 		zoneKey: "SafeZone",

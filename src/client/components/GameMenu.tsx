@@ -1,5 +1,4 @@
-import Fusion from "@rbxts/fusion";
-const { New, Children, Value, OnEvent } = Fusion as typeof import("@rbxts/fusion");
+import { New, Value, OnEvent, Children } from "@rbxts/fusion";
 
 export interface GameMenuProps {
 	onPlay: () => void;

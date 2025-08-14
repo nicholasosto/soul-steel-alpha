@@ -11,6 +11,7 @@
 export const ZONE_KEYS = [
 	// Safe zones
 	"PlayerSpawn",
+	"FatelessSpawn",
 	"SafeZone",
 	"TownCenter",
 

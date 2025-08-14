@@ -85,27 +85,29 @@ class DataService {
 		}
 
 		const profile = this._profileStore.LoadProfileAsync(tostring(player.UserId), "ForceLoad");
-		print(`Profile for player ${player.Name} loaded:`, profile);
+		print(`[ProfileService] LoadProfileAsync returned for ${player.Name}:`, profile !== undefined);
 		profile?.Reconcile();
 		profile?.ListenToRelease((releasedProfile) => {
 			if (releasedProfile !== undefined) {
-				warn(`Profile for player ${player.Name} has been released.`);
+				warn(`[ProfileService] Profile released for ${player.Name}`);
 				this.profiles.delete(player);
 			}
 		});
 		if (profile === undefined) {
-			warn(`Failed to load profile for player ${player.Name}.`);
+			warn(`[ProfileService] Failed to load profile for ${player.Name}`);
 			return;
 		}
 		this.profiles.set(player, profile);
 
 		// Fire PROFILE_READY to client with a minimal, typed summary once bound
+		print(`[ProfileService] PROFILE_READY sending to ${player.Name}`);
 		const dto: ProfileSummaryDTO = {
 			userId: player.UserId,
 			displayName: player.DisplayName,
 			level: profile.Data.Progression.Level,
 		};
 		ProfileRemotes.Server.Get("PROFILE_READY").SendToPlayer(player, dto);
+		print(`[ProfileService] PROFILE_READY sent to ${player.Name}`);
 	}
 
 	private handlePlayerRemoving(player: Player) {

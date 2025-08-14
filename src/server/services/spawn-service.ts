@@ -50,28 +50,34 @@ class SpawnService {
 	}
 
 	private handleSpawnRequest(player: Player): SpawnResult {
+		print(`[SpawnService] REQUEST_SPAWN from ${player.Name}`);
 		// Rate limit
 		if (this.isThrottled(player)) {
+			warn(`[SpawnService] Throttled spawn request for ${player.Name}`);
 			return { success: false, reason: "SERVER_ERROR" };
 		}
 
 		// Validate profile/session
 		const profile = DataServiceInstance.GetProfile(player);
 		if (profile === undefined) {
+			warn(`[SpawnService] NO_PROFILE for ${player.Name}`);
 			return { success: false, reason: "NO_PROFILE" };
 		}
 
 		// Idempotency
 		if (this.hasActiveCharacter(player)) {
+			warn(`[SpawnService] ALREADY_SPAWNED for ${player.Name}`);
 			return { success: false, reason: "ALREADY_SPAWNED" };
 		}
 
 		// Perform server-authoritative spawn
 		try {
+			print(`[SpawnService] Loading character for ${player.Name}`);
 			player.LoadCharacter();
 			// Optionally position/spawnCFrame here based on profile.Data or zones
 			// Send optional completion event for UI state machine
 			SpawnRemotes.Server.Get("SPAWN_COMPLETE").SendToPlayer(player);
+			print(`[SpawnService] Spawn complete for ${player.Name}`);
 			return { success: true };
 		} catch (e) {
 			warn(`[SpawnService] Failed to spawn ${player.Name}:`, e);

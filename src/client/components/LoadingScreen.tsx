@@ -1,5 +1,4 @@
-import Fusion from "@rbxts/fusion";
-const { New, Children } = Fusion;
+import { New, Children } from "@rbxts/fusion";
 
 export interface LoadingScreenProps {
 	message?: string;
