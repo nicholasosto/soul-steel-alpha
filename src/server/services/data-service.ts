@@ -23,6 +23,8 @@ import { Profile } from "@rbxts/profileservice/globals";
 import { Players } from "@rbxts/services";
 import { makeDefaultAbilityDTO, makeDefaultPlayerProgression, PersistantPlayerData } from "shared";
 import { DataRemotes } from "shared/network/data-remotes";
+import { ProfileRemotes } from "shared/network/profile-remotes";
+import type { ProfileSummaryDTO } from "shared/dtos/profile-dtos";
 
 /* Remotes */
 DataRemotes.Server.Get("GET_PLAYER_DATA").SetCallback((player) => {
@@ -96,6 +98,14 @@ class DataService {
 			return;
 		}
 		this.profiles.set(player, profile);
+
+		// Fire PROFILE_READY to client with a minimal, typed summary once bound
+		const dto: ProfileSummaryDTO = {
+			userId: player.UserId,
+			displayName: player.DisplayName,
+			level: profile.Data.Progression.Level,
+		};
+		ProfileRemotes.Server.Get("PROFILE_READY").SendToPlayer(player, dto);
 	}
 
 	private handlePlayerRemoving(player: Player) {

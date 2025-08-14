@@ -12,10 +12,14 @@ import { Players } from "@rbxts/services";
 import { ClientController } from "./controllers";
 import { createPlayerHUD } from "./screens";
 import { PlayerStateInstance } from "./states/player-state";
+import { startLoader } from "./loader";
 
 // Player GUI
 const localPlayer = Players.LocalPlayer;
 const playerGui = localPlayer.WaitForChild("PlayerGui") as PlayerGui;
+
+// Start loading flow UI before initializing controllers/HUD
+startLoader();
 
 // Initialize the main client controller (this initializes all sub-controllers)
 const clientController = ClientController.initialize();

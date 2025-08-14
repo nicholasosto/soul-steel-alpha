@@ -6,6 +6,7 @@ import {
 	MessageServiceInstance,
 	ProgressionServiceInstance,
 	ResourceServiceInstance,
+	SpawnServiceInstance,
 	UnifiedNPCServiceInstance,
 	TargetingServiceInstance,
 	RunCollectionService,
@@ -23,6 +24,7 @@ const Services = {
 	MessageService: MessageServiceInstance,
 	ProgressionService: ProgressionServiceInstance,
 	ResourceService: ResourceServiceInstance,
+	SpawnService: SpawnServiceInstance,
 	UnifiedNPCService: UnifiedNPCServiceInstance,
 	TargetingService: TargetingServiceInstance,
 };

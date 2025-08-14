@@ -10,6 +10,7 @@ export * from "./npc-spawn-manager";
 export * from "./progression-service";
 export * from "./unified-npc-service";
 export * from "./resource-service";
+export * from "./spawn-service";
 export * from "./zone-service";
 export * from "./signal-service";
 export * from "./service-interfaces";
