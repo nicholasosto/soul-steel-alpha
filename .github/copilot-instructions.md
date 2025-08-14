@@ -86,6 +86,26 @@ if (resource !== undefined) { /* safe to use */ }
 if (!variable) return;
 ```
 
+### ♻️ Avoid redundant existence checks (TypeScript/roblox-ts)
+
+- When checks are NOT needed
+    - Non-optional values created in the same scope or guaranteed by constructors/Initialize(): no extra undefined check right after creation.
+    - Services acquired via `game.GetService` that are typed as non-optional in rbxts: no existence guard is required.
+    - Constants/catalogs/keys imported with `as const`: do not check for undefined.
+
+- When checks ARE required
+    - Optional fields and lookups: `Map.get`, dictionary indexing, `array.find`, or catalog lookups can return `undefined` — check explicitly.
+    - Roblox Instances that can be absent/destroyed: `Player.Character`, `HumanoidRootPart`, `FindFirstChild*` results — check for `undefined` before use.
+    - After yields or asynchronous boundaries: references may be invalidated; re-validate Instances/parts.
+    - Network inputs from clients: always validate (use DTOs and `zod` or centralized type guards in `shared/helpers/type-guards.ts`).
+    - External resources that may not be loaded yet (animations, assets): add readiness checks or loader gates.
+
+- Practical guidance
+    - Prefer early-return guards with explicit `=== undefined` checks to narrow types.
+    - Avoid truthy/falsy for values that can be 0, "", or false; check exact conditions (e.g., `arr.size() === 0`).
+    - Use the non-null assertion `!` sparingly and only after establishing strong invariants (document why it is safe).
+    - Consider `WaitForChild` when presence is required; otherwise handle missing children gracefully.
+
 ### 📊 State Management
 Client uses Fusion reactive states in `src/client/states/`:
 - `PlayerResourceSlice` - DTO-based resource management

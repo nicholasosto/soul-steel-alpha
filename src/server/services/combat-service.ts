@@ -40,6 +40,14 @@
  * ## Roblox Events (Engine Integration)
  * - `Players.PlayerRemoving` - Cleans up combat data for leaving players
  * - `Players.GetPlayers()` - Used for broadcasting combat events to all players
+ *
+ * ## Public API
+ * - `CombatServiceInstance` — Singleton instance for use across server code
+ * - `Initialize(): void`
+ * - `StartCombatSession(participants: SSEntity[]): string`
+ * - `EndCombatSession(sessionId: string, winner?: SSEntity): void`
+ * - `ExecuteDamage(attacker: SSEntity, target: SSEntity, damage: number, weaponId?: string): boolean`
+ * - `IsInCombat(entity: SSEntity): boolean`
  */
 
 import { Players, Workspace, HttpService } from "@rbxts/services";
@@ -53,6 +61,8 @@ import { DamageServiceInstance } from "./damage-service";
 import { AbilityCatalog, AbilityKey } from "shared/catalogs/ability-catalog";
 import { AbilityServiceInstance } from "./ability-service";
 import { SignalServiceInstance } from "./signal-service";
+import { ServiceRegistryInstance } from "./service-registry";
+import { ICombatOperations } from "./service-interfaces";
 
 /**
  * Combat session data structure
@@ -143,6 +153,9 @@ class CombatService {
 
 	private constructor() {}
 
+	// Toggle for console verbosity (set to true during development/testing)
+	private static readonly DEBUG = true;
+
 	/**
 	 * Get the singleton instance of CombatService
 	 */
@@ -158,7 +171,24 @@ class CombatService {
 	 */
 	public Initialize(): void {
 		this.setupNetworkConnections();
-		print("CombatService: Initialized successfully");
+
+		// Register CombatOperations interface for loose coupling
+		const ops: ICombatOperations = {
+			executeDamage(attacker, target, damage, _weaponId?) {
+				return CombatService.getInstance().ExecuteDamage(attacker, target, damage);
+			},
+			startCombatSession(participants) {
+				return CombatService.getInstance().StartCombatSession(participants);
+			},
+			endCombatSession(sessionId) {
+				CombatService.getInstance().EndCombatSession(sessionId);
+			},
+			isInCombat(entity) {
+				return CombatService.getInstance().IsInCombat(entity);
+			},
+		};
+		ServiceRegistryInstance.registerService<ICombatOperations>("CombatOperations", ops);
+		if (CombatService.DEBUG) print("CombatService: Initialized successfully");
 	}
 
 	/**
@@ -186,28 +216,19 @@ class CombatService {
 	private setupNetworkConnections(): void {
 		// Basic attack handler
 		CombatRemotes.Server.Get("ExecuteBasicAttack").Connect((player, target, weaponId) => {
-			const now = tick();
-			const last = this.lastBasicAttackAt.get(player);
-			if (last !== undefined && now - last < this.BASIC_ATTACK_WINDOW_SEC) return;
-			this.lastBasicAttackAt.set(player, now);
+			if (!this.rateOk(this.lastBasicAttackAt, this.BASIC_ATTACK_WINDOW_SEC, player)) return;
 			this.handleBasicAttack(player, target, weaponId);
 		});
 
 		// Ability attack handler
 		CombatRemotes.Server.Get("ExecuteAbilityAttack").Connect((player, abilityKey, target) => {
-			const now = tick();
-			const last = this.lastAbilityAttackAt.get(player);
-			if (last !== undefined && now - last < this.ABILITY_ATTACK_WINDOW_SEC) return;
-			this.lastAbilityAttackAt.set(player, now);
+			if (!this.rateOk(this.lastAbilityAttackAt, this.ABILITY_ATTACK_WINDOW_SEC, player)) return;
 			this.handleAbilityAttack(player, abilityKey, target);
 		});
 
 		// Weapon equip handler
 		CombatRemotes.Server.Get("RequestWeaponEquip").Connect((player, weaponId) => {
-			const now = tick();
-			const last = this.lastEquipAt.get(player);
-			if (last !== undefined && now - last < this.EQUIP_WINDOW_SEC) return;
-			this.lastEquipAt.set(player, now);
+			if (!this.rateOk(this.lastEquipAt, this.EQUIP_WINDOW_SEC, player)) return;
 			this.handleWeaponEquip(player, weaponId);
 		});
 
@@ -238,6 +259,17 @@ class CombatService {
 				this.cleanupPlayer(character);
 			}
 		});
+	}
+
+	/**
+	 * Rate limiting helper for per-player actions
+	 */
+	private rateOk(map: Map<Player, number>, windowSec: number, player: Player): boolean {
+		const now = tick();
+		const last = map.get(player);
+		if (last !== undefined && now - last < windowSec) return false;
+		map.set(player, now);
+		return true;
 	}
 
 	/**
@@ -306,11 +338,13 @@ class CombatService {
 				);
 			}
 
-			print(
-				`CombatService: ${attacker.Name} attacked ${target.Name} with ${weapon.name} for ${finalDamage} damage${
-					isCritical ? " (CRITICAL!)" : ""
-				}`,
-			);
+			if (CombatService.DEBUG) {
+				print(
+					`CombatService: ${attacker.Name} attacked ${target.Name} with ${weapon.name} for ${finalDamage} damage${
+						isCritical ? " (CRITICAL!)" : ""
+					}`,
+				);
+			}
 		} else {
 			// Attack failed
 			MessageServiceInstance.SendMessageToPlayer(
@@ -475,7 +509,11 @@ class CombatService {
 				);
 			}
 
-			print(`CombatService: ${attacker.Name} used ${ability.displayName} for ${damage} damage on ${target.Name}`);
+			if (CombatService.DEBUG) {
+				print(
+					`CombatService: ${attacker.Name} used ${ability.displayName} for ${damage} damage on ${target.Name}`,
+				);
+			}
 		}
 	}
 
@@ -619,7 +657,9 @@ class CombatService {
 		} else {
 			// Check if NPC is already marked as dead
 			if (this.deadNPCs.has(target)) {
-				print(`CombatService: ${target.Name} is already defeated - no damage or rewards`);
+				if (CombatService.DEBUG) {
+					print(`CombatService: ${target.Name} is already defeated - no damage or rewards`);
+				}
 				return false;
 			}
 
@@ -630,9 +670,11 @@ class CombatService {
 				const newHealth = math.max(0, currentHealth - damage);
 				humanoid.Health = newHealth;
 
-				print(
-					`CombatService: Applied ${damage} damage to NPC ${target.Name} (${currentHealth} -> ${newHealth})`,
-				);
+				if (CombatService.DEBUG) {
+					print(
+						`CombatService: Applied ${damage} damage to NPC ${target.Name} (${currentHealth} -> ${newHealth})`,
+					);
+				}
 
 				// Emit signal for NPC damage (for logging, analytics, etc.)
 				SignalServiceInstance.emit("PlayerDamaged", {
@@ -643,7 +685,7 @@ class CombatService {
 
 				// Check if NPC died (transition from alive to dead)
 				if (newHealth <= 0 && currentHealth > 0) {
-					print(`CombatService: NPC ${target.Name} was defeated!`);
+					if (CombatService.DEBUG) print(`CombatService: NPC ${target.Name} was defeated!`);
 
 					// Mark NPC as dead to prevent multiple experience rewards
 					this.deadNPCs.add(target);
@@ -659,7 +701,8 @@ class CombatService {
 					}
 				} else if (newHealth <= 0) {
 					// NPC is already dead, don't award experience again
-					print(`CombatService: ${target.Name} is already defeated (no additional rewards)`);
+					if (CombatService.DEBUG)
+						print(`CombatService: ${target.Name} is already defeated (no additional rewards)`);
 				}
 
 				return true;
@@ -668,6 +711,15 @@ class CombatService {
 				return false;
 			}
 		}
+	}
+
+	/**
+	 * Public wrapper to execute direct damage through combat rules.
+	 * Prefer signals for cross-service calls; this is for controlled integrations.
+	 */
+	public ExecuteDamage(attacker: SSEntity, target: SSEntity, damage: number, _weaponId?: string): boolean {
+		const attackerPlayer = Players.GetPlayerFromCharacter(attacker as unknown as Model);
+		return this.applyDamage(target, damage, attackerPlayer);
 	}
 
 	/**
@@ -721,7 +773,8 @@ class CombatService {
 		// Broadcast session start
 		CombatRemotes.Server.Get("CombatSessionStarted").SendToAllPlayers(sessionId, participants);
 
-		print(`CombatService: Started combat session ${sessionId} with ${participants.size()} participants`);
+		if (CombatService.DEBUG)
+			print(`CombatService: Started combat session ${sessionId} with ${participants.size()} participants`);
 		return sessionId;
 	}
 
@@ -741,7 +794,15 @@ class CombatService {
 		// Broadcast session end
 		CombatRemotes.Server.Get("CombatSessionEnded").SendToAllPlayers(sessionId, winner);
 
-		print(`CombatService: Ended combat session ${sessionId}`);
+		if (CombatService.DEBUG) print(`CombatService: Ended combat session ${sessionId}`);
+	}
+
+	/** Determines if an entity is currently in an active combat session */
+	public IsInCombat(entity: SSEntity): boolean {
+		for (const [, session] of this.activeSessions) {
+			if (session.isActive && session.participants.includes(entity)) return true;
+		}
+		return false;
 	}
 
 	/**
@@ -761,7 +822,7 @@ class CombatService {
 			}
 		}
 
-		print(`CombatService: Cleaned up data for ${player.Name}`);
+		if (CombatService.DEBUG) print(`CombatService: Cleaned up data for ${player.Name}`);
 	}
 
 	/**
@@ -770,7 +831,7 @@ class CombatService {
 	public cleanupDeadNPC(npc: SSEntity): void {
 		if (this.deadNPCs.has(npc)) {
 			this.deadNPCs.delete(npc);
-			print(`CombatService: Cleaned up dead NPC tracking for ${npc.Name}`);
+			if (CombatService.DEBUG) print(`CombatService: Cleaned up dead NPC tracking for ${npc.Name}`);
 		}
 	}
 

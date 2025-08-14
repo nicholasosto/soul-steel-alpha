@@ -36,8 +36,8 @@ importers:
         specifier: 1.0.0-alpha.3
         version: 1.0.0-alpha.3
       '@trembus/ss-fusion':
-        specifier: 2.2.2
-        version: 2.2.2
+        specifier: 2.2.3
+        version: 2.2.3
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -171,8 +171,8 @@ packages:
   '@trembus/rpg-attributes@1.0.0-alpha.3':
     resolution: {integrity: sha512-b+xxyRcDRS3YH10dx+bIbmMdM3iK8VAUrDti2BbMIosgJkkCGzgXI+ofVaONY3Cb0xiQTAUlfMdHT9RQssPUWw==}
 
-  '@trembus/ss-fusion@2.2.2':
-    resolution: {integrity: sha512-v2WKpOHuRafSTrRaZmCV8t6CDcQua55ebBHpVt8ykHPRXAJPb/8SUi0Lm8vjew9iBtFXC12l5KRDjSenEO6E0Q==}
+  '@trembus/ss-fusion@2.2.3':
+    resolution: {integrity: sha512-9rE4wAlV8QxjX4OGfS6KkCqPcmsW9voGrbWvTwwpRZzPCPkQeo8cFp/Ho/dCFl3a6uVk34kt44LcTEZAl0rc7w==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -1269,7 +1269,7 @@ snapshots:
     dependencies:
       '@rbxts/fusion': 0.2.0
 
-  '@trembus/ss-fusion@2.2.2':
+  '@trembus/ss-fusion@2.2.3':
     dependencies:
       '@rbxts/fusion': 0.2.0
 

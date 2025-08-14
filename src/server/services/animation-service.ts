@@ -5,14 +5,14 @@
  * - Entity animation registration and loading on character spawn
  * - Automatic animation loading for existing and new SSEntity rigs
  * - Animation track management and cleanup
- * - Player cleanup when they leave the game
+ * - Per-character cleanup on CharacterRemoving
  *
  * The service follows a singleton pattern and integrates with the game's
  * animation helper system for consistent animation management.
  *
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
- * @lastUpdated 2025-08-12 - Added comprehensive signal documentation
+ * @lastUpdated 2025-08-14 - Streamlined API, updated cleanup wiring, refreshed docs
  *
  * ## Server Signals (Inter-Service Communication)
  * - None - Pure animation management service with no signal dependencies
@@ -21,9 +21,17 @@
  * - None - Animation tracks are managed server-side only
  *
  * ## Roblox Events (Engine Integration)
- * - `Players.PlayerAdded` - Loads animations for new players and their characters
- * - `Players.PlayerRemoving` - Cleans up animation data for leaving players
- * - `Players.GetPlayers()` - Initializes animations for existing players
+ * - `Players.PlayerAdded` → `CharacterAdded` - Loads animations for new players and their characters
+ * - `Player.CharacterRemoving` - Cleans up animation data for characters being removed
+ * - `Players.GetPlayers()` - Initializes handlers and loads animations for existing players
+ *
+ * ## Public API
+ * - `AnimationServiceInstance` — Singleton instance for use across server code
+ * - `SetDefaultAnimations(animationKeys: AnimationKey[]): boolean`
+ * - `GetDefaultAnimations(): AnimationKey[]`
+ * - `RegisterModelAnimations(entity: SSEntity, animationKeys: AnimationKey[]): boolean`
+ * - `UpdateModelAnimations(entity: SSEntity, animationKeys: AnimationKey[]): boolean`
+ * - `GetModelAnimations(entity: SSEntity): AnimationKey[] | undefined`
  */
 
 import { Players } from "@rbxts/services";
@@ -44,11 +52,10 @@ import { LoadCharacterAnimations, cleanupCharacterAnimations } from "shared/help
  * @example
  * ```typescript
  * // Configure default animations for all characters
- * const service = AnimationService.Start();
- * service.SetDefaultAnimations(["Punch_01", "Punch_02", "Dodge"]);
- *
+ * AnimationServiceInstance.SetDefaultAnimations(["Punch_01", "Punch_02", "Dodge"]);
+
  * // Register custom animations for a specific entity
- * service.RegisterModelAnimations(playerCharacter, ["Cast_Projectile", "Cast_Summon"]);
+ * AnimationServiceInstance.RegisterModelAnimations(playerCharacter, ["Cast_Projectile", "Cast_Summon"]);
  * ```
  */
 class AnimationService {
@@ -98,7 +105,6 @@ class AnimationService {
 		try {
 			Players.PlayerAdded.Connect((player) => {
 				player.CharacterAdded.Connect((characterModel) => {
-					print(`Character added for player ${player.Name}: ${characterModel.Name}`);
 					this.handleCharacterAdded(characterModel, player);
 				});
 
@@ -113,7 +119,6 @@ class AnimationService {
 					}
 				});
 			});
-			print("Animation service character handlers initialized");
 		} catch (error) {
 			warn(`Failed to initialize character handlers: ${error}`);
 		}
@@ -126,16 +131,7 @@ class AnimationService {
 	 * @private
 	 */
 	private initializeCleanup(): void {
-		// Cleanup when players leave
-		Players.PlayerRemoving.Connect((player) => {
-			player.CharacterRemoving.Connect((character) => {
-				if (isSSEntity(character)) {
-					this.unregisterModel(character);
-					// Animation tracks are cleaned up by the animation-helpers module
-					cleanupCharacterAnimations(character);
-				}
-			});
-		});
+		// Note: Cleanup is handled via CharacterRemoving handlers set per-player.
 		print("Animation service cleanup handlers initialized");
 	}
 
@@ -150,11 +146,23 @@ class AnimationService {
 			const players = Players.GetPlayers();
 			for (const player of players) {
 				const character = player.Character;
+
+				// Mirror PlayerAdded wiring for existing players
+				player.CharacterAdded.Connect((characterModel) => {
+					this.handleCharacterAdded(characterModel, player);
+				});
+				player.CharacterRemoving.Connect((char) => {
+					if (isSSEntity(char)) {
+						this.unregisterModel(char);
+						cleanupCharacterAnimations(char);
+					} else {
+						cleanupCharacterAnimations(char);
+					}
+				});
 				if (character) {
 					this.handleCharacterAdded(character, player);
 				}
 			}
-			print(`Loaded animations for ${players.size()} existing players`);
 		} catch (error) {
 			warn(`Failed to load animations for existing characters: ${error}`);
 		}
@@ -182,12 +190,6 @@ class AnimationService {
 		if (custom !== undefined && custom.size() > 0) {
 			this.loadAnimationsForEntity(ssEntity, custom);
 		}
-
-		print(
-			`Loaded default${custom ? " + custom" : ""} animations for player ${player.Name}'s character ${
-				ssEntity.Name
-			}`,
-		);
 	}
 
 	/**
@@ -197,10 +199,7 @@ class AnimationService {
 	 * @private
 	 */
 	private loadDefaultAnimations(entity: SSEntity): void {
-		if (this.defaultAnimations.size() > 0) {
-			LoadCharacterAnimations(entity, this.defaultAnimations);
-			print(`Loaded ${this.defaultAnimations.size()} default animations for entity ${entity.Name}`);
-		}
+		this.loadAnimationsForEntity(entity, this.defaultAnimations);
 	}
 
 	/**
@@ -213,9 +212,19 @@ class AnimationService {
 	private loadAnimationsForEntity(entity: SSEntity, animationKeys: AnimationKey[]): void {
 		if (animationKeys.size() > 0) {
 			LoadCharacterAnimations(entity, animationKeys);
-			print(
-				`Loaded ${animationKeys.size()} custom animations for entity ${entity.Name}: ${animationKeys.join(", ")}`,
-			);
+		}
+	}
+
+	/**
+	 * Loads animations only if the entity is currently in the workspace.
+	 *
+	 * @param entity - The SSEntity to load animations for
+	 * @param animationKeys - Keys to load
+	 * @private
+	 */
+	private loadIfSpawned(entity: SSEntity, animationKeys: AnimationKey[]): void {
+		if (entity.Parent) {
+			this.loadAnimationsForEntity(entity, animationKeys);
 		}
 	}
 
@@ -282,9 +291,7 @@ class AnimationService {
 		this.entityAnimationMap.set(entity, animationKeys);
 
 		// If the entity is already spawned, load the animations immediately
-		if (entity.Parent) {
-			this.loadAnimationsForEntity(entity, animationKeys);
-		}
+		this.loadIfSpawned(entity, animationKeys);
 
 		print(`Registered custom animations for entity ${entity.Name}: ${animationKeys.join(", ")}`);
 		return true;
@@ -310,9 +317,7 @@ class AnimationService {
 		this.entityAnimationMap.set(entity, animationKeys);
 
 		// If the entity is already spawned, load the new animations
-		if (entity.Parent) {
-			this.loadAnimationsForEntity(entity, animationKeys);
-		}
+		this.loadIfSpawned(entity, animationKeys);
 
 		print(`Updated custom animations for entity ${entity.Name}: ${animationKeys.join(", ")}`);
 		return true;
@@ -320,13 +325,13 @@ class AnimationService {
 
 	/**
 	 * Unregisters custom animations from an entity.
-	 * This will not affect already loaded animation tracks, only future loading.
+	 * This does not remove already loaded tracks; it affects future loads only.
 	 *
 	 * @param entity - The SSEntity to unregister custom animations from
-	 * @returns True if entity was found and unregistered, false if entity was not registered
-	 * @public
+	 * @returns True if entity was found and unregistered, false otherwise
+	 * @private
 	 */
-	public unregisterModel(entity: SSEntity): boolean {
+	private unregisterModel(entity: SSEntity): boolean {
 		if (this.entityAnimationMap.has(entity)) {
 			this.entityAnimationMap.delete(entity);
 			print(`Unregistered custom animations for entity ${entity.Name}`);
@@ -347,48 +352,7 @@ class AnimationService {
 		return customAnimations ? [...customAnimations] : undefined;
 	}
 
-	/**
-	 * Gets all animations (default + custom) that would be loaded for an entity.
-	 *
-	 * @param entity - The SSEntity to get all animations for
-	 * @returns Array of all animation keys that would be loaded for this entity
-	 * @public
-	 */
-	public GetAllAnimationsForEntity(entity: SSEntity): AnimationKey[] {
-		const customAnimations = this.entityAnimationMap.get(entity) || [];
-		return [...this.defaultAnimations, ...customAnimations];
-	}
-
-	/**
-	 * Forces animation loading for a specific entity.
-	 * Useful for manually triggering animation loading if needed.
-	 *
-	 * @param entity - The SSEntity to load animations for
-	 * @returns True if animations were loaded successfully
-	 * @public
-	 */
-	public LoadAnimationsForEntity(entity: SSEntity): boolean {
-		if (!isSSEntity(entity)) {
-			warn(`Provided entity is not a valid SSEntity`);
-			return false;
-		}
-
-		try {
-			// Load default animations
-			this.loadDefaultAnimations(entity);
-
-			// Load custom animations if any
-			const customAnimations = this.entityAnimationMap.get(entity);
-			if (customAnimations) {
-				this.loadAnimationsForEntity(entity, customAnimations);
-			}
-
-			return true;
-		} catch (error) {
-			warn(`Failed to load animations for entity ${entity.Name}: ${error}`);
-			return false;
-		}
-	}
+	// Note: Removed unused public methods GetAllAnimationsForEntity and LoadAnimationsForEntity to reduce API surface.
 }
 
 /**
