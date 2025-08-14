@@ -1,7 +1,7 @@
 /**
  * @fileoverview Ability Service for the Soul Steel Alpha game system.
  *
- * This service manages the server-side logic for ability system including:
+ * This service manages the server-side logic for abilities including:
  * - Entity ability registration and management
  * - Client-server communication for ability activation
  * - Ability validation (permissions, cooldowns, resources)
@@ -10,20 +10,33 @@
  * The service follows a singleton pattern and integrates with the game's
  * remote system for secure client-server ability communication.
  *
+ * Server Signals (Inter-Service Communication)
+ * - ManaConsumed — Emits when abilities consume mana for resource tracking
+ * - AbilityActivated — Emits when abilities are successfully activated for analytics
+ *
+ * Client Events (Network Communication)
+ * - ABILITY_ACTIVATE — Handles client ability activation requests with validation
+ *
+ * Roblox Events (Engine Integration)
+ * - Players.PlayerAdded — Initializes ability tracking for new players
+ * - Players.GetPlayers() — Initializes ability tracking for existing players
+ *
+ * Public API
+ * - RegisterModel(entity: SSEntity, abilityKeys: AbilityKey[]): boolean — Register available abilities for an entity.
+ * - ActivateAbilityForCombat(player: Player, abilityKey: AbilityKey): boolean — Validate and trigger an ability activation (server-authoritative).
+ * - IsAbilityOnCooldown(player: Player, abilityKey: AbilityKey): boolean — Query an ability's cooldown state for a player.
+ *
+ * Example
+ * // Register abilities for a character
+ * // const ok = AbilityServiceInstance.RegisterModel(character, ["FIREBALL", "HEAL"]);
+ *
+ * Notes
+ * - Registry Adapter: Registers IAbilityOperations under key "AbilityOperations" in ServiceRegistry.
+ * - Validation: Uses explicit undefined checks; rate-limited remote handler; never wraps ServerAsyncFunction in Promise.
+ *
  * @author Soul Steel Alpha Development Team
  * @since 1.0.0
- * @lastUpdated 2025-08-12 - Added comprehensive signal documentation
- *
- * ## Server Signals (Inter-Service Communication)
- * - `ManaConsumed` - Emits when abilities consume mana for resource tracking
- * - `AbilityActivated` - Emits when abilities are successfully activated for analytics
- *
- * ## Client Events (Network Communication)
- * - `ABILITY_ACTIVATE` - Handles client ability activation requests with validation
- *
- * ## Roblox Events (Engine Integration)
- * - `Players.PlayerAdded` - Initializes ability tracking for new players
- * - `Players.GetPlayers()` - Initializes ability tracking for existing players
+ * @lastUpdated 2025-08-14 - Public API section, registry adapter, explicit checks, API hygiene
  */
 
 import { Players } from "@rbxts/services";
@@ -39,6 +52,7 @@ import { MessageServiceInstance } from "./message-service";
 // import { ResourceServiceInstance } from "./resource-service"; // Avoid direct coupling
 import { SignalServiceInstance } from "./signal-service";
 import { ServiceRegistryInstance } from "./service-registry";
+import { IAbilityOperations } from "./service-interfaces";
 
 /**
  * Server-side ability management service.
@@ -52,9 +66,8 @@ import { ServiceRegistryInstance } from "./service-registry";
  * @example
  * ```typescript
  * // Register abilities for an entity
- * const service = AbilityService.Start();
- * service.RegisterModel(playerCharacter, ["FIREBALL", "HEAL"]);
- *
+ * import { AbilityServiceInstance } from "server/services/ability-service";
+ * AbilityServiceInstance.RegisterModel(playerCharacter, ["FIREBALL", "HEAL"]);
  * // Service automatically handles client requests and validation
  * ```
  */
@@ -101,6 +114,7 @@ class AbilityService {
 		// Initialize the service
 		this.initializeRemotes();
 		this.initializeCleanup();
+		this.registerRegistryAdapter();
 	}
 
 	/**
@@ -189,7 +203,7 @@ class AbilityService {
 		}
 
 		this.characterAbilityMap.set(entity, abilityKeys);
-		print(`Registered entity ${entity.Name} with abilities: ${abilityKeys.join(", ")}`);
+		if (this.DEBUG) print(`Registered entity ${entity.Name} with abilities: ${abilityKeys.join(", ")}`);
 		return true;
 	}
 
@@ -200,7 +214,7 @@ class AbilityService {
 	 * @returns True if the ability is on cooldown, false if ready to use
 	 * @public
 	 */
-	public isAbilityOnCooldown(entity: SSEntity, abilityKey: AbilityKey): boolean {
+	private isAbilityOnCooldownEntity(entity: SSEntity, abilityKey: AbilityKey): boolean {
 		const timers = this.abilityCooldowns.get(entity);
 		const timer = timers?.get(abilityKey);
 		if (timer === undefined) return false;
@@ -217,6 +231,13 @@ class AbilityService {
 		return true;
 	}
 
+	/** Public cooldown query (player-centric) */
+	public IsAbilityOnCooldown(player: Player, abilityKey: AbilityKey): boolean {
+		const character = player.Character as SSEntity | undefined;
+		if (character === undefined || !isSSEntity(character)) return false;
+		return this.isAbilityOnCooldownEntity(character, abilityKey);
+	}
+
 	private getTimer(entity: SSEntity, key: AbilityKey): CooldownTimer | undefined {
 		return this.abilityCooldowns.get(entity)?.get(key);
 	}
@@ -228,7 +249,8 @@ class AbilityService {
 	 * @private
 	 */
 	private startAbilityCooldown(entity: SSEntity, abilityKey: AbilityKey): void {
-		const abilityMeta = AbilityCatalog[abilityKey];
+		// Invariant: validateAbility has been called before starting cooldown, so abilityMeta exists
+		const abilityMeta = AbilityCatalog[abilityKey]!;
 		const cd = abilityMeta.cooldown;
 		if (cd <= 0) {
 			if (this.DEBUG) warn(`SKIP-COOLDOWN: ${entity.Name}.${abilityKey} has non-positive duration (${cd}s)`);
@@ -273,7 +295,7 @@ class AbilityService {
 	 * @returns True if entity was found and unregistered, false if entity was not registered
 	 * @public
 	 */
-	public unregisterModel(entity: SSEntity): boolean {
+	private unregisterModel(entity: SSEntity): boolean {
 		let didAnything = false;
 		// Clean up cooldown timers tracked for this entity
 		const perEntity = this.abilityCooldowns.get(entity);
@@ -291,9 +313,7 @@ class AbilityService {
 			didAnything = true;
 		}
 
-		if (didAnything) {
-			print(`Unregistered entity ${entity.Name} and cleaned up cooldowns`);
-		}
+		if (didAnything && this.DEBUG) print(`Unregistered entity ${entity.Name} and cleaned up cooldowns`);
 		return didAnything;
 	}
 
@@ -311,11 +331,17 @@ class AbilityService {
 	 * @private
 	 */
 	private validateAbility(player: Player, abilityKey: AbilityKey): boolean {
-		// Get player's character
-		const character = player.Character as SSEntity;
+		// Validate player profile
 		const profile = this.dataService.GetProfile(player);
-		if (!profile) {
+		if (profile === undefined) {
 			warn(`Player ${player.Name} does not have a valid profile`);
+			return false;
+		}
+
+		// Validate ability exists in catalog
+		const abilityMeta = AbilityCatalog[abilityKey];
+		if (abilityMeta === undefined) {
+			warn(`Ability ${abilityKey} is not defined in AbilityCatalog`);
 			return false;
 		}
 		const hasAbilityDefined = profile.Data.Abilities[abilityKey] !== undefined;
@@ -325,7 +351,8 @@ class AbilityService {
 		}
 
 		// Check if ability is on cooldown
-		if (this.isAbilityOnCooldown(character, abilityKey)) {
+		const character = player.Character as SSEntity | undefined;
+		if (character !== undefined && this.isAbilityOnCooldownEntity(character, abilityKey)) {
 			warn(`Ability ${abilityKey} is on cooldown for player ${player.Name}`);
 			if (this.DEBUG) {
 				const t = this.getTimer(character, abilityKey);
@@ -360,7 +387,6 @@ class AbilityService {
 	 * @private
 	 */
 	private handleAbilityStart(player: Player, abilityKey: AbilityKey): boolean {
-		const abilityMeta = AbilityCatalog[abilityKey];
 		// Execute ability logic here
 		const character = player.Character as SSEntity;
 		if (!isSSEntity(character)) {
@@ -371,9 +397,11 @@ class AbilityService {
 		try {
 			if (!this.validateAbility(player, abilityKey)) {
 				warn("ABILITY-VALIDATE-FAILED");
-				//abilityMeta.OnStartFailure?.(player.Character as SSEntity);
-				// return false;
+				return false;
 			}
+
+			// Invariant: validateAbility confirmed ability exists in catalog
+			const abilityMeta = AbilityCatalog[abilityKey]!;
 
 			// Start cooldown timer
 			this.startAbilityCooldown(character, abilityKey);
@@ -403,6 +431,22 @@ class AbilityService {
 			warn(`,error handling ability start for ${player.Name}: ${err}`);
 			return false;
 		}
+	}
+
+	/** Register IAbilityOperations adapter with the ServiceRegistry */
+	private registerRegistryAdapter(): void {
+		const ops: IAbilityOperations = {
+			canActivateAbility(player, abilityKey) {
+				return AbilityService.getInstance().validateAbility(player, abilityKey);
+			},
+			activateAbility(player, abilityKey) {
+				return AbilityService.getInstance().handleAbilityStart(player, abilityKey);
+			},
+			isAbilityOnCooldown(player, abilityKey) {
+				return AbilityService.getInstance().IsAbilityOnCooldown(player, abilityKey);
+			},
+		};
+		ServiceRegistryInstance.registerService<IAbilityOperations>("AbilityOperations", ops);
 	}
 }
 

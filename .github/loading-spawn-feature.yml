@@ -1,0 +1,132 @@
+title: "Loading Screen + Controlled Spawn Flow"
+summary: |
+  Implement a join flow where players see a loading screen, the server loads their profile (ProfileService),
+  then presents a Game Menu (Play button). The character is spawned only after the player clicks Play.
+
+owner: "@nicholasosto"
+labels:
+  - feature
+  - ux
+  - server
+  - client
+
+acceptance_criteria:
+  - Player sees a Loading Screen immediately on join (client-side UI).
+  - Server loads the player's profile before allowing spawn; profile is bound to a session.
+  - Once profile is ready, client receives `PROFILE_READY` and shows Game Menu with Play button.
+  - Character is spawned only after Play is clicked and server validates the request.
+  - Flow handles timeouts, failures, and reconnects gracefully.
+
+tasks:
+  - id: TSK-001
+    title: Add typed remotes for profile & spawn
+    description: |
+      Create `src/shared/network/profile-remotes.ts` and `src/shared/network/spawn-remotes.ts` using
+      @rbxts/net Definitions. Include `PROFILE_READY` (server->client) and `REQUEST_SPAWN` (client->server async).
+    files:
+      - src/shared/network/profile-remotes.ts
+      - src/shared/network/spawn-remotes.ts
+
+  - id: TSK-002
+    title: Server: profile-service that loads profiles on PlayerAdded
+    description: |
+      Implement `src/server/services/profile-service.ts` that wraps ProfileService, binds profiles to sessions,
+      and fires `PROFILE_READY` with a minimal DTO when ready.
+    files:
+      - src/server/services/profile-service.ts
+
+  - id: TSK-003
+    title: Server: spawn-service and spawn handler
+    description: |
+      Implement `src/server/services/spawn-service.ts` to server-authoritatively create player characters and
+      wire `REQUEST_SPAWN` to call it. Validate session state and rate-limit multiple calls.
+    files:
+      - src/server/services/spawn-service.ts
+
+  - id: TSK-004
+    title: Client UI and loader orchestration
+    description: |
+      Add `LoadingScreen` and `GameMenu` Fusion components and a `loader.client.ts` to show loading UI,
+      subscribe to `PROFILE_READY`, and call `REQUEST_SPAWN` when Play is clicked.
+    files:
+      - src/client/components/LoadingScreen.tsx
+      - src/client/components/GameMenu.tsx
+      - src/client/loader.client.ts
+      - src/client/main.client.ts (wireup)
+
+  - id: TSK-005
+    title: Tests & smoke checks
+    description: |
+      Add small unit/smoke tests that simulate PlayerAdded -> PROFILE_READY -> REQUEST_SPAWN -> spawn created.
+      Run `pnpm run build` and `pnpm run lint` in CI.
+    files:
+      - tests/spawn-flow.test.ts (suggested)
+
+network_contracts:
+  PROFILE_REMOTES:
+    PROFILE_READY: "ClientEvent<(profileSummary: ProfileSummaryDTO) => void>"
+
+  SPAWN_REMOTES:
+    REQUEST_SPAWN: "ServerAsyncFunction<() => SpawnResult>"
+    SPAWN_COMPLETE: "ClientEvent<() => void> (optional)"
+
+data_shapes:
+  ProfileSummaryDTO:
+    userId: number
+    displayName: string
+    level: number
+    lastSpawnKey?: string
+    appearance?: object
+
+  SpawnResult:
+    success: boolean
+    reason?: "NO_PROFILE" | "ALREADY_SPAWNED" | "SERVER_ERROR"
+    spawnCFrame?: string # optional serialized CFrame or spawn key
+
+ux_states:
+  - LoadingScreen: "Initial full-screen UI shown on join; shows progress and tips"
+  - GameMenu: "Shown after PROFILE_READY; Play button triggers spawn"
+  - Spawning: "Disabled Play + spinner while server processes spawn"
+  - InGame: "UI hidden, normal HUD visible"
+
+timeouts_and_defaults:
+  MIN_DISPLAY_TIME: 0.6 # seconds, avoid visual flicker when loads are instantaneous
+  LOADING_TIMEOUT: 20 # seconds, fallback to retry UI after this
+
+edge_cases_and_mitigation:
+  - fast_loads: "Enforce MIN_DISPLAY_TIME so UI does not flicker"
+  - profile_load_failure: "Show retry + leave options; server should release profile if failed"
+  - duplicate_spawn_requests: "Server checks idempotency and returns ALREADY_SPAWNED"
+  - reconnects: "On rejoin, re-run flow; if player left mid-spawn, clean up partial characters"
+
+tests:
+  manual_smoke:
+    - Join with CharacterAutoLoads disabled locally and ensure no auto spawn occurs.
+    - Confirm LoadingScreen appears.
+    - Simulate server firing PROFILE_READY and verify GameMenu shows and Play works.
+
+  automated:
+    - unit: "profile-service loads profiles and fires PROFILE_READY"
+    - integration: "REQUEST_SPAWN returns success and workspace contains the spawned character"
+
+rollout_plan:
+  - alpha: implement server + client prototypes; test with devs locally
+  - beta: enable for a subset of players or a private place; monitor load times and failures
+  - ga: rollout to all players after metrics meet targets
+
+metrics_to_capture:
+  - profile_load_time_ms
+  - time_between_JOIN_and_PLAY
+  - spawn_failure_rate
+
+pr_checklist:
+  - [ ] Adds typed remotes under `src/shared/network/`
+  - [ ] Adds `profile-service` and `spawn-service` with unit tests
+  - [ ] Adds client `LoadingScreen` and `GameMenu`, wired in `main.client.ts`
+  - [ ] `pnpm run build` passes
+  - [ ] `pnpm run lint` passes
+
+notes:
+  - The team will disable Roblox `CharacterAutoLoads` in game settings; the code assumes that's done.
+  - Keep server authoritative character creation to avoid exploit surface.
+  - Prefer small, incremental PRs (remotes -> profile-service -> spawn-service -> client UI) to keep review focused.

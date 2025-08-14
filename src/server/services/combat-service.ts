@@ -452,7 +452,7 @@ class CombatService {
 			// Heal attacker for 30% of damage dealt via signal
 			warn("Handling Soul Drain ability");
 			const healAmount = math.floor(finalDamage * 0.3);
-			DamageServiceInstance.requestHealthHeal(attacker, healAmount, "Soul-Drain");
+			DamageServiceInstance.RequestHealthHeal(attacker, healAmount, "Soul-Drain");
 			MessageServiceInstance.SendMessageToPlayer(
 				attacker,
 				this.createMessage(`Soul Drain healed you for ${healAmount} health!`, "success"),
@@ -647,12 +647,8 @@ class CombatService {
 	 */
 	private applyDamage(target: SSEntity, damage: number, attacker?: Player): boolean {
 		if (target.IsA("Player")) {
-			// Apply damage to player through signals
-			SignalServiceInstance.emit("HealthDamageRequested", {
-				player: target,
-				amount: damage,
-				source: "Combat",
-			});
+			// Apply damage to player via DamageService (signal facade)
+			DamageServiceInstance.RequestHealthDamage(target, damage, "Combat");
 			return true;
 		} else {
 			// Check if NPC is already marked as dead

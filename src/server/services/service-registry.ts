@@ -75,6 +75,10 @@ export class ServiceRegistry {
 		return this.getService<IResourcePlayerOperations>("ResourcePlayerOperations");
 	}
 
+	public getResourceSignalOperations(): import("./service-interfaces").IResourceSignalOperations {
+		return this.getService<import("./service-interfaces").IResourceSignalOperations>("ResourceSignalOperations");
+	}
+
 	public getAbilityOperations(): IAbilityOperations {
 		return this.getService<IAbilityOperations>("AbilityOperations");
 	}
