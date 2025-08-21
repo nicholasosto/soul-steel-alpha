@@ -25,6 +25,8 @@ import { makeDefaultAbilityDTO, makeDefaultPlayerProgression, PersistantPlayerDa
 import { DataRemotes } from "shared/network/data-remotes";
 import { ProfileRemotes } from "shared/network/profile-remotes";
 import type { ProfileSummaryDTO } from "shared/dtos/profile-dtos";
+import { ServiceRegistryInstance } from "./service-registry";
+import { IDataOperations } from "./service-interfaces";
 
 /* Remotes */
 DataRemotes.Server.Get("GET_PLAYER_DATA").SetCallback((player) => {
@@ -53,6 +55,7 @@ class DataService {
 
 	private constructor() {
 		this._initConnections();
+		this.registerWithServiceRegistry();
 	}
 
 	public static getInstance(): DataService {
@@ -69,6 +72,21 @@ class DataService {
 		Players.PlayerRemoving.Connect((player) => {
 			this.handlePlayerRemoving(player);
 		});
+	}
+
+	/**
+	 * Register DataService interface with ServiceRegistry for loose coupling
+	 */
+	private registerWithServiceRegistry(): void {
+		const ops: IDataOperations = {
+			getProfile: (player: Player) => this.GetProfile(player),
+			saveProfile: (player: Player) => {
+				const profile = this.GetProfile(player);
+				profile?.Save();
+			},
+			isProfileLoaded: (player: Player) => this.GetProfile(player) !== undefined,
+		};
+		ServiceRegistryInstance.registerService<IDataOperations>("DataOperations", ops);
 	}
 
 	private handlePlayerAdded(player: Player) {
