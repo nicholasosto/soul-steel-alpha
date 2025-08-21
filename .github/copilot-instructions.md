@@ -42,6 +42,8 @@ export const AbilityRemotes = Definitions.Create({
 START_ABILITY: Definitions.ServerAsyncFunction<(key: AbilityKey) => Promise<boolean>>(),
 ```
 
+Always cross-check `.documentation/reference/api-quirks.md#rbxtsnet` before changing or adding remotes.
+
 ### 🎯 Client Controller Architecture
 Enhanced client architecture follows strict single responsibility:
 
@@ -76,6 +78,15 @@ Key files:
 
 ## Critical Patterns
 
+### 🚦 Copilot Guardrails (Always apply)
+- Before writing or editing code, consult both:
+    - `.documentation/reference/validation-matrix.md` — when to validate vs. when it’s safe not to
+    - `.documentation/reference/api-quirks.md` — Roblox/@rbxts package gotchas and dos/don’ts
+- Enforce explicit undefined checks for any optional lookup or post-yield Instance use.
+- Never change network definitions to use Promise return types for ServerAsyncFunction.
+- On the client, respect controller responsibilities; don’t mix concerns.
+- Add a brief inline comment when using non-null assertions (!) explaining the invariant.
+
 ### ✅ Validation Best Practices
 ```typescript
 // CORRECT - Explicit undefined checks
@@ -105,6 +116,8 @@ if (!variable) return;
     - Avoid truthy/falsy for values that can be 0, "", or false; check exact conditions (e.g., `arr.size() === 0`).
     - Use the non-null assertion `!` sparingly and only after establishing strong invariants (document why it is safe).
     - Consider `WaitForChild` when presence is required; otherwise handle missing children gracefully.
+
+See the detailed rules and examples in `.documentation/reference/validation-matrix.md`.
 
 ### 📊 State Management
 Client uses Fusion reactive states in `src/client/states/`:

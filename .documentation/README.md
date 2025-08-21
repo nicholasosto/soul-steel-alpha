@@ -97,6 +97,8 @@ Current state and quick lookups:
 - **[Current Status](status/current-status.md)** - Complete implementation status with MCP analysis
 - **[Documentation Update Plan](status/DOCUMENTATION_UPDATE_PLAN.md)** - Planned documentation improvements
 - **[Quick Reference](reference/quick-reference.md)** - Common patterns and solutions
+- **[Validation Matrix](reference/validation-matrix.md)** - When to validate vs. when it’s safe not to
+- **[API Quirks](reference/api-quirks.md)** - Roblox/@rbxts gotchas and dos/don’ts
 - **[Asset Inventory](reference/asset-inventory.md)** - Available models and assets
 
 ---
