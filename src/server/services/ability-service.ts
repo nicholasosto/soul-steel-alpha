@@ -334,26 +334,26 @@ class AbilityService {
 		// Validate player profile
 		const profile = this.dataService.GetProfile(player);
 		if (profile === undefined) {
-			warn(`Player ${player.Name} does not have a valid profile`);
+			warn(`FAIL 01: Player ${player.Name} does not have a valid profile`);
 			return false;
 		}
 
 		// Validate ability exists in catalog
 		const abilityMeta = AbilityCatalog[abilityKey];
 		if (abilityMeta === undefined) {
-			warn(`Ability ${abilityKey} is not defined in AbilityCatalog`);
+			warn(`FAIL 02: Ability ${abilityKey} is not defined in AbilityCatalog`);
 			return false;
 		}
 		const hasAbilityDefined = profile.Data.Abilities[abilityKey] !== undefined;
 		if (!hasAbilityDefined) {
-			warn(`Ability ${abilityKey} is not defined in player profile`, profile.Data.Abilities);
+			warn(`FAIL 03: Ability ${abilityKey} is not defined in player profile`, profile.Data.Abilities);
 			return false;
 		}
 
 		// Check if ability is on cooldown
 		const character = player.Character as SSEntity | undefined;
 		if (character !== undefined && this.isAbilityOnCooldownEntity(character, abilityKey)) {
-			warn(`Ability ${abilityKey} is on cooldown for player ${player.Name}`);
+			warn(`FAIL 04: Ability ${abilityKey} is on cooldown for player ${player.Name}`);
 			if (this.DEBUG) {
 				const t = this.getTimer(character, abilityKey);
 				const progress = t ? t["Progress"].get?.() : undefined;
@@ -368,7 +368,7 @@ class AbilityService {
 		const resourceOps = ServiceRegistryInstance.getResourcePlayerOperations();
 		const currentMana = resourceOps.getResourceValue(player, "mana");
 		if (currentMana < manaCost) {
-			warn(`Player ${player.Name} does not have enough mana for ability ${abilityKey}`);
+			warn(`FAIL 05: Player ${player.Name} does not have enough mana for ability ${abilityKey}`);
 			return false;
 		}
 

@@ -55,11 +55,9 @@ import { SSEntity } from "shared/types";
 import { isSSEntity } from "shared/helpers/type-guards";
 import { CombatRemotes, CombatHitEvent, WeaponEquipEvent } from "shared/network";
 import { MessageType, MessageMetaRecord } from "shared/types";
-// import { ResourceServiceInstance } from "./resource-service"; // Avoid direct coupling
 import { MessageServiceInstance } from "./message-service";
 import { DamageServiceInstance } from "./damage-service";
 import { AbilityCatalog, AbilityKey } from "shared/catalogs/ability-catalog";
-import { AbilityServiceInstance } from "./ability-service";
 import { SignalServiceInstance } from "./signal-service";
 import { ServiceRegistryInstance } from "./service-registry";
 import { ICombatOperations } from "./service-interfaces";
@@ -378,14 +376,13 @@ class CombatService {
 			return;
 		}
 
-		// Use AbilityService to validate and consume resources
-		// This will check cooldowns, mana costs, and trigger ability effects
-		const abilitySuccess = AbilityServiceInstance.ActivateAbilityForCombat(attacker, abilityKey as AbilityKey);
-		if (abilitySuccess === false) {
-			// AbilityService already sent failure messages
-			warn(`CombatService: ${attacker.Name} failed to activate ${ability.displayName}`);
-			return;
-		}
+		// NOTE: Ability activation (validation + cooldown + resource costs) is performed
+		// by AbilityService via the ABILITY_ACTIVATE remote that the client calls first.
+		// Calling ActivateAbilityForCombat here would double-validate and immediately
+		// fail on cooldown (FAIL 04) because the cooldown has just started.
+		// Trust the prior activation and proceed with damage handling only.
+		// TODO: Harden this path by verifying a recent activation token from AbilityService
+		// to prevent clients from bypassing activation and calling this remote directly.
 
 		// Check if ability requires target
 		if (ability.requiresTarget && !target) {
