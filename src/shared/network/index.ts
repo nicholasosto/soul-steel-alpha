@@ -49,5 +49,6 @@ export * from "./progression-remotes";
 export * from "./targeting-remotes";
 export * from "./profile-remotes";
 export * from "./spawn-remotes";
+export * from "./controls-remotes";
 export * from "../catalogs/resources-catalog"; // exposes ResourceRemotes
 // export * from "./game-cycle-remotes"; // Currently unused - uncomment when needed

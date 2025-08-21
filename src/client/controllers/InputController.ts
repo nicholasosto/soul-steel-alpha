@@ -24,6 +24,8 @@
 
 import { UserInputService } from "@rbxts/services";
 import { AbilityKey } from "shared";
+import { ControlsRemotes } from "shared/network";
+import { makeDefaultHotkeyBindings } from "shared/types/player-data";
 import { VFXKey } from "shared/packages";
 
 export type InputAction =
@@ -45,8 +47,11 @@ export type InputActionHandler = (action: InputAction) => void;
 export class InputController {
 	private static instance: InputController | undefined;
 	private actionHandlers: Set<InputActionHandler> = new Set();
+	// Local key → ability mapping loaded from server, with defaults
+	private abilityBindings: Map<string, AbilityKey> = new Map();
 
 	private constructor() {
+		this.loadBindingsFromServer();
 		this.setupInputHandlers();
 	}
 
@@ -125,32 +130,34 @@ export class InputController {
 				case Enum.KeyCode.LeftShift:
 					this.emitAction({ type: "MOVEMENT_START_RUNNING" });
 					break;
-				case Enum.KeyCode.Q:
-					this.emitAction({ type: "ABILITY_ACTIVATE", abilityKey: "Melee" });
-					break;
-				case Enum.KeyCode.E:
-					this.emitAction({ type: "ABILITY_ACTIVATE", abilityKey: "Ice-Rain" });
-					break;
-				case Enum.KeyCode.R:
-					this.emitAction({ type: "ABILITY_ACTIVATE", abilityKey: "Earthquake" });
-					break;
-				case Enum.KeyCode.KeypadOne:
-					this.emitAction({ type: "EFFECT_TRIGGER", effectKey: "Animal_Cast" });
-					break;
-				case Enum.KeyCode.KeypadTwo:
-					this.emitAction({ type: "EFFECT_TRIGGER", effectKey: "Frost_Cast" });
-					break;
-				case Enum.KeyCode.KeypadThree:
-					this.emitAction({ type: "EFFECT_TRIGGER", effectKey: "Shadow_Cast" });
-					break;
-				case Enum.KeyCode.KeypadFour:
-					this.emitAction({ type: "EFFECT_TRIGGER", effectKey: "Void_Cast" });
-					break;
-				case Enum.KeyCode.KeypadFive:
-					this.emitAction({ type: "EFFECT_TRIGGER", effectKey: "Shrine_Cast" });
-					break;
-				default:
-					this.emitAction({ type: "DEBUG_KEY_PRESS", keyName: keyCode.Name });
+				default: {
+					// Ability hotkeys by dynamic binding
+					const mapped = this.abilityBindings.get(keyCode.Name);
+					if (mapped !== undefined) {
+						this.emitAction({ type: "ABILITY_ACTIVATE", abilityKey: mapped });
+						break;
+					}
+					// Example effect triggers kept as-is
+					switch (keyCode) {
+						case Enum.KeyCode.KeypadOne:
+							this.emitAction({ type: "EFFECT_TRIGGER", effectKey: "Animal_Cast" });
+							break;
+						case Enum.KeyCode.KeypadTwo:
+							this.emitAction({ type: "EFFECT_TRIGGER", effectKey: "Frost_Cast" });
+							break;
+						case Enum.KeyCode.KeypadThree:
+							this.emitAction({ type: "EFFECT_TRIGGER", effectKey: "Shadow_Cast" });
+							break;
+						case Enum.KeyCode.KeypadFour:
+							this.emitAction({ type: "EFFECT_TRIGGER", effectKey: "Void_Cast" });
+							break;
+						case Enum.KeyCode.KeypadFive:
+							this.emitAction({ type: "EFFECT_TRIGGER", effectKey: "Shrine_Cast" });
+							break;
+						default:
+							this.emitAction({ type: "DEBUG_KEY_PRESS", keyName: keyCode.Name });
+					}
+				}
 			}
 		} else {
 			// Key release actions
@@ -160,6 +167,34 @@ export class InputController {
 					break;
 			}
 		}
+	}
+
+	/** Load bindings from server and fall back to defaults */
+	private loadBindingsFromServer(): void {
+		const defaults = makeDefaultHotkeyBindings();
+		for (const [key, ability] of pairs(defaults.abilities)) {
+			if (ability !== undefined) this.abilityBindings.set(key, ability);
+		}
+		const Load = ControlsRemotes.Client.Get("HOTKEY_LOAD");
+		Load.CallServerAsync()
+			.then((payload) => {
+				if (payload === undefined) return;
+				// Replace current map with sanitized server payload
+				this.abilityBindings.clear();
+				for (const [key, ability] of pairs(payload.abilities)) {
+					if (ability !== undefined) this.abilityBindings.set(key, ability);
+				}
+			})
+			.catch((err) => warn("HOTKEY_LOAD failed:", err));
+	}
+
+	/** Public setter to update a binding locally and push to server */
+	public setAbilityBinding(keyName: string, abilityKey: AbilityKey): void {
+		this.abilityBindings.set(keyName, abilityKey);
+		const Save = ControlsRemotes.Client.Get("HOTKEY_SAVE");
+		const payload = { abilities: {} as Record<string, AbilityKey> };
+		for (const [k, v] of this.abilityBindings) payload.abilities[k] = v;
+		Save.CallServerAsync(payload).catch((err) => warn("HOTKEY_SAVE failed:", err));
 	}
 
 	/**

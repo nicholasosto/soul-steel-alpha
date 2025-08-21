@@ -3,6 +3,8 @@ export const SIGNAL_KEYS = {
 	GET_PLAYER_DATA: "GET_PLAYER_DATA",
 	SET_PLAYER_DATA: "SET_PLAYER_DATA",
 	RUN_EVENT: "RUN_EVENT",
+	HOTKEY_LOAD: "HOTKEY_LOAD",
+	HOTKEY_SAVE: "HOTKEY_SAVE",
 } as const;
 
 export type SignalKey = (typeof SIGNAL_KEYS)[keyof typeof SIGNAL_KEYS];

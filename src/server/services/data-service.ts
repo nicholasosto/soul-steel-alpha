@@ -21,12 +21,20 @@
 import ProfileService from "@rbxts/profileservice";
 import { Profile } from "@rbxts/profileservice/globals";
 import { Players } from "@rbxts/services";
-import { makeDefaultAbilityDTO, makeDefaultPlayerProgression, PersistantPlayerData } from "shared";
+import {
+	makeDefaultAbilityDTO,
+	makeDefaultPlayerProgression,
+	PersistantPlayerData,
+	makeDefaultPlayerControls,
+	AbilityKey,
+} from "shared";
 import { DataRemotes } from "shared/network/data-remotes";
 import { ProfileRemotes } from "shared/network/profile-remotes";
+import { ControlsRemotes } from "shared/network/controls-remotes";
 import type { ProfileSummaryDTO } from "shared/dtos/profile-dtos";
 import { ServiceRegistryInstance } from "./service-registry";
 import { IDataOperations } from "./service-interfaces";
+import { ABILITY_KEYS } from "shared/catalogs/ability-catalog";
 
 /* Remotes */
 DataRemotes.Server.Get("GET_PLAYER_DATA").SetCallback((player) => {
@@ -43,6 +51,7 @@ DataRemotes.Server.Get("GET_PLAYER_DATA").SetCallback((player) => {
 const DefaultData: PersistantPlayerData = {
 	Abilities: makeDefaultAbilityDTO(),
 	Progression: makeDefaultPlayerProgression(),
+	Controls: makeDefaultPlayerControls(),
 };
 
 // Datastore Name
@@ -52,6 +61,8 @@ class DataService {
 	private static instance?: DataService;
 	private _profileStore = ProfileService.GetProfileStore(DATASTORE_NAME, DefaultData);
 	private profiles: Map<Player, Profile<PersistantPlayerData>> = new Map();
+	// Simple in-memory rate limiter for save calls (per player)
+	private lastHotkeySave: Map<Player, number> = new Map();
 
 	private constructor() {
 		this._initConnections();
@@ -72,6 +83,73 @@ class DataService {
 		Players.PlayerRemoving.Connect((player) => {
 			this.handlePlayerRemoving(player);
 		});
+
+		// Wire hotkey load/save remotes
+		ControlsRemotes.Server.Get("HOTKEY_LOAD").SetCallback((player) => {
+			const profile = this.GetProfile(player);
+			if (profile === undefined) return undefined;
+			const bindings = profile.Data.Controls?.bindings;
+			if (bindings === undefined) return undefined;
+			// Sanitize before returning to client
+			return this.sanitizeBindings(bindings, player);
+		});
+
+		ControlsRemotes.Server.Get("HOTKEY_SAVE").SetCallback((player, incoming) => {
+			// Rate limit: allow at most one save per 2 seconds
+			const now = tick();
+			const last = this.lastHotkeySave.get(player);
+			if (last !== undefined && now - last < 2) {
+				warn(`HOTKEY_SAVE rate limited for ${player.Name}`);
+				return false;
+			}
+
+			const profile = this.GetProfile(player);
+			if (profile === undefined) return false;
+
+			// Validate payload shape explicitly
+			if (incoming === undefined || incoming.abilities === undefined) return false;
+
+			const sanitized = this.sanitizeBindings(incoming, player);
+			// Save to profile
+			if (profile.Data.Controls === undefined) profile.Data.Controls = makeDefaultPlayerControls();
+			profile.Data.Controls.bindings = sanitized;
+			this.lastHotkeySave.set(player, now);
+			return true;
+		});
+	}
+
+	/** Replace unknown ability keys or invalid key names with defaults; log replacements */
+	private sanitizeBindings(incoming: { abilities: Record<string, AbilityKey | undefined> }, player?: Player) {
+		const validAbility = new Set<AbilityKey>(ABILITY_KEYS as readonly AbilityKey[]);
+		const result: Record<string, AbilityKey> = {};
+		let invalidCount = 0;
+		for (const [keyName, ability] of pairs(incoming.abilities)) {
+			if (typeOf(keyName) !== "string") continue;
+			if (ability !== undefined && validAbility.has(ability)) {
+				result[keyName] = ability;
+			} else if (ability !== undefined) {
+				invalidCount += 1;
+			}
+		}
+		// Fill defaults for missing core keys (Q,E,R)
+		let filledDefaults = 0;
+		if (result["Q"] === undefined) {
+			result["Q"] = "Melee";
+			filledDefaults += 1;
+		}
+		if (result["E"] === undefined) {
+			result["E"] = "Ice-Rain";
+			filledDefaults += 1;
+		}
+		if (result["R"] === undefined) {
+			result["R"] = "Earthquake";
+			filledDefaults += 1;
+		}
+		if (invalidCount > 0 || filledDefaults > 0) {
+			const who = player ? player.Name : "unknown";
+			warn(`HOTKEY_SANITIZE for ${who}: invalid=${invalidCount}, defaultsFilled=${filledDefaults}`);
+		}
+		return { abilities: result };
 	}
 
 	/**
