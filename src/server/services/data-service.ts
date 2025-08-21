@@ -79,12 +79,16 @@ class DataService {
 	 */
 	private registerWithServiceRegistry(): void {
 		const ops: IDataOperations = {
-			getProfile: (player: Player) => this.GetProfile(player),
-			saveProfile: (player: Player) => {
-				const profile = this.GetProfile(player);
+			getProfile(player: Player) {
+				return DataServiceInstance.GetProfile(player);
+			},
+			saveProfile(player: Player) {
+				const profile = DataServiceInstance.GetProfile(player);
 				profile?.Save();
 			},
-			isProfileLoaded: (player: Player) => this.GetProfile(player) !== undefined,
+			isProfileLoaded(player: Player) {
+				return DataServiceInstance.GetProfile(player) !== undefined;
+			},
 		};
 		ServiceRegistryInstance.registerService<IDataOperations>("DataOperations", ops);
 	}

@@ -100,24 +100,32 @@ export default class MessageService {
 	 */
 	private registerWithServiceRegistry(): void {
 		const ops: IMessageOperations = {
-			sendInfoToPlayer: (player: Player, message: string) => this.SendInfoToPlayer(player, message),
-			sendWarningToPlayer: (player: Player, message: string) => this.SendMessageToPlayer(player, {
-				severity: "warning",
-				content: message,
-				id: "",
-				timestamp: DateTime.now().UnixTimestamp,
-				title: "Warning",
-				textColor: new Color3(0.8, 0.6, 0.2),
-			}),
-			sendErrorToPlayer: (player: Player, message: string) => this.SendErrorToPlayer(player, message),
-			sendServerWideMessage: (message: string) => this.SendServerWideMessage({
-				severity: "info",
-				content: message,
-				id: "",
-				timestamp: DateTime.now().UnixTimestamp,
-				title: "Server",
-				textColor: new Color3(0.6, 0.6, 0.6),
-			}),
+			sendInfoToPlayer(player: Player, message: string) {
+				MessageServiceInstance.SendInfoToPlayer(player, message);
+			},
+			sendWarningToPlayer(player: Player, message: string) {
+				MessageServiceInstance.SendMessageToPlayer(player, {
+					severity: "warning",
+					content: message,
+					id: "",
+					timestamp: DateTime.now().UnixTimestamp,
+					title: "Warning",
+					textColor: new Color3(0.8, 0.6, 0.2),
+				});
+			},
+			sendErrorToPlayer(player: Player, message: string) {
+				MessageServiceInstance.SendErrorToPlayer(player, message);
+			},
+			sendServerWideMessage(message: string) {
+				MessageServiceInstance.SendServerWideMessage({
+					severity: "info",
+					content: message,
+					id: "",
+					timestamp: DateTime.now().UnixTimestamp,
+					title: "Server",
+					textColor: new Color3(0.6, 0.6, 0.6),
+				});
+			},
 		};
 		ServiceRegistryInstance.registerService<IMessageOperations>("MessageOperations", ops);
 	}

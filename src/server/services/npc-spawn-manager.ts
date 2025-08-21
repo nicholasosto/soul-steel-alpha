@@ -89,6 +89,13 @@ interface PendingNPCRequest {
 	timestamp: number;
 }
 
+// Narrow unknown to UnifiedNPCEntity by checking for required shape
+function isUnifiedNPCEntity(value: unknown): value is UnifiedNPCEntity {
+	const obj = value as Partial<UnifiedNPCEntity> | undefined;
+	const npcId = (obj as { npcId?: unknown } | undefined)?.npcId;
+	return npcId !== undefined && typeOf(npcId) === "string";
+}
+
 // =============================================================================
 // NPC SPAWN MANAGER SERVICE
 // =============================================================================
@@ -373,7 +380,7 @@ export class NPCSpawnManager {
 	private spawnNPCAtPosition(area: ManagedSpawnArea, npcConfig: NPCSpawnConfig, position: Vector3): void {
 		// Generate unique request ID
 		const requestId = HttpService.GenerateGUID(false);
-		
+
 		// Store pending request
 		this.pendingRequests.set(requestId, {
 			requestId,
@@ -559,10 +566,10 @@ export class NPCSpawnManager {
 
 		// Find the area and add the NPC
 		const area = this.spawnAreas.get(request.areaId);
-		if (area && npcEntity && (npcEntity as any).npcId) {
-			const npc = npcEntity as UnifiedNPCEntity;
+		if (area && isUnifiedNPCEntity(npcEntity)) {
+			const npc = npcEntity;
 			area.activeNPCs.set(npc.npcId, npc);
-			
+
 			// Emit spawned signal
 			SignalServiceInstance.emit("NPCSpawned", {
 				areaId: request.areaId,

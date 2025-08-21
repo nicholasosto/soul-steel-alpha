@@ -450,13 +450,10 @@ class CombatService {
 			SignalServiceInstance.emit("HealthHealRequested", {
 				player: attacker,
 				amount: healAmount,
-				source: "Soul-Drain"
+				source: "Soul-Drain",
 			});
 			const messageOps = ServiceRegistryInstance.getMessageOperations();
-			messageOps.sendInfoToPlayer(
-				attacker,
-				`Soul Drain healed you for ${healAmount} health!`
-			);
+			messageOps.sendInfoToPlayer(attacker, `Soul Drain healed you for ${healAmount} health!`);
 		}
 	}
 
@@ -641,7 +638,7 @@ class CombatService {
 			SignalServiceInstance.emit("HealthDamageRequested", {
 				player: target,
 				amount: damage,
-				source: "Combat"
+				source: "Combat",
 			});
 			return true;
 		} else {

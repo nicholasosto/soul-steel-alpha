@@ -250,7 +250,7 @@ class UnifiedNPCService {
 	 */
 	private handleSpawnRequest(npcType: string, position: Vector3, config: unknown, requestId: string): void {
 		const npc = this.SpawnNPC(npcType, position, config as NPCConfig | undefined);
-		
+
 		// Emit completion signal
 		SignalServiceInstance.emit("NPCSpawnCompleted", {
 			npcEntity: npc,
@@ -263,7 +263,7 @@ class UnifiedNPCService {
 	 */
 	private handleDespawnRequest(npcId: string, requestId?: string): void {
 		const success = this.DespawnNPC(npcId);
-		
+
 		// Emit completion signal
 		SignalServiceInstance.emit("NPCDespawnCompleted", {
 			npcId,
