@@ -21,9 +21,9 @@
  */
 
 import Signal from "@rbxts/signal";
+import { ProgressionDTO } from "shared";
 import { ZoneKey } from "shared/keys";
 import { SSEntity } from "shared/types";
-import { PlayerProgression } from "shared/types/player-data";
 
 // Service event types
 export interface ServiceEvents {
@@ -60,8 +60,8 @@ export interface ServiceEvents {
 
 	// Progression events - Player experience and leveling
 	ExperienceAwarded: { player: Player; amount: number; source?: string };
-	LevelUp: { player: Player; oldLevel: number; newLevel: number; progression: PlayerProgression };
-	ProgressionUpdated: { player: Player; progression: PlayerProgression };
+	LevelUp: { player: Player; oldLevel: number; newLevel: number; progression: ProgressionDTO };
+	ProgressionUpdated: { player: Player; progression: ProgressionDTO };
 
 	// NPC Spawn Management events
 	NPCSpawnAreaCreated: { areaId: string };

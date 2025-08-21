@@ -18,7 +18,7 @@ export const AttributeRow = (key: AttributeKey) => {
 				Size: new UDim2(1, -50, 0, 50),
 				// Use Computed to bind the current attribute value as text
 				text: Computed(
-					() => `${PlayerStateInstance.getAttributeValue(key).get()}`,
+					() => `${PlayerStateInstance.Attributes[key].get()}`,
 				) as unknown as import("@rbxts/fusion").Value<string>,
 			}),
 		],

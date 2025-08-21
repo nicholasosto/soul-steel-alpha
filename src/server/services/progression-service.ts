@@ -29,13 +29,12 @@
  */
 
 import { Players } from "@rbxts/services";
-import { PlayerProgression, PersistentPlayerData } from "shared/types/player-data";
 import { ProgressionRemotes } from "shared/network/progression-remotes";
 import { DataServiceInstance } from "./data-service";
 import { SignalServiceInstance } from "./signal-service";
-import { ServiceRegistryInstance } from "./service-registry";
 import { NPC_MODEL_CATALOG, NPCModelKey } from "shared/catalogs/npc-model-catalog";
 import { SSEntity } from "shared/types";
+import { ProgressionDTO } from "shared";
 
 /**
  * Progression Service - Manages player experience, levels, and progression
@@ -275,7 +274,7 @@ export class ProgressionService {
 	/**
 	 * Handle level-up processing and rewards
 	 */
-	private handleLevelUp(player: Player, oldLevel: number, newLevel: number, progression: PlayerProgression): void {
+	private handleLevelUp(player: Player, oldLevel: number, newLevel: number, progression: ProgressionDTO): void {
 		print(`ProgressionService: ${player.Name} leveled up from ${oldLevel} to ${newLevel}!`);
 
 		// Emit level-up signal for other services to handle rewards
@@ -310,14 +309,14 @@ export class ProgressionService {
 	/**
 	 * Get current progression data for a player
 	 */
-	public getProgression(player: Player): PlayerProgression | undefined {
+	public getProgression(player: Player): ProgressionDTO | undefined {
 		return DataServiceInstance.GetProgression(player);
 	}
 
 	/**
 	 * Update progression data (for admin tools or special events)
 	 */
-	public updateProgression(player: Player, progressionData: Partial<PlayerProgression>): boolean {
+	public updateProgression(player: Player, progressionData: Partial<ProgressionDTO>): boolean {
 		const updated = DataServiceInstance.UpdateProgression(player, progressionData);
 
 		if (updated) {

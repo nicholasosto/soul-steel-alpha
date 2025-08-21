@@ -23,7 +23,7 @@ import { Profile } from "@rbxts/profileservice/globals";
 import { Players } from "@rbxts/services";
 import {
 	makeDefaultAbilityDTO,
-	makeDefaultPlayerProgression,
+	makeDefaultProgressionDTO,
 	PersistentPlayerData,
 	makeDefaultPlayerControls,
 	AbilityKey,
@@ -32,7 +32,7 @@ import { makeDefaultAttributeDTO } from "shared/catalogs/attribute-catalog";
 import { DataRemotes } from "shared/network/data-remotes";
 import { ProfileRemotes } from "shared/network/profile-remotes";
 import { ControlsRemotes } from "shared/network/controls-remotes";
-import type { ProfileSummaryDTO } from "shared/dtos/profile-dtos";
+//import type { ProfileSummaryDTO } from "shared/dtos/profile-dtos";
 import { ServiceRegistryInstance } from "./service-registry";
 import { IDataOperations } from "./service-interfaces";
 import { ABILITY_KEYS } from "shared/catalogs/ability-catalog";
@@ -54,7 +54,7 @@ const DefaultData: PersistentPlayerData = {
 	Abilities: makeDefaultAbilityDTO(),
 	Attributes: makeDefaultAttributeDTO(),
 	Currency: makeDefaultCurrencyDTO(),
-	Progression: makeDefaultPlayerProgression(),
+	Progression: makeDefaultProgressionDTO(),
 	Controls: makeDefaultPlayerControls(),
 };
 
@@ -205,12 +205,12 @@ class DataService {
 
 		// Fire PROFILE_READY to client with a minimal, typed summary once bound
 		print(`[ProfileService] PROFILE_READY sending to ${player.Name}`);
-		const dto: ProfileSummaryDTO = {
+		const dto = {
 			userId: player.UserId,
 			displayName: player.DisplayName,
 			level: profile.Data.Progression.Level,
 		};
-		ProfileRemotes.Server.Get("PROFILE_READY").SendToPlayer(player, dto);
+		ProfileRemotes.Server.Get("PROFILE_READY").SendToPlayer(player, profile.Data);
 		print(`[ProfileService] PROFILE_READY sent to ${player.Name}`);
 	}
 

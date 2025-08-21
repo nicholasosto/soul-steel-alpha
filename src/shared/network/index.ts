@@ -41,6 +41,7 @@
 export * from "./ability-remotes";
 export * from "./attribute-remotes";
 export * from "./combat-remotes";
+export * from "./currency-remotes";
 export * from "./data-remotes";
 export * from "./effect-remotes";
 export * from "./game-cycle-remotes";

@@ -1,30 +1,32 @@
 import { Computed, Value } from "@rbxts/fusion";
 import { Players } from "@rbxts/services";
+import { PersistentPlayerData, SSEntity } from "shared";
+
+/* Progression Imports */
+import { ProgressionDTO, ProgressionState, makeProgressionStateFromDTO } from "shared/catalogs/progression-catalog";
+/* Ability Imports */
+import { AbilitiesState, makeAbilityStateFromDTO, makeDefaultAbilitiesState } from "shared/catalogs/ability-catalog";
+/* Attribute Imports */
 import {
-	ABILITY_KEYS,
-	AbilitiesState,
-	makeDefaultAbilitiesState,
-	PersistentPlayerData,
-	PlayerDTO,
-	SSEntity,
-	PlayerProgression,
-	makeDefaultPlayerProgression,
-} from "shared";
+	AttributeDTO,
+	AttributeState,
+	makeAttributeStateFromDTO,
+	makeDefaultAttributeState,
+} from "shared/catalogs/attribute-catalog";
+/* Resource Imports */
+import { ResourceStateMap, ResourceDTO, makeDefaultResourceState } from "shared/catalogs/resources-catalog";
+
+import { makeDefaultProgressionState } from "shared/catalogs/progression-catalog";
+/* Currency Imports */
 import {
-	makeDefaultResourceDTO,
-	makeResourceStateFromDTO,
-	ResourceRemotes,
-	ResourceStateMap,
-	ResourceDTO,
-	RESOURCE_KEYS,
-	ResourceKey,
-	makeDefaultResourceState,
-} from "shared/catalogs/resources-catalog";
-import { ATTRIBUTE_KEYS, AttributeDTO, AttributeKey, makeDefaultAttributeDTO } from "shared/catalogs/attribute-catalog";
-import { CURRENCY_KEYS, CurrencyDTO, CurrencyKey, makeDefaultCurrencyDTO } from "shared/catalogs/currency-catalog";
-import { DataRemotes } from "shared/network/data-remotes";
-import { ProgressionRemotes } from "shared/network/progression-remotes";
-import { AttributeRemotes } from "shared/network/attribute-remotes";
+	CurrencyDTO,
+	CurrencyState,
+	makeCurrencyStateFromDTO,
+	makeDefaultCurrencyState,
+} from "shared/catalogs/currency-catalog";
+
+/* Remote Imports*/
+import { ProgressionRemotes, DataRemotes, CurrencyRemotes, AttributeRemotes, ResourceRemotes } from "shared/network";
 
 const fetchPersistantData = DataRemotes.Client.Get("GET_PLAYER_DATA");
 const PlayerDataUpdated = DataRemotes.Client.Get("PLAYER_DATA_UPDATED");
@@ -32,99 +34,34 @@ const FetchResources = ResourceRemotes.Client.Get("FetchResources");
 const ResourcesUpdated = ResourceRemotes.Client.Get("ResourcesUpdated");
 
 // Progression remotes
-const FetchProgression = ProgressionRemotes.Client.Get("GET_PROGRESSION");
 const ProgressionUpdated = ProgressionRemotes.Client.Get("PROGRESSION_UPDATED");
-const LevelUp = ProgressionRemotes.Client.Get("LEVEL_UP");
+const AttributesUpdated = AttributeRemotes.Client.Get("AttributesUpdated");
+const CurrencyUpdated = CurrencyRemotes.Client.Get("CurrencyUpdated");
 
 class PlayerState {
 	private static instance?: PlayerState;
 	private player: Player = Players.LocalPlayer;
-	public Resources: ResourceStateMap = makeDefaultResourceState();
+
 	public Abilities: AbilitiesState = makeDefaultAbilitiesState();
-
-	// Core attribute state (primary stats): reactive number for each attribute
-	public Attributes: AbilitiesState = makeDefaultAbilitiesState();
-	// Currency state (reactive amount per currency key)
-	public Currency: { [key in CurrencyKey]: Value<number> } =
-		PlayerState.makeCurrencyStateFromDTO(makeDefaultCurrencyDTO());
-
-	// Progression state - separated from resources
-	public Progression: {
-		Level: Value<number>;
-		Experience: Value<number>;
-		NextLevelExperience: Value<number>;
-	};
+	public Attributes: AttributeState = makeDefaultAttributeState();
+	public Currency: CurrencyState = makeDefaultCurrencyState();
+	public Progression: ProgressionState = makeDefaultProgressionState();
+	public Resources: ResourceStateMap = makeDefaultResourceState();
 
 	// Currently selected target (locked). Reactive for UI.
 	public target: Value<SSEntity | undefined> = Value<SSEntity | undefined>(undefined);
 	// Current hover/candidate target (aiming). Reactive for UI.
 	public hoverTarget: Value<SSEntity | undefined> = Value<SSEntity | undefined>(undefined);
 
-	// Helper: apply a single resource update safely
-	private applyResource(key: ResourceKey, dto?: { current: number; max: number }): void {
-		if (dto === undefined) return;
-		const state = this.Resources[key];
-		if (state !== undefined) {
-			state.current.set(dto.current);
-			state.max.set(dto.max);
-		}
+	private constructor() {
+		/* Register Update Handlers */
+		AttributesUpdated.Connect((values) => this._updateAttributes(values));
+		ProgressionUpdated.Connect((progression) => this._updateProgression(progression));
+		CurrencyUpdated.Connect((currency) => this._updateCurrency(currency));
+		ResourcesUpdated.Connect((resources) => this._updateResources(resources));
+		PlayerDataUpdated.Connect((data) => this.SetPersistentData(data as PersistentPlayerData));
 	}
 
-	/** Build a new reactive currency state map from a DTO */
-	private static makeCurrencyStateFromDTO(dto: CurrencyDTO): { [key in CurrencyKey]: Value<number> } {
-		const map = {} as { [key in CurrencyKey]: Value<number> };
-		for (const key of CURRENCY_KEYS) {
-			map[key] = Value(dto[key]);
-		}
-		return map;
-	}
-
-	private constructor(playerData?: PlayerDTO) {
-		// Initialize progression state with defaults
-		const defaultProgression = makeDefaultPlayerProgression();
-		this.Progression = {
-			Level: Value(defaultProgression.Level),
-			Experience: Value(defaultProgression.Experience),
-			NextLevelExperience: Value(defaultProgression.NextLevelExperience),
-		};
-
-		warn("PlayerState initialized for", this.player.Name, "with data:", playerData);
-
-		// Setup resource update listener immediately in constructor
-		ResourcesUpdated.Connect((resources) => {
-			if (resources !== undefined) {
-				this.UpdateResources(resources);
-			}
-		});
-
-		// Setup progression update listeners
-		ProgressionUpdated.Connect((progression) => {
-			if (progression !== undefined) {
-				this.SetProgression(progression);
-			}
-		});
-
-		// Setup attribute update listener
-		const AttributesUpdated = AttributeRemotes.Client.Get("AttributesUpdated");
-		AttributesUpdated.Connect((values) => {
-			if (values !== undefined) {
-				this.SetAttributes(PlayerState.mapAttributeValuesToDTO(values));
-			}
-		});
-
-		LevelUp.Connect((newLevel, progression) => {
-			this.SetProgression(progression);
-			print(`🎉 Level Up! You are now level ${newLevel}!`);
-		});
-
-		// Listen for server-pushed player data updates (level, abilities)
-		PlayerDataUpdated.Connect((data) => {
-			if (data !== undefined) {
-				this.SetPersistentData(data);
-				print("Player data updated (push):", data);
-			}
-		});
-	}
 	public static GetInstance(): PlayerState {
 		if (this.instance === undefined) {
 			this.instance = new PlayerState();
@@ -135,18 +72,15 @@ class PlayerState {
 
 	private static _initializeData(): PlayerState {
 		// Initialize any necessary connections or listeners here
-		const dataPromise = fetchPersistantData.CallServerAsync();
+		const persistedDataPromise = fetchPersistantData.CallServerAsync();
 		const resourcesPromise = FetchResources.CallServerAsync();
-		const progressionPromise = FetchProgression.CallServerAsync();
-		const fetchAttributes = AttributeRemotes.Client.Get("FetchAttributes");
-		const attributesPromise = fetchAttributes.CallServerAsync();
 
-		dataPromise
+		persistedDataPromise
 			.then((data) => {
-				if (data !== undefined) {
-					const playerData = data as PlayerDTO;
-					this.instance?.SetPersistentData(playerData);
-					print("Player data initialized:", playerData);
+				const persistantPlayerData = data as PersistentPlayerData;
+				if (persistantPlayerData !== undefined) {
+					this.instance?.SetPersistentData(persistantPlayerData);
+					print("Player data initialized:", persistantPlayerData);
 				} else {
 					warn("No player data received.");
 				}
@@ -155,245 +89,54 @@ class PlayerState {
 
 		resourcesPromise
 			.then((resources) => {
-				if (resources !== undefined) {
-					this.instance?.SetResources(makeResourceStateFromDTO(resources));
-					print("Player resources initialized:", resources);
-				} else {
-					warn("No player resources received.");
-				}
+				this.GetInstance()._updateResources(resources);
 			})
-			.catch((err) => warn("FetchResources failed:", err));
-
-		progressionPromise
-			.then((progression) => {
-				if (progression !== undefined) {
-					this.instance?.SetProgression(progression);
-					print("Player progression initialized:", progression);
-				} else {
-					warn("No player progression received.");
-				}
-			})
-			.catch((err) => warn("FetchProgression failed:", err));
-
-		attributesPromise
-			.then((attributes) => {
-				if (attributes !== undefined) {
-					this.instance?.SetAttributes(attributes as unknown as AttributeDTO);
-					print("Player attributes initialized:", attributes);
-				} else {
-					warn("No player attributes received.");
-				}
-			})
-			.catch((err) => warn("FetchAttributes failed:", err));
+			.catch((err) => {
+				warn("FetchResources failed:", err);
+			});
 
 		return this.GetInstance();
 	}
 
-	/** Build a new reactive attribute state map from a DTO */
-	private static makeAttributeStateFromDTO(dto: AttributeDTO): { [key in AttributeKey]: Value<number> } {
-		const map = {} as { [key in AttributeKey]: Value<number> };
-		for (const key of ATTRIBUTE_KEYS) {
-			map[key] = Value(dto[key]);
-		}
-		return map;
+	private _updateProgression(progressionDTO: ProgressionDTO): void {
+		this.Progression.Experience.set(progressionDTO.Experience);
+		this.Progression.Level.set(progressionDTO.Level);
+		this.Progression.NextLevelExperience.set(progressionDTO.NextLevelExperience);
 	}
 
-	/**
-	 * Convert AttributeRemotes payload (external type) to our AttributeDTO shape
-	 * Only copies known ATTRIBUTE_KEYS and ignores others safely.
-	 */
-	private static mapAttributeValuesToDTO(values: unknown): AttributeDTO {
-		const dto = makeDefaultAttributeDTO();
-		const record = values as unknown as Record<string, unknown>;
-		for (const key of ATTRIBUTE_KEYS) {
-			const v = record[key];
-			if (typeOf(v) === "number") dto[key] = v as number;
-		}
-		return dto;
+	private _updateAttributes(attributesDTO: AttributeDTO): void {
+		this.Attributes.Strength.set(attributesDTO.Strength);
+		this.Attributes.Agility.set(attributesDTO.Agility);
+		this.Attributes.Intelligence.set(attributesDTO.Intelligence);
+	}
+
+	private _updateCurrency(currencyDTO: CurrencyDTO): void {
+		this.Currency.Coins.set(currencyDTO.Coins);
+		this.Currency.Tombs.set(currencyDTO.Tombs);
+		this.Currency.AttributePoints.set(currencyDTO.AttributePoints);
 	}
 
 	public SetPersistentData(data: PersistentPlayerData): void {
 		if (data !== undefined) {
 			// Update progression data
-			this.SetProgression(data.Progression);
+			this.Abilities = makeAbilityStateFromDTO(data.Abilities);
+			this.Attributes = makeAttributeStateFromDTO(data.Attributes);
+			this.Currency = makeCurrencyStateFromDTO(data.Currency);
+			this.Progression = makeProgressionStateFromDTO(data.Progression);
 
-			// Update abilities
-			const abilities = data.Abilities;
-			for (const abilityKey of ABILITY_KEYS) {
-				const value = abilities[abilityKey];
-				const abilityState = this.Abilities[abilityKey];
-				if (value !== undefined && abilityState !== undefined) {
-					abilityState.set(value);
-				}
-			}
-			// Update currency from persistent profile
-			this.SetCurrency(data.Currency);
 			print("Player data set:", data);
 		} else {
 			warn("No player data provided.");
 		}
 	}
 
-	public SetProgression(progression: PlayerProgression): void {
-		if (progression !== undefined) {
-			this.Progression.Level.set(progression.Level);
-			this.Progression.Experience.set(progression.Experience);
-			this.Progression.NextLevelExperience.set(progression.NextLevelExperience);
-			print("Player progression set:", progression);
-		} else {
-			warn("No progression data provided.");
-		}
-	}
-
-	public SetResources(resources: ResourceStateMap): void {
-		if (resources !== undefined) {
-			// Do NOT replace the map reference; mutate existing Values using known keys
-			for (const key of RESOURCE_KEYS) {
-				const incoming = resources[key];
-				const current = this.Resources[key];
-				if (incoming !== undefined && current !== undefined) {
-					current.current.set(incoming.current.get());
-					current.max.set(incoming.max.get());
-				} else if (incoming !== undefined && current === undefined) {
-					// Fallback: if a new resource appears, adopt it
-					this.Resources[key] = incoming;
-				}
-			}
-			print("Player resources set (merged into existing state):", resources);
-		} else {
-			warn("No player resources provided.");
-		}
-	}
-
-	/** Replace current attribute values with provided values (keys merged, Values preserved) */
-	public SetAttributes(attributes: AttributeDTO): void {
-		if (attributes === undefined) {
-			warn("No attributes provided.");
-			return;
-		}
-		for (const key of ATTRIBUTE_KEYS) {
-			const incoming = attributes[key];
-			const current = this.Attributes[key];
-			if (incoming !== undefined && current !== undefined) {
-				current.set(incoming);
-			}
-		}
-	}
-
-	/** Apply partial attribute updates from server push */
-	public UpdateAttributes(partial: Partial<Record<AttributeKey, number>>): void {
-		if (partial === undefined) return;
-		for (const key of ATTRIBUTE_KEYS) {
-			const value = partial[key];
-			if (value !== undefined) {
-				const state = this.Attributes[key];
-				if (state !== undefined) state.set(value);
-			}
-		}
-	}
-
-	public UpdateResources(resourceDTO: ResourceDTO): void {
-		if (resourceDTO === undefined) return;
-
-		for (const key of RESOURCE_KEYS) {
-			const dto = resourceDTO[key];
-			if (dto !== undefined) this.applyResource(key, dto);
-		}
-	}
-
-	/** Replace current currency values with provided values (keys merged, Values preserved) */
-	public SetCurrency(currency: CurrencyDTO): void {
-		if (currency === undefined) {
-			warn("No currency provided.");
-			return;
-		}
-		for (const key of CURRENCY_KEYS) {
-			const incoming = currency[key];
-			const current = this.Currency[key];
-			if (incoming !== undefined && current !== undefined) {
-				current.set(incoming);
-			}
-		}
-	}
-
-	/** Apply partial currency updates from server push */
-	public UpdateCurrency(partial: Partial<Record<CurrencyKey, number>>): void {
-		if (partial === undefined) return;
-		for (const key of CURRENCY_KEYS) {
-			const value = partial[key];
-			if (value !== undefined) {
-				const state = this.Currency[key];
-				if (state !== undefined) state.set(value);
-			}
-		}
-	}
-
-	/** Access a reactive currency value by key */
-	public getCurrency(key: CurrencyKey): Value<number> {
-		const v = this.Currency[key];
-		if (v !== undefined) return v;
-		// Invariant: only created for unknown keys; no catalog key should hit this path
-		return Value(0);
-	}
-
-	public getComputedLabel(key: keyof ResourceStateMap): Computed<string> {
-		return Computed(() => {
-			const resource = this.Resources[key];
-			if (resource !== undefined) {
-				const current = math.floor(resource.current.get());
-				const max = math.floor(resource.max.get());
-				// Ensure values are valid numbers
-				const safeCurrent = current >= 0 ? current : 0;
-				const safeMax = max > 0 ? max : 1;
-				return `${key}: ${safeCurrent}/${safeMax}`;
-			} else {
-				warn(`Resource ${key} does not exist.`);
-				return `${key}: 0/1`; // Default fallback
-			}
-		});
-	}
-
-	public getComputedResource(key: keyof ResourceStateMap): Computed<number> {
-		const resource = this.Resources[key];
-		if (resource !== undefined) {
-			return Computed(() => resource.current.get());
-		} else {
-			warn(`Resource ${key} does not exist.`);
-			return Computed(() => 0); // Default to 0 if resource doesn't exist
-		}
-	}
-
-	// Progression-related computed properties
-	public getComputedProgressionLabel(): Computed<string> {
-		return Computed(() => {
-			const level = this.Progression.Level.get();
-			const exp = this.Progression.Experience.get();
-			const nextLevelExp = this.Progression.NextLevelExperience.get();
-			return `Level ${level} (${exp}/${nextLevelExp} XP)`;
-		});
-	}
-
-	public getComputedExperienceProgress(): Computed<number> {
-		return Computed(() => {
-			const exp = this.Progression.Experience.get();
-			const nextLevelExp = this.Progression.NextLevelExperience.get();
-			return nextLevelExp > 0 ? exp / nextLevelExp : 0;
-		});
-	}
-
-	// Attribute accessors
-	public getAttributeValue(key: AttributeKey): Value<number> {
-		const v = this.Attributes[key];
-		if (v !== undefined) return v;
-		// This should not happen if ATTRIBUTE_KEYS are stable; create a Value as fallback
-		const created = Value(0);
-		// Invariant: only created for unknown keys; no catalog key should hit this path
-		return created;
-	}
-
-	/** UI helper: alias for getAttributeValue to match existing panel code */
-	public A(key: AttributeKey): Value<number> {
-		return this.getAttributeValue(key);
+	private _updateResources(resources: ResourceDTO): void {
+		this.Resources.Health.max.set(resources.Health.max);
+		this.Resources.Health.current.set(resources.Health.current);
+		this.Resources.Mana.max.set(resources.Mana.max);
+		this.Resources.Mana.current.set(resources.Mana.current);
+		this.Resources.Stamina.max.set(resources.Stamina.max);
+		this.Resources.Stamina.current.set(resources.Stamina.current);
 	}
 }
 export const PlayerStateInstance = PlayerState.GetInstance();

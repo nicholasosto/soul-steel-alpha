@@ -7,14 +7,14 @@
  */
 
 import { Definitions } from "@rbxts/net";
-import { PlayerProgression } from "shared/types/player-data";
+import { ProgressionDTO } from "shared";
 
 export const ProgressionRemotes = Definitions.Create({
 	/**
 	 * Get current player progression data
 	 * @returns Current progression data or undefined if not found
 	 */
-	GET_PROGRESSION: Definitions.ServerAsyncFunction<() => PlayerProgression | undefined>(),
+	GET_PROGRESSION: Definitions.ServerAsyncFunction<() => ProgressionDTO | undefined>(),
 
 	/**
 	 * Award experience to a player (server-only, for admin/testing)
@@ -28,11 +28,11 @@ export const ProgressionRemotes = Definitions.Create({
 	 * @param newLevel The new level achieved
 	 * @param progression Complete progression data
 	 */
-	LEVEL_UP: Definitions.ServerToClientEvent<[newLevel: number, progression: PlayerProgression]>(),
+	LEVEL_UP: Definitions.ServerToClientEvent<[newLevel: number, progression: ProgressionDTO]>(),
 
 	/**
 	 * Event fired when progression data changes
 	 * @param progression Updated progression data
 	 */
-	PROGRESSION_UPDATED: Definitions.ServerToClientEvent<[progression: PlayerProgression]>(),
+	PROGRESSION_UPDATED: Definitions.ServerToClientEvent<[progression: ProgressionDTO]>(),
 });

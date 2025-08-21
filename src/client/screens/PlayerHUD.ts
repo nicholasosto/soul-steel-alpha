@@ -17,8 +17,8 @@ export function createPlayerHUD(parent: Instance): ScreenGui {
 			CharacterInfoCard: CharacterCardInstance,
 			AbilityBar: AbilityBar(["Earthquake", "Melee", "Ice-Rain", "Soul-Drain"]),
 			CurrencyDisplay: CurrencyDisplay({
-				coins: PlayerStateInstance.getCurrency("Coins"),
-				tombs: PlayerStateInstance.getCurrency("Tombs"),
+				coins: PlayerStateInstance.Currency["Coins"],
+				tombs: PlayerStateInstance.Currency["Tombs"],
 			}),
 			PlayerPanel: PlayerDataPanel(),
 		},

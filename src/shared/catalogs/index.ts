@@ -40,5 +40,8 @@ export * from "./ability-catalog";
 export * from "./animation-catalog";
 export * from "./force-catalog";
 export * from "./npc-model-catalog";
+export * from "./progression-catalog";
+export * from "./menu-catalog";
+export * from "./resources-catalog";
 export * from "./zone-catalog";
 export * from "./attribute-catalog";

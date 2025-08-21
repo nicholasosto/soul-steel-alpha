@@ -11,12 +11,14 @@ export interface ResourceMeta {
 	color: Color3; // Color used for the resource bar
 }
 
+export type CurrentMax = {
+	current: number; // Current value of the resource
+	max: number; // Maximum value of the resource
+};
+
 /* DTO for Resource Catalog */
 export type ResourceDTO = {
-	[key in ResourceKey]: {
-		current: number; // Current value of the resource
-		max: number; // Maximum value of the resource
-	};
+	[key in ResourceKey]: CurrentMax;
 };
 
 /* Resource State and State Map - Current Values for Resources */
@@ -109,3 +111,7 @@ export const ResourceRemotes = Definitions.Create({
 	FetchResources: Definitions.ServerAsyncFunction<() => ResourceDTO>(),
 	ResourcesUpdated: Definitions.ServerToClientEvent<[ResourceDTO]>(),
 });
+
+export function calculateMaxResourceValue(level: number, attributeValue1: number, attributeValue2: number): number {
+	return level * attributeValue1 * 10 + attributeValue2 * 5;
+}

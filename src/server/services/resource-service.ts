@@ -78,6 +78,7 @@ export class ResourceService {
 		Players.PlayerAdded.Connect((player) => {
 			print(`ResourceService: Player added - ${player.Name}`);
 			const profile = DataServiceInstance.GetProfile(player); // Ensure profile is loaded
+			print(`ResourceService: Player profile loaded - ${player.Name}`, profile);
 			const resources = makeDefaultResourceDTO();
 			this.entityResources.set(player, resources);
 			this.lastChangeTimestampMs.set(player, {});

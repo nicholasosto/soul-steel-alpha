@@ -98,24 +98,29 @@ export interface AbilityMeta {
 export type AbilityDTO = {
 	[key in AbilityKey]: number; // Maps each ability key to its current level or state
 };
-export function makeDefaultAbilityDTO(): AbilityDTO {
-	const dto: AbilityDTO = {} as AbilityDTO;
-	for (const key of ABILITY_KEYS) {
-		dto[key] = 0; // Default level or state for each ability
-	}
-	return dto;
-}
 
 export type AbilitiesState = {
 	[key in AbilityKey]: Value<number>; // Reactive level value for the ability
 };
 
+export function makeDefaultAbilityDTO(): AbilityDTO {
+	const dto: AbilityDTO = {} as AbilityDTO;
+	ABILITY_KEYS.forEach((key) => {
+		dto[key] = 0;
+	});
+	return dto;
+}
+
+export function makeAbilityStateFromDTO(dto: AbilityDTO): AbilitiesState {
+	const state: AbilitiesState = {} as AbilitiesState;
+	ABILITY_KEYS.forEach((key) => {
+		state[key] = Value(dto[key]);
+	});
+	return state;
+}
+
 export const makeDefaultAbilitiesState = (): AbilitiesState => {
-	const abilitiesState: AbilitiesState = {} as AbilitiesState;
-	for (const key of ABILITY_KEYS) {
-		abilitiesState[key] = Value(0); // Initialize each ability with a default level of 0
-	}
-	return abilitiesState;
+	return makeAbilityStateFromDTO(makeDefaultAbilityDTO());
 };
 
 // Internal Helpers
