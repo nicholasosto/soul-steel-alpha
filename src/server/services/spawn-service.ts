@@ -8,7 +8,7 @@
 import { Players } from "@rbxts/services";
 import { SpawnRemotes } from "shared/network/spawn-remotes";
 import type { SpawnResult } from "shared/dtos/spawn-dtos";
-import { DataServiceInstance } from "./data-service";
+import { ServiceRegistryInstance } from "./service-registry";
 
 const REQUEST_THROTTLE_SECONDS = 1.0;
 
@@ -58,7 +58,8 @@ class SpawnService {
 		}
 
 		// Validate profile/session
-		const profile = DataServiceInstance.GetProfile(player);
+		const dataOps = ServiceRegistryInstance.getDataOperations();
+		const profile = dataOps.getProfile(player);
 		if (profile === undefined) {
 			warn(`[SpawnService] NO_PROFILE for ${player.Name}`);
 			return { success: false, reason: "NO_PROFILE" };

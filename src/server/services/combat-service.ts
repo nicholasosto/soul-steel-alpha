@@ -55,8 +55,6 @@ import { SSEntity } from "shared/types";
 import { isSSEntity } from "shared/helpers/type-guards";
 import { CombatRemotes, CombatHitEvent, WeaponEquipEvent } from "shared/network";
 import { MessageType, MessageMetaRecord } from "shared/types";
-import { MessageServiceInstance } from "./message-service";
-import { DamageServiceInstance } from "./damage-service";
 import { AbilityCatalog, AbilityKey } from "shared/catalogs/ability-catalog";
 import { SignalServiceInstance } from "./signal-service";
 import { ServiceRegistryInstance } from "./service-registry";
@@ -209,6 +207,27 @@ class CombatService {
 	}
 
 	/**
+	 * Helper method to send messages via ServiceRegistry
+	 */
+	private sendMessage(player: Player, content: string, severity: "info" | "warning" | "error" | "success"): void {
+		const messageOps = ServiceRegistryInstance.getMessageOperations();
+		switch (severity) {
+			case "info":
+				messageOps.sendInfoToPlayer(player, content);
+				break;
+			case "warning":
+				messageOps.sendWarningToPlayer(player, content);
+				break;
+			case "error":
+				messageOps.sendErrorToPlayer(player, content);
+				break;
+			case "success":
+				messageOps.sendInfoToPlayer(player, content); // Success maps to info for now
+				break;
+		}
+	}
+
+	/**
 	 * Set up network connections for combat remotes
 	 */
 	private setupNetworkConnections(): void {
@@ -289,10 +308,8 @@ class CombatService {
 
 		// Prevent self-attack
 		if (attackerCharacter === target) {
-			MessageServiceInstance.SendMessageToPlayer(
-				attacker,
-				this.createMessage("You cannot attack yourself!", "warning"),
-			);
+			const messageOps = ServiceRegistryInstance.getMessageOperations();
+			messageOps.sendWarningToPlayer(attacker, "You cannot attack yourself!");
 			return;
 		}
 
@@ -318,21 +335,17 @@ class CombatService {
 			});
 
 			// Send feedback messages
-			MessageServiceInstance.SendMessageToPlayer(
+			this.sendMessage(
 				attacker,
-				this.createMessage(
-					`You dealt ${finalDamage} damage to ${target.Name}${isCritical ? " (Critical!)" : ""}`,
-					"info",
-				),
+				`You dealt ${finalDamage} damage to ${target.Name}${isCritical ? " (Critical!)" : ""}`,
+				"info",
 			);
 
 			if (target.IsA("Player")) {
-				MessageServiceInstance.SendMessageToPlayer(
+				this.sendMessage(
 					target,
-					this.createMessage(
-						`You took ${finalDamage} damage from ${attacker.Name}${isCritical ? " (Critical!)" : ""}`,
-						"warning",
-					),
+					`You took ${finalDamage} damage from ${attacker.Name}${isCritical ? " (Critical!)" : ""}`,
+					"warning",
 				);
 			}
 
@@ -345,10 +358,7 @@ class CombatService {
 			}
 		} else {
 			// Attack failed
-			MessageServiceInstance.SendMessageToPlayer(
-				attacker,
-				this.createMessage(`Your attack on ${target.Name} failed!`, "warning"),
-			);
+			this.sendMessage(attacker, `Your attack on ${target.Name} failed!`, "warning");
 		}
 	}
 
@@ -369,10 +379,7 @@ class CombatService {
 		// Get ability data
 		const ability = AbilityCatalog[abilityKey as AbilityKey];
 		if (!ability) {
-			MessageServiceInstance.SendMessageToPlayer(
-				attacker,
-				this.createMessage(`Unknown ability: ${abilityKey}`, "error"),
-			);
+			this.sendMessage(attacker, `Unknown ability: ${abilityKey}`, "error");
 			return;
 		}
 
@@ -386,10 +393,7 @@ class CombatService {
 
 		// Check if ability requires target
 		if (ability.requiresTarget && !target) {
-			MessageServiceInstance.SendMessageToPlayer(
-				attacker,
-				this.createMessage(`${ability.displayName} requires a target!`, "warning"),
-			);
+			this.sendMessage(attacker, `${ability.displayName} requires a target!`, "warning");
 			return;
 		}
 
@@ -401,19 +405,13 @@ class CombatService {
 
 		// Prevent self-attack (unless it's a healing ability)
 		if (target && attackerCharacter === target && ability.baseDamage !== undefined && ability.baseDamage > 0) {
-			MessageServiceInstance.SendMessageToPlayer(
-				attacker,
-				this.createMessage("You cannot attack yourself!", "warning"),
-			);
+			this.sendMessage(attacker, "You cannot attack yourself!", "warning");
 			return;
 		}
 
 		// Check if ability deals damage
 		if (ability.baseDamage === undefined || ability.baseDamage <= 0) {
-			MessageServiceInstance.SendMessageToPlayer(
-				attacker,
-				this.createMessage(`${ability.displayName} is not a damage ability!`, "warning"),
-			);
+			this.sendMessage(attacker, `${ability.displayName} is not a damage ability!`, "warning");
 			return;
 		}
 
@@ -449,10 +447,15 @@ class CombatService {
 			// Heal attacker for 30% of damage dealt via signal
 			warn("Handling Soul Drain ability");
 			const healAmount = math.floor(finalDamage * 0.3);
-			DamageServiceInstance.RequestHealthHeal(attacker, healAmount, "Soul-Drain");
-			MessageServiceInstance.SendMessageToPlayer(
+			SignalServiceInstance.emit("HealthHealRequested", {
+				player: attacker,
+				amount: healAmount,
+				source: "Soul-Drain"
+			});
+			const messageOps = ServiceRegistryInstance.getMessageOperations();
+			messageOps.sendInfoToPlayer(
 				attacker,
-				this.createMessage(`Soul Drain healed you for ${healAmount} health!`, "success"),
+				`Soul Drain healed you for ${healAmount} health!`
 			);
 		}
 	}
@@ -487,22 +490,18 @@ class CombatService {
 
 			// Send feedback messages
 			if (attacker.IsA("Player")) {
-				MessageServiceInstance.SendMessageToPlayer(
+				this.sendMessage(
 					attacker,
-					this.createMessage(
-						`${ability.displayName} dealt ${damage} damage to ${target.Name}${isCritical ? " (Critical!)" : ""}`,
-						"success",
-					),
+					`${ability.displayName} dealt ${damage} damage to ${target.Name}${isCritical ? " (Critical!)" : ""}`,
+					"success",
 				);
 			}
 
 			if (target.IsA("Player")) {
-				MessageServiceInstance.SendMessageToPlayer(
+				this.sendMessage(
 					target,
-					this.createMessage(
-						`You took ${damage} damage from ${attacker.Name}'s ${ability.displayName}${isCritical ? " (Critical!)" : ""}`,
-						"warning",
-					),
+					`You took ${damage} damage from ${attacker.Name}'s ${ability.displayName}${isCritical ? " (Critical!)" : ""}`,
+					"warning",
 				);
 			}
 
@@ -562,10 +561,7 @@ class CombatService {
 		}
 
 		if (attacker.IsA("Player")) {
-			MessageServiceInstance.SendMessageToPlayer(
-				attacker,
-				this.createMessage(`${ability.displayName} hit ${targets.size()} targets!`, "success"),
-			);
+			this.sendMessage(attacker, `${ability.displayName} hit ${targets.size()} targets!`, "success");
 		}
 	}
 
@@ -582,10 +578,7 @@ class CombatService {
 		// Validate weapon exists
 		const weapon = this.getWeaponData(weaponId);
 		if (!weapon) {
-			MessageServiceInstance.SendMessageToPlayer(
-				player,
-				this.createMessage(`Unknown weapon: ${weaponId}`, "error"),
-			);
+			this.sendMessage(player, `Unknown weapon: ${weaponId}`, "error");
 			return;
 		}
 
@@ -611,7 +604,7 @@ class CombatService {
 			CombatRemotes.Server.Get("WeaponUnequipped").SendToAllPlayers(playerCharacter, previousWeapon);
 		}
 
-		MessageServiceInstance.SendMessageToPlayer(player, this.createMessage(`Equipped ${weapon.name}`, "success"));
+		this.sendMessage(player, `Equipped ${weapon.name}`, "success");
 	}
 
 	/**
@@ -644,8 +637,12 @@ class CombatService {
 	 */
 	private applyDamage(target: SSEntity, damage: number, attacker?: Player): boolean {
 		if (target.IsA("Player")) {
-			// Apply damage to player via DamageService (signal facade)
-			DamageServiceInstance.RequestHealthDamage(target, damage, "Combat");
+			// Apply damage to player via signals (decoupled approach)
+			SignalServiceInstance.emit("HealthDamageRequested", {
+				player: target,
+				amount: damage,
+				source: "Combat"
+			});
 			return true;
 		} else {
 			// Check if NPC is already marked as dead

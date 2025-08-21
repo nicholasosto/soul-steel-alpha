@@ -96,3 +96,14 @@ export interface IZoneOperations {
 	setZoneActive(zoneKey: ZoneKey, active: boolean): boolean;
 	getPlayersInZone(zoneKey: ZoneKey): Player[];
 }
+
+/**
+ * Interface for NPC operations
+ * Services should depend on this interface rather than the concrete UnifiedNPCService
+ */
+export interface INPCOperations {
+	spawnNPC(npcType: string, position: Vector3, config?: unknown): unknown;
+	despawnNPC(npcId: string): boolean;
+	getNPCById(npcId: string): unknown;
+	getAllNPCs(): unknown[];
+}

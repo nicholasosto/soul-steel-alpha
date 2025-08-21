@@ -20,6 +20,8 @@
 import { Players, RunService } from "@rbxts/services";
 import { MessageType, MessageLibrary } from "shared/types";
 import { MessageRemotes } from "shared/network";
+import { ServiceRegistryInstance } from "./service-registry";
+import { IMessageOperations } from "./service-interfaces";
 
 /// <reference types="@rbxts/types" />
 
@@ -43,6 +45,7 @@ export default class MessageService {
 
 	private constructor() {
 		if (RunService.IsStudio()) print(`${SERVICE_NAME} started`);
+		this.registerWithServiceRegistry();
 	}
 
 	/** Sends a message to a specific player. */
@@ -90,6 +93,33 @@ export default class MessageService {
 		for (const player of Players.GetPlayers()) {
 			this.SendMessageToPlayer(player, message);
 		}
+	}
+
+	/**
+	 * Register MessageService interface with ServiceRegistry for loose coupling
+	 */
+	private registerWithServiceRegistry(): void {
+		const ops: IMessageOperations = {
+			sendInfoToPlayer: (player: Player, message: string) => this.SendInfoToPlayer(player, message),
+			sendWarningToPlayer: (player: Player, message: string) => this.SendMessageToPlayer(player, {
+				severity: "warning",
+				content: message,
+				id: "",
+				timestamp: DateTime.now().UnixTimestamp,
+				title: "Warning",
+				textColor: new Color3(0.8, 0.6, 0.2),
+			}),
+			sendErrorToPlayer: (player: Player, message: string) => this.SendErrorToPlayer(player, message),
+			sendServerWideMessage: (message: string) => this.SendServerWideMessage({
+				severity: "info",
+				content: message,
+				id: "",
+				timestamp: DateTime.now().UnixTimestamp,
+				title: "Server",
+				textColor: new Color3(0.6, 0.6, 0.6),
+			}),
+		};
+		ServiceRegistryInstance.registerService<IMessageOperations>("MessageOperations", ops);
 	}
 
 	private destroyInternal() {

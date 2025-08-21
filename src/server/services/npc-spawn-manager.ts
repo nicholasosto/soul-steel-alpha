@@ -22,9 +22,8 @@
  * - `RunService.Heartbeat` - Drives respawn timers and area monitoring
  */
 
-import { RunService, Workspace } from "@rbxts/services";
-import { UnifiedNPCServiceInstance, type NPCConfig, type UnifiedNPCEntity } from "./unified-npc-service";
-import { ZoneServiceInstance } from "./zone-service";
+import { RunService, Workspace, HttpService } from "@rbxts/services";
+import { type NPCConfig, type UnifiedNPCEntity } from "./unified-npc-service";
 import { SignalServiceInstance } from "./signal-service";
 import { ZoneKey } from "shared/keys";
 
@@ -82,6 +81,14 @@ interface ManagedSpawnArea {
 	lastPlayerCheck: number;
 }
 
+interface PendingNPCRequest {
+	requestId: string;
+	areaId: string;
+	npcConfig: NPCSpawnConfig;
+	position: Vector3;
+	timestamp: number;
+}
+
 // =============================================================================
 // NPC SPAWN MANAGER SERVICE
 // =============================================================================
@@ -89,6 +96,7 @@ interface ManagedSpawnArea {
 export class NPCSpawnManager {
 	private static instance: NPCSpawnManager;
 	private spawnAreas = new Map<string, ManagedSpawnArea>();
+	private pendingRequests = new Map<string, PendingNPCRequest>();
 	private initialized = false;
 	private heartbeatConnection?: RBXScriptConnection;
 
@@ -164,7 +172,7 @@ export class NPCSpawnManager {
 
 		// Despawn all NPCs in this area
 		for (const [npcId, npc] of area.activeNPCs) {
-			UnifiedNPCServiceInstance.DespawnNPC(npcId);
+			SignalServiceInstance.emit("NPCDespawnRequested", { npcId });
 		}
 
 		// Clear timers
@@ -194,7 +202,7 @@ export class NPCSpawnManager {
 		if (!active) {
 			// Despawn all NPCs when deactivating
 			for (const [npcId, npc] of area.activeNPCs) {
-				UnifiedNPCServiceInstance.DespawnNPC(npcId);
+				SignalServiceInstance.emit("NPCDespawnRequested", { npcId });
 			}
 			area.activeNPCs.clear();
 			area.respawnTimers.clear();
@@ -265,6 +273,16 @@ export class NPCSpawnManager {
 
 		SignalServiceInstance.connect("ZonePlayerExited", (data) => {
 			this.handlePlayerZoneChange(data.player, data.zoneKey, false);
+		});
+
+		// Listen for NPC spawn completion
+		SignalServiceInstance.connect("NPCSpawnCompleted", (data) => {
+			this.handleNPCSpawnCompleted(data.npcEntity, data.requestId);
+		});
+
+		// Listen for NPC despawn completion
+		SignalServiceInstance.connect("NPCDespawnCompleted", (data) => {
+			this.handleNPCDespawnCompleted(data.npcId, data.requestId);
 		});
 	}
 
@@ -353,15 +371,25 @@ export class NPCSpawnManager {
 	}
 
 	private spawnNPCAtPosition(area: ManagedSpawnArea, npcConfig: NPCSpawnConfig, position: Vector3): void {
-		const npc = UnifiedNPCServiceInstance.SpawnNPC(npcConfig.npcType, position, npcConfig.config);
-		if (npc !== undefined) {
-			area.activeNPCs.set(npc.npcId, npc);
-			SignalServiceInstance.emit("NPCSpawned", {
-				areaId: area.config.id,
-				npcId: npc.npcId,
-				npcType: npcConfig.npcType,
-			});
-		}
+		// Generate unique request ID
+		const requestId = HttpService.GenerateGUID(false);
+		
+		// Store pending request
+		this.pendingRequests.set(requestId, {
+			requestId,
+			areaId: area.config.id,
+			npcConfig,
+			position,
+			timestamp: tick(),
+		});
+
+		// Emit spawn request signal
+		SignalServiceInstance.emit("NPCSpawnRequested", {
+			npcType: npcConfig.npcType,
+			position,
+			config: npcConfig.config,
+			requestId,
+		});
 	}
 
 	private handleNPCDefeated(npcName: string): void {
@@ -514,6 +542,48 @@ export class NPCSpawnManager {
 		}
 
 		this.initialized = false;
+	}
+
+	/**
+	 * Handle NPC spawn completion from UnifiedNPCService
+	 */
+	private handleNPCSpawnCompleted(npcEntity: unknown, requestId: string): void {
+		const request = this.pendingRequests.get(requestId);
+		if (!request) {
+			warn(`NPCSpawnManager: Received spawn completion for unknown request ${requestId}`);
+			return;
+		}
+
+		// Remove pending request
+		this.pendingRequests.delete(requestId);
+
+		// Find the area and add the NPC
+		const area = this.spawnAreas.get(request.areaId);
+		if (area && npcEntity && (npcEntity as any).npcId) {
+			const npc = npcEntity as UnifiedNPCEntity;
+			area.activeNPCs.set(npc.npcId, npc);
+			
+			// Emit spawned signal
+			SignalServiceInstance.emit("NPCSpawned", {
+				areaId: request.areaId,
+				npcId: npc.npcId,
+				npcType: request.npcConfig.npcType,
+			});
+		}
+	}
+
+	/**
+	 * Handle NPC despawn completion from UnifiedNPCService
+	 */
+	private handleNPCDespawnCompleted(npcId: string, requestId?: string): void {
+		// Find and remove the NPC from relevant areas
+		for (const [areaId, area] of this.spawnAreas) {
+			if (area.activeNPCs.has(npcId)) {
+				area.activeNPCs.delete(npcId);
+				SignalServiceInstance.emit("NPCDespawned", { areaId, npcId });
+				break;
+			}
+		}
 	}
 }
 

@@ -23,9 +23,10 @@ import { Players, RunService, Workspace } from "@rbxts/services";
 import { cloneNPCModel, NPC_MODEL_CATALOG, type NPCModelKey } from "shared/catalogs/npc-model-catalog";
 import { isSSEntity } from "shared/helpers/type-guards";
 import { SSEntity } from "shared/types";
+import { SignalServiceInstance } from "./signal-service";
 // Import services for enhanced mode
 //import { CombatServiceInstance } from "./combat-service";
-import { ResourceServiceInstance } from "./resource-service";
+// ResourceService would be accessed via signals when needed
 
 // =============================================================================
 // TYPES & INTERFACES
@@ -213,6 +214,9 @@ class UnifiedNPCService {
 		if (this.initialized) return;
 		this.initialized = true;
 
+		// Set up signal handling for NPC lifecycle requests
+		this.setupSignalHandling();
+
 		const anchors = this.findSpawnAnchors();
 		if (anchors.size() === 0) {
 			warn("UnifiedNPCService: No SpawnLocation or 'SpawnPoint' anchors found in Workspace.");
@@ -224,6 +228,47 @@ class UnifiedNPCService {
 		}
 
 		print(`UnifiedNPCService: Spawned NPCs at ${anchors.size()} spawn anchor(s).`);
+	}
+
+	/**
+	 * Set up signal handling for NPC lifecycle requests
+	 */
+	private setupSignalHandling(): void {
+		// Listen for NPC spawn requests
+		SignalServiceInstance.connect("NPCSpawnRequested", (data) => {
+			this.handleSpawnRequest(data.npcType, data.position, data.config, data.requestId);
+		});
+
+		// Listen for NPC despawn requests
+		SignalServiceInstance.connect("NPCDespawnRequested", (data) => {
+			this.handleDespawnRequest(data.npcId, data.requestId);
+		});
+	}
+
+	/**
+	 * Handle spawn request from NPCSpawnManager
+	 */
+	private handleSpawnRequest(npcType: string, position: Vector3, config: unknown, requestId: string): void {
+		const npc = this.SpawnNPC(npcType, position, config as NPCConfig | undefined);
+		
+		// Emit completion signal
+		SignalServiceInstance.emit("NPCSpawnCompleted", {
+			npcEntity: npc,
+			requestId,
+		});
+	}
+
+	/**
+	 * Handle despawn request from NPCSpawnManager
+	 */
+	private handleDespawnRequest(npcId: string, requestId?: string): void {
+		const success = this.DespawnNPC(npcId);
+		
+		// Emit completion signal
+		SignalServiceInstance.emit("NPCDespawnCompleted", {
+			npcId,
+			requestId,
+		});
 	}
 
 	/** Find SpawnLocations or parts named 'SpawnPoint' as anchors */
