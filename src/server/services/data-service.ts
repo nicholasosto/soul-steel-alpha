@@ -28,6 +28,7 @@ import {
 	makeDefaultPlayerControls,
 	AbilityKey,
 } from "shared";
+import { makeDefaultAttributeDTO } from "shared/catalogs/attribute-catalog";
 import { DataRemotes } from "shared/network/data-remotes";
 import { ProfileRemotes } from "shared/network/profile-remotes";
 import { ControlsRemotes } from "shared/network/controls-remotes";
@@ -50,6 +51,7 @@ DataRemotes.Server.Get("GET_PLAYER_DATA").SetCallback((player) => {
 
 const DefaultData: PersistantPlayerData = {
 	Abilities: makeDefaultAbilityDTO(),
+	Attributes: makeDefaultAttributeDTO(),
 	Progression: makeDefaultPlayerProgression(),
 	Controls: makeDefaultPlayerControls(),
 };

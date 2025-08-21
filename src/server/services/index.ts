@@ -11,6 +11,7 @@ export * from "./progression-service";
 export * from "./unified-npc-service";
 export * from "./resource-service";
 export * from "./spawn-service";
+export * from "./respawn-service";
 export * from "./zone-service";
 export * from "./signal-service";
 export * from "./service-interfaces";

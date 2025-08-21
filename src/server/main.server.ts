@@ -11,6 +11,7 @@ import {
 	UnifiedNPCServiceInstance,
 	ZoneServiceInstance,
 	NPCSpawnManagerInstance,
+	RespawnServiceInstance,
 } from "./services";
 import { initializeExampleSpawnAreas } from "./services/npc-spawn-examples";
 import { CombatServiceInstance } from "./services/combat-service";

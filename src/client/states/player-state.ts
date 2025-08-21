@@ -19,8 +19,10 @@ import {
 	RESOURCE_KEYS,
 	ResourceKey,
 } from "shared/catalogs/resources-catalog";
+import { ATTRIBUTE_KEYS, AttributeDTO, AttributeKey, makeDefaultAttributeDTO } from "shared/catalogs/attribute-catalog";
 import { DataRemotes } from "shared/network/data-remotes";
 import { ProgressionRemotes } from "shared/network/progression-remotes";
+import { AttributeRemotes } from "shared/network/attribute-remotes";
 
 const fetchPersistantData = DataRemotes.Client.Get("GET_PLAYER_DATA");
 const PlayerDataUpdated = DataRemotes.Client.Get("PLAYER_DATA_UPDATED");
@@ -37,6 +39,10 @@ class PlayerState {
 	private player: Player = Players.LocalPlayer;
 	public Resources: ResourceStateMap = makeResourceStateFromDTO(makeDefaultResourceDTO());
 	public Abilities: AbilitiesState = createAbilitiesState();
+
+	// Core attribute state (primary stats): reactive number for each attribute
+	public Attributes: { [key in AttributeKey]: Value<number> } =
+		PlayerState.makeAttributeStateFromDTO(makeDefaultAttributeDTO());
 
 	// Progression state - separated from resources
 	public Progression: {
@@ -91,6 +97,14 @@ class PlayerState {
 			}
 		});
 
+		// Setup attribute update listener
+		const AttributesUpdated = AttributeRemotes.Client.Get("AttributesUpdated");
+		AttributesUpdated.Connect((values) => {
+			if (values !== undefined) {
+				this.SetAttributes(PlayerState.mapAttributeValuesToDTO(values));
+			}
+		});
+
 		LevelUp.Connect((newLevel, progression) => {
 			this.SetProgression(progression);
 			print(`🎉 Level Up! You are now level ${newLevel}!`);
@@ -117,6 +131,8 @@ class PlayerState {
 		const dataPromise = fetchPersistantData.CallServerAsync();
 		const resourcesPromise = FetchResources.CallServerAsync();
 		const progressionPromise = FetchProgression.CallServerAsync();
+		const fetchAttributes = AttributeRemotes.Client.Get("FetchAttributes");
+		const attributesPromise = fetchAttributes.CallServerAsync();
 
 		dataPromise
 			.then((data) => {
@@ -152,7 +168,41 @@ class PlayerState {
 			})
 			.catch((err) => warn("FetchProgression failed:", err));
 
+		attributesPromise
+			.then((attributes) => {
+				if (attributes !== undefined) {
+					this.instance?.SetAttributes(attributes as unknown as AttributeDTO);
+					print("Player attributes initialized:", attributes);
+				} else {
+					warn("No player attributes received.");
+				}
+			})
+			.catch((err) => warn("FetchAttributes failed:", err));
+
 		return this.GetInstance();
+	}
+
+	/** Build a new reactive attribute state map from a DTO */
+	private static makeAttributeStateFromDTO(dto: AttributeDTO): { [key in AttributeKey]: Value<number> } {
+		const map = {} as { [key in AttributeKey]: Value<number> };
+		for (const key of ATTRIBUTE_KEYS) {
+			map[key] = Value(dto[key]);
+		}
+		return map;
+	}
+
+	/**
+	 * Convert AttributeRemotes payload (external type) to our AttributeDTO shape
+	 * Only copies known ATTRIBUTE_KEYS and ignores others safely.
+	 */
+	private static mapAttributeValuesToDTO(values: unknown): AttributeDTO {
+		const dto = makeDefaultAttributeDTO();
+		const record = values as unknown as Record<string, unknown>;
+		for (const key of ATTRIBUTE_KEYS) {
+			const v = record[key];
+			if (typeOf(v) === "number") dto[key] = v as number;
+		}
+		return dto;
 	}
 
 	public SetPersistentData(data: PersistantPlayerData): void {
@@ -203,6 +253,33 @@ class PlayerState {
 			print("Player resources set (merged into existing state):", resources);
 		} else {
 			warn("No player resources provided.");
+		}
+	}
+
+	/** Replace current attribute values with provided values (keys merged, Values preserved) */
+	public SetAttributes(attributes: AttributeDTO): void {
+		if (attributes === undefined) {
+			warn("No attributes provided.");
+			return;
+		}
+		for (const key of ATTRIBUTE_KEYS) {
+			const incoming = attributes[key];
+			const current = this.Attributes[key];
+			if (incoming !== undefined && current !== undefined) {
+				current.set(incoming);
+			}
+		}
+	}
+
+	/** Apply partial attribute updates from server push */
+	public UpdateAttributes(partial: Partial<Record<AttributeKey, number>>): void {
+		if (partial === undefined) return;
+		for (const key of ATTRIBUTE_KEYS) {
+			const value = partial[key];
+			if (value !== undefined) {
+				const state = this.Attributes[key];
+				if (state !== undefined) state.set(value);
+			}
 		}
 	}
 
@@ -258,6 +335,21 @@ class PlayerState {
 			const nextLevelExp = this.Progression.NextLevelExperience.get();
 			return nextLevelExp > 0 ? exp / nextLevelExp : 0;
 		});
+	}
+
+	// Attribute accessors
+	public getAttributeValue(key: AttributeKey): Value<number> {
+		const v = this.Attributes[key];
+		if (v !== undefined) return v;
+		// This should not happen if ATTRIBUTE_KEYS are stable; create a Value as fallback
+		const created = Value(0);
+		// Invariant: only created for unknown keys; no catalog key should hit this path
+		return created;
+	}
+
+	/** UI helper: alias for getAttributeValue to match existing panel code */
+	public A(key: AttributeKey): Value<number> {
+		return this.getAttributeValue(key);
 	}
 }
 export const PlayerStateInstance = PlayerState.GetInstance();

@@ -1,7 +1,7 @@
 import { Children, New } from "@rbxts/fusion";
 import { CharacterCardInstance } from "./hud-components";
 import { AbilityBar } from "./hud-components/AbilityBar";
-import { PlayerDataPanel } from "./panels";
+import { AttributeRow, PlayerDataPanel } from "./panels";
 
 export function createPlayerHUD(parent: Instance): ScreenGui {
 	return New("ScreenGui")({
@@ -14,7 +14,7 @@ export function createPlayerHUD(parent: Instance): ScreenGui {
 			//Panel: PanelTest,
 			CharacterInfoCard: CharacterCardInstance,
 			AbilityBar: AbilityBar(["Earthquake", "Melee", "Ice-Rain", "Soul-Drain"]),
-			PlayerPanel: PlayerDataPanel,
+			PlayerPanel: PlayerDataPanel(),
 		},
 	});
 }
