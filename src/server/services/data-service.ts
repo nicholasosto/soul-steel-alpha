@@ -24,7 +24,7 @@ import { Players } from "@rbxts/services";
 import {
 	makeDefaultAbilityDTO,
 	makeDefaultPlayerProgression,
-	PersistantPlayerData,
+	PersistentPlayerData,
 	makeDefaultPlayerControls,
 	AbilityKey,
 } from "shared";
@@ -41,7 +41,7 @@ import { ABILITY_KEYS } from "shared/catalogs/ability-catalog";
 DataRemotes.Server.Get("GET_PLAYER_DATA").SetCallback((player) => {
 	const profile = DataServiceInstance.GetProfile(player);
 	if (profile !== undefined) {
-		const persistantData = profile.Data as PersistantPlayerData;
+		const persistantData = profile.Data as PersistentPlayerData;
 		return persistantData || undefined;
 	} else {
 		warn(`No profile found for player ${player.Name} when requesting data.`);
@@ -49,7 +49,7 @@ DataRemotes.Server.Get("GET_PLAYER_DATA").SetCallback((player) => {
 	}
 });
 
-const DefaultData: PersistantPlayerData = {
+const DefaultData: PersistentPlayerData = {
 	Abilities: makeDefaultAbilityDTO(),
 	Attributes: makeDefaultAttributeDTO(),
 	Progression: makeDefaultPlayerProgression(),
@@ -62,7 +62,7 @@ const DATASTORE_NAME = "A_SoulSteelPlayerProfile";
 class DataService {
 	private static instance?: DataService;
 	private _profileStore = ProfileService.GetProfileStore(DATASTORE_NAME, DefaultData);
-	private profiles: Map<Player, Profile<PersistantPlayerData>> = new Map();
+	private profiles: Map<Player, Profile<PersistentPlayerData>> = new Map();
 	// Simple in-memory rate limiter for save calls (per player)
 	private lastHotkeySave: Map<Player, number> = new Map();
 
@@ -221,10 +221,10 @@ class DataService {
 			this.profiles.delete(player);
 		}
 	}
-	public GetProfile(player: Player): Profile<PersistantPlayerData> | undefined {
+	public GetProfile(player: Player): Profile<PersistentPlayerData> | undefined {
 		return this.profiles.get(player);
 	}
-	public GetAbilities(player: Player): PersistantPlayerData["Abilities"] | undefined {
+	public GetAbilities(player: Player): PersistentPlayerData["Abilities"] | undefined {
 		const profile = this.GetProfile(player);
 		if (profile) {
 			return profile.Data.Abilities;
@@ -233,7 +233,7 @@ class DataService {
 		return undefined;
 	}
 
-	public GetProgression(player: Player): PersistantPlayerData["Progression"] | undefined {
+	public GetProgression(player: Player): PersistentPlayerData["Progression"] | undefined {
 		const profile = this.GetProfile(player);
 		if (profile) {
 			return profile.Data.Progression;
@@ -242,7 +242,7 @@ class DataService {
 		return undefined;
 	}
 
-	public UpdateProgression(player: Player, progressionData: Partial<PersistantPlayerData["Progression"]>): boolean {
+	public UpdateProgression(player: Player, progressionData: Partial<PersistentPlayerData["Progression"]>): boolean {
 		const profile = this.GetProfile(player);
 		if (profile) {
 			// Merge the new progression data with existing data

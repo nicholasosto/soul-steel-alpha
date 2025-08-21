@@ -4,7 +4,7 @@ import {
 	ABILITY_KEYS,
 	AbilitiesState,
 	createAbilitiesState,
-	PersistantPlayerData,
+	PersistentPlayerData,
 	PlayerDTO,
 	SSEntity,
 	PlayerProgression,
@@ -205,7 +205,7 @@ class PlayerState {
 		return dto;
 	}
 
-	public SetPersistentData(data: PersistantPlayerData): void {
+	public SetPersistentData(data: PersistentPlayerData): void {
 		if (data !== undefined) {
 			// Update progression data
 			this.SetProgression(data.Progression);

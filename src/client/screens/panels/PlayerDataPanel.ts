@@ -13,10 +13,10 @@ export const AttributeRow = (key: AttributeKey) => {
 	const row = HStack({
 		children: [
 			icon,
-			Label({variant: 'body',
-				// Computed is a readonly State<string>; Label typing accepts Value<string> only.
-				// Safe cast: Computed behaves as Value for consumption.
+			Label({
+				variant: "body",
 				Size: new UDim2(1, -50, 0, 50),
+				// Use Computed to bind the current attribute value as text
 				text: Computed(
 					() => `${PlayerStateInstance.getAttributeValue(key).get()}`,
 				) as unknown as import("@rbxts/fusion").Value<string>,
@@ -26,7 +26,7 @@ export const AttributeRow = (key: AttributeKey) => {
 	const panel = Panel({
 		padding: 2,
 		Size: UDim2.fromOffset(200, 54),
-		variant: 'surface',
+		variant: "surface",
 		children: [row],
 	});
 	return panel;

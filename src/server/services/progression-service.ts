@@ -29,7 +29,7 @@
  */
 
 import { Players } from "@rbxts/services";
-import { PlayerProgression, PersistantPlayerData } from "shared/types/player-data";
+import { PlayerProgression, PersistentPlayerData } from "shared/types/player-data";
 import { ProgressionRemotes } from "shared/network/progression-remotes";
 import { DataServiceInstance } from "./data-service";
 import { SignalServiceInstance } from "./signal-service";

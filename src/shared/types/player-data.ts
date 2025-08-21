@@ -1,5 +1,5 @@
 import { ResourceDTO, ResourceStateMap } from "shared/catalogs/resources-catalog";
-import { AbilitiesState, AbilityDTO, ABILITY_KEYS, AbilityKey } from "shared/catalogs";
+import { AbilitiesState, AbilityDTO, AbilityKey } from "shared/catalogs";
 import { AttributeDTO } from "shared/catalogs/attribute-catalog";
 import { Value } from "@rbxts/fusion";
 
@@ -9,22 +9,18 @@ export interface PlayerProgression {
 	NextLevelExperience: number; // Experience required for the next level
 }
 
-export interface PersistantPlayerData {
+export interface PersistentPlayerData {
 	Abilities: AbilityDTO; // Player's abilities and their levels
 	Attributes: AttributeDTO; // Core attributes (Strength, Agility, etc.)
 	Progression: PlayerProgression; // Player's progression data
 	Controls?: PlayerControlsData; // Optional until migration complete
 }
 
-export interface PlayerDTO extends PersistantPlayerData {
+export interface PlayerDTO extends PersistentPlayerData {
 	Resources: ResourceDTO; // Player's resources like health, mana, etc.
 }
 
-export interface PlayerStateInterface {
-	Level: Value<number>; // Reactive level value
-	Abilities: AbilitiesState;
-	Resources: ResourceStateMap;
-}
+// Note: Client state shape lives in client/state; avoid shared coupling
 
 /** Mapping from keyboard key name (Enum.KeyCode.Name) to an AbilityKey */
 export type AbilityHotkeyMap = Partial<Record<string, AbilityKey>>;
