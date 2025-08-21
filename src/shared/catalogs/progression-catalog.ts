@@ -1,0 +1,1 @@
+export const PROGRESSION_KEYS = ["Experience", "Level", "AttributePoints"] as const;

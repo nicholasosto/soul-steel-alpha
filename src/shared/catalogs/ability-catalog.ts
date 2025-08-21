@@ -110,7 +110,7 @@ export type AbilitiesState = {
 	[key in AbilityKey]: Value<number>; // Reactive level value for the ability
 };
 
-export const createAbilitiesState = (): AbilitiesState => {
+export const makeDefaultAbilitiesState = (): AbilitiesState => {
 	const abilitiesState: AbilitiesState = {} as AbilitiesState;
 	for (const key of ABILITY_KEYS) {
 		abilitiesState[key] = Value(0); // Initialize each ability with a default level of 0

@@ -100,6 +100,10 @@ export const makeResourceStateFromDTO = (dto: ResourceDTO): ResourceStateMap => 
 	return resourceState;
 };
 
+export const makeDefaultResourceState = (): ResourceStateMap => {
+	return makeResourceStateFromDTO(makeDefaultResourceDTO());
+};
+
 /* -- Remotes -- */
 export const ResourceRemotes = Definitions.Create({
 	FetchResources: Definitions.ServerAsyncFunction<() => ResourceDTO>(),

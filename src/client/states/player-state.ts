@@ -3,7 +3,7 @@ import { Players } from "@rbxts/services";
 import {
 	ABILITY_KEYS,
 	AbilitiesState,
-	createAbilitiesState,
+	makeDefaultAbilitiesState,
 	PersistentPlayerData,
 	PlayerDTO,
 	SSEntity,
@@ -18,6 +18,7 @@ import {
 	ResourceDTO,
 	RESOURCE_KEYS,
 	ResourceKey,
+	makeDefaultResourceState,
 } from "shared/catalogs/resources-catalog";
 import { ATTRIBUTE_KEYS, AttributeDTO, AttributeKey, makeDefaultAttributeDTO } from "shared/catalogs/attribute-catalog";
 import { CURRENCY_KEYS, CurrencyDTO, CurrencyKey, makeDefaultCurrencyDTO } from "shared/catalogs/currency-catalog";
@@ -38,13 +39,11 @@ const LevelUp = ProgressionRemotes.Client.Get("LEVEL_UP");
 class PlayerState {
 	private static instance?: PlayerState;
 	private player: Player = Players.LocalPlayer;
-	public Resources: ResourceStateMap = makeResourceStateFromDTO(makeDefaultResourceDTO());
-	public Abilities: AbilitiesState = createAbilitiesState();
+	public Resources: ResourceStateMap = makeDefaultResourceState();
+	public Abilities: AbilitiesState = makeDefaultAbilitiesState();
 
 	// Core attribute state (primary stats): reactive number for each attribute
-	public Attributes: { [key in AttributeKey]: Value<number> } =
-		PlayerState.makeAttributeStateFromDTO(makeDefaultAttributeDTO());
-
+	public Attributes: AbilitiesState = makeDefaultAbilitiesState();
 	// Currency state (reactive amount per currency key)
 	public Currency: { [key in CurrencyKey]: Value<number> } =
 		PlayerState.makeCurrencyStateFromDTO(makeDefaultCurrencyDTO());

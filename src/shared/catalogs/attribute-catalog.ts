@@ -6,6 +6,7 @@
  * Defines base character attributes and default values for persistence/UI.
  */
 
+import { Value } from "@rbxts/fusion";
 import { ImageConstants } from "shared/asset-ids";
 
 export const ATTRIBUTE_KEYS = ["Strength", "Agility", "Intelligence", "Vitality", "Spirit", "Luck"] as const;
@@ -22,6 +23,10 @@ export interface AttributeDisplayMeta {
 
 export type AttributeDTO = {
 	[key in AttributeKey]: number;
+};
+
+export type AttributeState = {
+	[key in AttributeKey]: Value<number>;
 };
 
 export const AttributeCatalog: Record<AttributeKey, AttributeDisplayMeta> = {
@@ -62,4 +67,20 @@ export function makeDefaultAttributeDTO(): AttributeDTO {
 	const dto: AttributeDTO = {} as AttributeDTO;
 	for (const key of ATTRIBUTE_KEYS) dto[key] = 5;
 	return dto;
+}
+
+export function makeAttributeStateFromDTO(dto: AttributeDTO): AttributeState {
+	const state: AttributeState = {} as AttributeState;
+	for (const key of ATTRIBUTE_KEYS) {
+		state[key] = Value(dto[key]);
+	}
+	return state;
+}
+
+export function makeDefaultAttributeState(): AttributeState {
+	const state: AttributeState = {} as AttributeState;
+	for (const key of ATTRIBUTE_KEYS) {
+		state[key] = Value(5);
+	}
+	return state;
 }

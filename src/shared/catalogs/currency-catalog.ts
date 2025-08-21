@@ -1,4 +1,5 @@
-import { Value, Computed } from "@rbxts/fusion";
+import { Value } from "@rbxts/fusion";
+import { ImageConstants } from "shared/asset-ids";
 export const CURRENCY_KEYS = ["Coins", "Tombs", "AttributePoints"] as const;
 export type CurrencyKey = (typeof CURRENCY_KEYS)[number];
 export interface CurrencyMeta {
@@ -11,14 +12,44 @@ export type CurrencyDTO = {
 	[key in CurrencyKey]: number; // Maps each currency key to its current amount
 };
 export type CurrencyState = {
-	meta: CurrencyMeta; // Metadata for the currency
-	current: Value<number>; // Current amount of the currency
-	percentage: Computed<number>; // Percentage of current/max (0-1)
+	[key in CurrencyKey]: Value<number>; // Reactive value for each currency
 };
+
 export function makeDefaultCurrencyDTO(): CurrencyDTO {
 	return {
-		Coins: 0,
-		Tombs: 0,
-		AttributePoints: 0,
+		Coins: 140,
+		Tombs: 2,
+		AttributePoints: 14,
 	};
 }
+export function makeCurrencyStateFromDTO(dto: CurrencyDTO): CurrencyState {
+	const state: CurrencyState = {} as CurrencyState;
+	for (const key of CURRENCY_KEYS) {
+		state[key] = Value(dto[key]);
+	}
+	return state;
+}
+export function makeDefaultCurrencyState(): CurrencyState {
+	return makeCurrencyStateFromDTO(makeDefaultCurrencyDTO());
+}
+
+export const CurrencyCatalog: Record<CurrencyKey, CurrencyMeta> = {
+	Coins: {
+		displayName: "Coins",
+		description: "The primary currency used for transactions.",
+		icon: ImageConstants.Currency.Coins,
+		color: Color3.fromRGB(255, 215, 0),
+	},
+	Tombs: {
+		displayName: "Tombs",
+		description: "A currency used for purchasing special items.",
+		icon: ImageConstants.Currency.Tombs,
+		color: Color3.fromRGB(128, 0, 128),
+	},
+	AttributePoints: {
+		displayName: "Attribute Points",
+		description: "Points used to upgrade player attributes.",
+		icon: ImageConstants.Ability.Melee, //TODO: create Attribute point icon
+		color: Color3.fromRGB(0, 255, 0),
+	},
+};
