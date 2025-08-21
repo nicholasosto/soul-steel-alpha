@@ -15,3 +15,10 @@ export type CurrencyState = {
 	current: Value<number>; // Current amount of the currency
 	percentage: Computed<number>; // Percentage of current/max (0-1)
 };
+export function makeDefaultCurrencyDTO(): CurrencyDTO {
+	return {
+		Coins: 0,
+		Tombs: 0,
+		AttributePoints: 0,
+	};
+}

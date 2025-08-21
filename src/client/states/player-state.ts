@@ -20,6 +20,7 @@ import {
 	ResourceKey,
 } from "shared/catalogs/resources-catalog";
 import { ATTRIBUTE_KEYS, AttributeDTO, AttributeKey, makeDefaultAttributeDTO } from "shared/catalogs/attribute-catalog";
+import { CURRENCY_KEYS, CurrencyDTO, CurrencyKey, makeDefaultCurrencyDTO } from "shared/catalogs/currency-catalog";
 import { DataRemotes } from "shared/network/data-remotes";
 import { ProgressionRemotes } from "shared/network/progression-remotes";
 import { AttributeRemotes } from "shared/network/attribute-remotes";
@@ -44,6 +45,10 @@ class PlayerState {
 	public Attributes: { [key in AttributeKey]: Value<number> } =
 		PlayerState.makeAttributeStateFromDTO(makeDefaultAttributeDTO());
 
+	// Currency state (reactive amount per currency key)
+	public Currency: { [key in CurrencyKey]: Value<number> } =
+		PlayerState.makeCurrencyStateFromDTO(makeDefaultCurrencyDTO());
+
 	// Progression state - separated from resources
 	public Progression: {
 		Level: Value<number>;
@@ -56,9 +61,6 @@ class PlayerState {
 	// Current hover/candidate target (aiming). Reactive for UI.
 	public hoverTarget: Value<SSEntity | undefined> = Value<SSEntity | undefined>(undefined);
 
-	// Legacy Level accessor for backwards compatibility
-	public Level: Value<number>;
-
 	// Helper: apply a single resource update safely
 	private applyResource(key: ResourceKey, dto?: { current: number; max: number }): void {
 		if (dto === undefined) return;
@@ -69,6 +71,15 @@ class PlayerState {
 		}
 	}
 
+	/** Build a new reactive currency state map from a DTO */
+	private static makeCurrencyStateFromDTO(dto: CurrencyDTO): { [key in CurrencyKey]: Value<number> } {
+		const map = {} as { [key in CurrencyKey]: Value<number> };
+		for (const key of CURRENCY_KEYS) {
+			map[key] = Value(dto[key]);
+		}
+		return map;
+	}
+
 	private constructor(playerData?: PlayerDTO) {
 		// Initialize progression state with defaults
 		const defaultProgression = makeDefaultPlayerProgression();
@@ -77,9 +88,6 @@ class PlayerState {
 			Experience: Value(defaultProgression.Experience),
 			NextLevelExperience: Value(defaultProgression.NextLevelExperience),
 		};
-
-		// Legacy Level accessor points to Progression.Level
-		this.Level = this.Progression.Level;
 
 		warn("PlayerState initialized for", this.player.Name, "with data:", playerData);
 
@@ -219,6 +227,8 @@ class PlayerState {
 					abilityState.set(value);
 				}
 			}
+			// Update currency from persistent profile
+			this.SetCurrency(data.Currency);
 			print("Player data set:", data);
 		} else {
 			warn("No player data provided.");
@@ -290,6 +300,41 @@ class PlayerState {
 			const dto = resourceDTO[key];
 			if (dto !== undefined) this.applyResource(key, dto);
 		}
+	}
+
+	/** Replace current currency values with provided values (keys merged, Values preserved) */
+	public SetCurrency(currency: CurrencyDTO): void {
+		if (currency === undefined) {
+			warn("No currency provided.");
+			return;
+		}
+		for (const key of CURRENCY_KEYS) {
+			const incoming = currency[key];
+			const current = this.Currency[key];
+			if (incoming !== undefined && current !== undefined) {
+				current.set(incoming);
+			}
+		}
+	}
+
+	/** Apply partial currency updates from server push */
+	public UpdateCurrency(partial: Partial<Record<CurrencyKey, number>>): void {
+		if (partial === undefined) return;
+		for (const key of CURRENCY_KEYS) {
+			const value = partial[key];
+			if (value !== undefined) {
+				const state = this.Currency[key];
+				if (state !== undefined) state.set(value);
+			}
+		}
+	}
+
+	/** Access a reactive currency value by key */
+	public getCurrency(key: CurrencyKey): Value<number> {
+		const v = this.Currency[key];
+		if (v !== undefined) return v;
+		// Invariant: only created for unknown keys; no catalog key should hit this path
+		return Value(0);
 	}
 
 	public getComputedLabel(key: keyof ResourceStateMap): Computed<string> {

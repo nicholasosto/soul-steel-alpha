@@ -60,6 +60,6 @@ export const AttributeCatalog: Record<AttributeKey, AttributeDisplayMeta> = {
 /** Create a default AttributeDTO with all attributes set to 0 */
 export function makeDefaultAttributeDTO(): AttributeDTO {
 	const dto: AttributeDTO = {} as AttributeDTO;
-	for (const key of ATTRIBUTE_KEYS) dto[key] = 0;
+	for (const key of ATTRIBUTE_KEYS) dto[key] = 5;
 	return dto;
 }

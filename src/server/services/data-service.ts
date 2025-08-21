@@ -36,6 +36,7 @@ import type { ProfileSummaryDTO } from "shared/dtos/profile-dtos";
 import { ServiceRegistryInstance } from "./service-registry";
 import { IDataOperations } from "./service-interfaces";
 import { ABILITY_KEYS } from "shared/catalogs/ability-catalog";
+import { makeDefaultCurrencyDTO } from "shared/catalogs/currency-catalog";
 
 /* Remotes */
 DataRemotes.Server.Get("GET_PLAYER_DATA").SetCallback((player) => {
@@ -52,6 +53,7 @@ DataRemotes.Server.Get("GET_PLAYER_DATA").SetCallback((player) => {
 const DefaultData: PersistentPlayerData = {
 	Abilities: makeDefaultAbilityDTO(),
 	Attributes: makeDefaultAttributeDTO(),
+	Currency: makeDefaultCurrencyDTO(),
 	Progression: makeDefaultPlayerProgression(),
 	Controls: makeDefaultPlayerControls(),
 };

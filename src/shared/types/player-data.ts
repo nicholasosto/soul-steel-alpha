@@ -2,6 +2,7 @@ import { ResourceDTO, ResourceStateMap } from "shared/catalogs/resources-catalog
 import { AbilitiesState, AbilityDTO, AbilityKey } from "shared/catalogs";
 import { AttributeDTO } from "shared/catalogs/attribute-catalog";
 import { Value } from "@rbxts/fusion";
+import { CurrencyDTO } from "shared/catalogs/currency-catalog";
 
 export interface PlayerProgression {
 	Level: number; // Player's level
@@ -12,6 +13,7 @@ export interface PlayerProgression {
 export interface PersistentPlayerData {
 	Abilities: AbilityDTO; // Player's abilities and their levels
 	Attributes: AttributeDTO; // Core attributes (Strength, Agility, etc.)
+	Currency: CurrencyDTO;
 	Progression: PlayerProgression; // Player's progression data
 	Controls?: PlayerControlsData; // Optional until migration complete
 }
