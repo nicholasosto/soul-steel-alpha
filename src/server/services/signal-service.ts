@@ -67,6 +67,12 @@ export interface ServiceEvents {
 	NPCSpawnAreaCreated: { areaId: string };
 	NPCSpawned: { areaId: string; npcId: string; npcType: string };
 	NPCDespawned: { areaId: string; npcId: string };
+	
+	// NPC Lifecycle Request events (for decoupling)
+	NPCSpawnRequested: { npcType: string; position: Vector3; config?: unknown; requestId: string };
+	NPCDespawnRequested: { npcId: string; requestId?: string };
+	NPCSpawnCompleted: { npcEntity: unknown; requestId: string };
+	NPCDespawnCompleted: { npcId: string; requestId?: string };
 }
 
 export class SignalService {
@@ -111,16 +117,10 @@ export class SignalService {
 			"NPCSpawnAreaCreated",
 			"NPCSpawned",
 			"NPCDespawned",
-			"HealthHealRequested",
-			"ManaConsumed",
-			"ManaRestored",
-			"StaminaConsumed",
-			"StaminaRestored",
-			"HumanoidHealthChanged",
-			"HumanoidDied",
-			"ExperienceAwarded",
-			"LevelUp",
-			"ProgressionUpdated",
+			"NPCSpawnRequested",
+			"NPCDespawnRequested",
+			"NPCSpawnCompleted",
+			"NPCDespawnCompleted",
 		];
 
 		for (const eventKey of eventKeys) {
