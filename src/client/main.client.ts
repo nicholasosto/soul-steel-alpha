@@ -9,16 +9,20 @@
  * @lastUpdated 2025-08-07 - Updated to use consolidated controller architecture
  */
 import { Players } from "@rbxts/services";
+import { startLoader } from "./loader";
 import { ClientController } from "./controllers";
 import { createPlayerHUD } from "./screens";
 import { PlayerStateInstance } from "./states/player-state";
+
+// Start the loading UI immediately; note: module imports are evaluated before this runs in rbxts
+// so this may appear a fraction later than a dedicated bootstrap LocalScript.
+startLoader();
 
 // Player GUI
 const localPlayer = Players.LocalPlayer;
 
 // Initialize the main client controller (this initializes all sub-controllers)
 const clientController = ClientController.initialize();
-clientController.getAbilityController();
 
 // Initialize player state early to subscribe to resource updates
 const _playerState = PlayerStateInstance;
