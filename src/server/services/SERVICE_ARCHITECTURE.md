@@ -114,8 +114,16 @@ ResourceServiceInstance.ModifyResource(player, "health", -amount);
 **Action:** ✅ Added `DamageService` to exports
 
 ### 4. **Signal Integration**
-**Status:** � Complete - Enhanced
+**Status:** ✅ Complete - Enhanced
 **Action:** ✅ Enhanced CombatService and AbilityService with signals
+
+### 5. **Service Decoupling Violations**
+**Status:** ✅ Complete - Fixed
+**Action:** ✅ Removed all direct service dependencies:
+- SpawnService: Uses ServiceRegistry for DataService access
+- CombatService: Uses signals + ServiceRegistry for messaging/damage
+- NPCSpawnManager: Uses signal-based NPC lifecycle management
+- UnifiedNPCService: Removed ResourceService dependency, added signal handlers
 
 ## 📊 **Service Dependencies**
 
