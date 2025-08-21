@@ -41,88 +41,95 @@ This playbook guides a systematic service audit and refactor for Soul Steel Alph
 ## Review checklist
 
 - Structure
-	- Service follows singleton pattern with getInstance().
-	- File naming matches conventions (kebab-case for services).
+  - Service follows singleton pattern with getInstance().
+  - File naming matches conventions (kebab-case for services).
 - API hygiene
-	- Unused public methods removed or made private.
-	- Public methods are PascalCase; private/internal are camelCase.
-	- Public API documented in a dedicated section in the header TSDoc.
+  - Unused public methods removed or made private.
+  - Public methods are PascalCase; private/internal are camelCase.
+  - Public API documented in a dedicated section in the header TSDoc.
 - Patterns and integration
-	- If an interface exists (service-interfaces.ts), register an adapter in Initialize() via service-registry.ts.
-	- @rbxts/net: ServerAsyncFunction signatures return plain types (no Promise wrapper).
-	- Add a DEBUG gate for verbose prints/logs.
+  - If an interface exists (service-interfaces.ts), register an adapter in Initialize() via service-registry.ts.
+  - @rbxts/net: ServerAsyncFunction signatures return plain types (no Promise wrapper).
+  - Add a DEBUG gate for verbose prints/logs.
 - Validation and safety
-	- Use explicit undefined checks; avoid truthy/falsy pitfalls.
-	- Rate-limit client-callable handlers if applicable.
-	- Never trust client input; validate on server.
+  - Use explicit undefined checks; avoid truthy/falsy pitfalls.
+  - Rate-limit client-callable handlers if applicable.
+  - Never trust client input; validate on server.
 
 ### TypeScript vs runtime checks (rbxts specifics)
 
 - When checks are NOT needed
-	- Non-optional values created in the same scope or guaranteed by constructors/Initialize(): no extra undefined check right after creation.
-	- Services acquired via `game.GetService` that are typed as non-optional in rbxts: no existence guard is required.
-	- Constants/catalogs/keys imported with `as const`: do not check for undefined.
+  - Non-optional values created in the same scope or guaranteed by constructors/Initialize(): no extra undefined check right after creation.
+  - Services acquired via `game.GetService` that are typed as non-optional in rbxts: no existence guard is required.
+  - Constants/catalogs/keys imported with `as const`: do not check for undefined.
 
 - When checks ARE required
-	- Optional fields and lookups: `Map.get`, dictionary indexing, `array.find`, or catalog lookups can return `undefined` — check explicitly.
-	- Roblox Instances that can be absent/destroyed: `Player.Character`, `HumanoidRootPart`, `FindFirstChild*` results — check for `undefined` before use.
-	- After yields or asynchronous boundaries: references may be invalidated; re-validate Instances/parts.
-	- Network inputs from clients: always validate (use DTOs and `zod` or centralized type guards in `shared/helpers/type-guards.ts`).
-	- External resources that may not be loaded yet (animations, assets): add readiness checks or loader gates.
+  - Optional fields and lookups: `Map.get`, dictionary indexing, `array.find`, or catalog lookups can return `undefined` — check explicitly.
+  - Roblox Instances that can be absent/destroyed: `Player.Character`, `HumanoidRootPart`, `FindFirstChild*` results — check for `undefined` before use.
+  - After yields or asynchronous boundaries: references may be invalidated; re-validate Instances/parts.
+  - Network inputs from clients: always validate (use DTOs and `zod` or centralized type guards in `shared/helpers/type-guards.ts`).
+  - External resources that may not be loaded yet (animations, assets): add readiness checks or loader gates.
 
 - Practical guidance
-	- Prefer early-return guards with explicit `=== undefined` checks to narrow types.
-	- Avoid truthy/falsy for values that can be 0, "", or false; check exact conditions (e.g., `arr.size() === 0`).
-	- Use the non-null assertion `!` sparingly and only after establishing strong invariants (document why it is safe).
-	- Consider `WaitForChild` when presence is required; otherwise handle missing children gracefully.
+  - Prefer early-return guards with explicit `=== undefined` checks to narrow types.
+  - Avoid truthy/falsy for values that can be 0, "", or false; check exact conditions (e.g., `arr.size() === 0`).
+  - Use the non-null assertion `!` sparingly and only after establishing strong invariants (document why it is safe).
+  - Consider `WaitForChild` when presence is required; otherwise handle missing children gracefully.
 - Documentation
-	- TSDoc header updated with summary, events/remotes (if any), Public API, examples.
-	- Examples reference the singleton instance consistently.
+  - TSDoc header updated with summary, events/remotes (if any), Public API, examples.
+  - Examples reference the singleton instance consistently.
 - Quality gates
-	- Build passes with pnpm run build or the Build rbxts task.
-	- No new lints/types errors (if linters are configured).
+  - Build passes with pnpm run build or the Build rbxts task.
+  - No new lints/types errors (if linters are configured).
 
 ## Step-by-step workflow
 
 1) Discovery
+
 - Skim the target service under src/server/services/. Identify:
-	- Public vs. private methods, event wiring, remotes, and registry usage.
-	- Obvious duplication (rate limiting, spawn checks, loader logic).
+  - Public vs. private methods, event wiring, remotes, and registry usage.
+  - Obvious duplication (rate limiting, spawn checks, loader logic).
 
 2) Analysis
+
 - Note unused public methods (search usages). Consolidate repeated helpers.
 - Confirm interface presence in service-interfaces.ts and registry accessors.
 
 3) Propose changes (small, safe deltas)
+
 - Privatize internals; prune unused APIs.
 - Extract tiny helpers (e.g., rateOk, spawn checks) to de-duplicate.
 - Add DEBUG flag for noisy logs.
 - Prepare an adapter to register into the Service Registry if applicable.
 
 4) Implement
+
 - Make edits in the service file only where necessary; avoid broad reformatting.
 - Add/extend the TSDoc header with a Public API section and examples.
 - Register the interface adapter in Initialize() (method-based, not arrow fields) delegating to the singleton wrappers.
 
 5) Verify
+
 - Build the project to ensure types compile.
 - If changes affect runtime wiring, sanity-check key call paths.
 
 6) Optional: debug tooling
+
 - Add a Studio-only server script under src/server/demos/ for admin/debug commands (e.g., “!combat sessions”).
 - Gate with RunService:IsStudio() and/or an allowlist.
 
 ## Documentation standards
 
 - TSDoc header should contain:
-	- Summary, responsibilities, and key events/remotes.
-	- Public API section: list and describe public methods (inputs/outputs, side-effects, error modes).
-	- Short example demonstrating singleton usage.
+  - Summary, responsibilities, and key events/remotes.
+  - Public API section: list and describe public methods (inputs/outputs, side-effects, error modes).
+  - Short example demonstrating singleton usage.
 
 Example Public API blurb (adapt wording per service):
 
 """
 Public API
+
 - Initialize(): Sets up connections and registers interface adapter.
 - FooBar(entity: SSEntity, options: FooOptions): boolean — Validates and executes X.
 - IsActive(entity: SSEntity): boolean — Read-only query for systems/UI.
@@ -162,10 +169,10 @@ pnpm run build:mcp
 ## Deliverables
 
 - Refactored service with:
-	- Pruned/privatized APIs, small helpers for de-duplication.
-	- Updated TSDoc header with Public API section and examples.
-	- Optional DEBUG gate for logs.
-	- Registry adapter registration when an interface exists.
+  - Pruned/privatized APIs, small helpers for de-duplication.
+  - Updated TSDoc header with Public API section and examples.
+  - Optional DEBUG gate for logs.
+  - Registry adapter registration when an interface exists.
 - Brief change summary and verification notes.
 
 ## PR/commit summary template

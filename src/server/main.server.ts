@@ -80,14 +80,11 @@ spawn(() => {
 });
 
 // Centralized player lifecycle wiring
-const defaultAbilityKeys: AbilityKey[] = ["Melee", "Ice-Rain"];
-
 Players.PlayerAdded.Connect((player) => {
 	print(`Player ${player.Name} joined`);
 	player.CharacterAdded.Connect((character) => {
 		const entity = character as SSEntity;
-		print(`Registering abilities for ${player.Name} → ${entity.Name}`);
-		AbilityServiceInstance.RegisterModel(entity, defaultAbilityKeys);
+		print(`Character ready for ${player.Name} → ${entity.Name}`);
 	});
 
 	// Friendly greeting or initialization message

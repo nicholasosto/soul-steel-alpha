@@ -33,6 +33,7 @@ import { Players } from "@rbxts/services";
 import { isSSEntity } from "shared/helpers/type-guards";
 import { SSEntity } from "shared/types";
 import { PlayerStateInstance } from "client/states/player-state";
+import { AbilityStateInstance } from "client/states";
 
 /**
  * AbilityController handles all ability-related functionality:
@@ -55,9 +56,9 @@ export class AbilityController {
 	private cooldownProgress: Map<AbilityKey, Value<number>> = new Map();
 
 	private constructor() {
-		// Initialize progress values for all abilities
+		// Source progress values from centralized AbilityState
 		for (const abilityKey of ABILITY_KEYS) {
-			this.cooldownProgress.set(abilityKey, Value(0));
+			this.cooldownProgress.set(abilityKey, AbilityStateInstance.getProgressValue(abilityKey));
 		}
 	}
 
@@ -222,9 +223,11 @@ export class AbilityController {
 		const timer = new CooldownTimer(abilityMeta.cooldown);
 		const progressValue = this.cooldownProgress.get(abilityKey)!;
 
-		// Update UI progress whenever timer progress changes
+		// Update UI progress whenever timer progress changes (mirror to AbilityState)
 		const updateProgress = () => {
-			progressValue.set(timer.Progress.get());
+			const p = timer.Progress.get();
+			progressValue.set(p);
+			AbilityStateInstance.setProgress(abilityKey, p);
 		};
 
 		// Start periodic updates
@@ -240,6 +243,7 @@ export class AbilityController {
 		timer.onComplete(() => {
 			task.cancel(updateTask);
 			progressValue.set(0);
+			AbilityStateInstance.reset(abilityKey);
 			this.cooldownTimers.delete(abilityKey);
 			timer.destroy();
 		});
@@ -262,6 +266,7 @@ export class AbilityController {
 			timer.destroy();
 			this.cooldownTimers.delete(abilityKey);
 			this.cooldownProgress.get(abilityKey)?.set(0);
+			AbilityStateInstance.reset(abilityKey);
 			print(`Cancelled cooldown for ${abilityKey}`);
 		}
 	}

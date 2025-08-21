@@ -1,17 +1,17 @@
-import { CooldownButton, HStack } from "@trembus/ss-fusion";
+import { HStack } from "@trembus/ss-fusion";
 import { Value } from "@rbxts/fusion";
 import { AbilityCatalog, AbilityKey } from "shared";
 import { AbilityController } from "client/controllers";
+import { AbilityButton } from "./AbilityButton";
 
 export const AbilityBar = (keys: AbilityKey[]) => {
 	const buttons = keys.map((key) =>
-		CooldownButton({
-			size: "large",
+		AbilityButton({
+			abilityKey: key,
 			icon: AbilityCatalog[key].icon,
 			cooldown: AbilityCatalog[key].cooldown,
-			onClick: () => AbilityController.getInstance().activateAbility(key),
-			showCooldownLabel: true,
-			cooldownLabelText: Value(AbilityCatalog[key].displayName),
+			onActivate: () => AbilityController.getInstance().activateAbility(key),
+			labelText: Value(AbilityCatalog[key].displayName),
 		}),
 	);
 	const hStack = HStack({
