@@ -30,24 +30,15 @@ import {
 } from "shared/catalogs/currency-catalog";
 
 /* Remote Imports*/
-import {
-	ProgressionRemotes,
-	DataRemotes,
-	CurrencyRemotes,
-	AttributeRemotes,
-	ResourceRemotes,
-	SpawnRemotes,
-} from "shared/network";
+import { ProgressionRemotes, DataRemotes, CurrencyRemotes, AttributeRemotes, ResourceRemotes } from "shared/network";
 
 /* Remotes */
-const RequestSpawn = SpawnRemotes.Client.Get("REQUEST_SPAWN");
 const fetchPersistantData = DataRemotes.Client.Get("GET_PLAYER_DATA");
 const PlayerDataUpdated = DataRemotes.Client.Get("PLAYER_DATA_UPDATED");
-const FetchResources = ResourceRemotes.Client.Get("FetchResources");
-const ResourcesUpdated = ResourceRemotes.Client.Get("ResourcesUpdated");
+const ResourcesUpdated = ResourceRemotes.Client.Get("RESOURCES_UPDATED");
 const ProgressionUpdated = ProgressionRemotes.Client.Get("PROGRESSION_UPDATED");
-const AttributesUpdated = AttributeRemotes.Client.Get("AttributesUpdated");
-const CurrencyUpdated = CurrencyRemotes.Client.Get("CurrencyUpdated");
+const AttributesUpdated = AttributeRemotes.Client.Get("ATTRIBUTES_UPDATED");
+const CurrencyUpdated = CurrencyRemotes.Client.Get("CURRENCY_UPDATED");
 
 class PlayerState {
 	private static instance?: PlayerState;
@@ -85,7 +76,6 @@ class PlayerState {
 	private static _initializeData(): PlayerState {
 		// Initialize any necessary connections or listeners here
 		const persistedDataPromise = fetchPersistantData.CallServerAsync();
-		const resourcesPromise = FetchResources.CallServerAsync();
 
 		persistedDataPromise
 			.then((data) => {
@@ -99,14 +89,6 @@ class PlayerState {
 				}
 			})
 			.catch((err) => warn("GET_PLAYER_DATA failed:", err));
-
-		resourcesPromise
-			.then((resources) => {
-				this.GetInstance()._updateResources(resources);
-			})
-			.catch((err) => {
-				warn("FetchResources failed:", err);
-			});
 
 		Observer(this.PlayerStateReady).onChange(() => {
 			if (this.PlayerStateReady.get()) {

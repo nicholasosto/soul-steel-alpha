@@ -15,8 +15,8 @@
 		"moduleDetection": "force",
 		"strict": true,
 		"target": "ESNext",
-		"typeRoots": ["node_modules/@rbxts", "node_modules/@trembus"],
-		
+		"typeRoots": ["node_modules/@rbxts", "node_modules/@trembus", "node_modules/@noxickon"],
+
 		// Temporarily disable strict checks to work around ecosystem issues
 		"skipLibCheck": true,
 		"noImplicitAny": false,

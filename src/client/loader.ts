@@ -1,6 +1,8 @@
 import { Players } from "@rbxts/services";
 import { New, Value } from "@rbxts/fusion";
-import { GameMenu, LoadingScreen } from "./components";
+// Import directly to avoid executing all exports in screens/index (which may import heavier UI)
+import { LoadingScreen } from "./screens/LoadingScreen";
+import { GameMenu } from "./screens/GameMenu";
 import { ProfileRemotes } from "shared/network/profile-remotes";
 import { SpawnRemotes } from "shared/network/spawn-remotes";
 import { DataRemotes } from "shared/network/data-remotes";

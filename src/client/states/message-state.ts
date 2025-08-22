@@ -1,8 +1,9 @@
 import { MessageRemotes } from "shared/network";
 import Fusion, { Children, New, OnEvent, Value } from "@rbxts/fusion";
+import { SIGNAL_KEYS } from "shared";
 
 const Remotes = {
-	SendMessageToPlayer: MessageRemotes.Client.Get("SendMessageToPlayer"),
+	SendMessageToPlayer: MessageRemotes.Client.Get(SIGNAL_KEYS.MESSAGE_SEND),
 };
 
 export class MessageState {

@@ -1,7 +1,7 @@
 import { Children, New } from "@rbxts/fusion";
 import { CharacterCardInstance } from "./hud-components";
 import { AbilityBar } from "./hud-components/AbilityBar";
-import { AttributeRow, PlayerDataPanel } from "./panels";
+import { PlayerDataPanel } from "./panels";
 import { CurrencyDisplay } from "./hud-components/CurrencyDisplay";
 import { PlayerStateInstance } from "client/states";
 

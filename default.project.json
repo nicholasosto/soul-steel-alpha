@@ -27,7 +27,11 @@
 					},
 					"@trembus": {
 						"$path": "node_modules/@trembus"
+					},
+					"@noxickon": {
+						"$path": "node_modules/@noxickon"
 					}
+					
 				}
 			},
 

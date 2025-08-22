@@ -13,6 +13,7 @@ export function LoadingScreen(props?: LoadingScreenProps): Frame {
 		BackgroundTransparency: 0.1,
 		[Children]: {
 			Label: New("TextLabel")({
+				Name: "Label", // Name explicitly for reliable lookup later
 				Size: UDim2.fromScale(1, 0),
 				Position: UDim2.fromScale(0, 0.45),
 				BackgroundTransparency: 1,
@@ -22,6 +23,7 @@ export function LoadingScreen(props?: LoadingScreenProps): Frame {
 				Font: Enum.Font.GothamBold,
 			}),
 			Spinner: New("TextLabel")({
+				Name: "Spinner",
 				Size: UDim2.fromScale(1, 0),
 				Position: UDim2.fromScale(0, 0.52),
 				BackgroundTransparency: 1,

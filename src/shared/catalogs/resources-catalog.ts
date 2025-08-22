@@ -106,12 +106,6 @@ export const makeDefaultResourceState = (): ResourceStateMap => {
 	return makeResourceStateFromDTO(makeDefaultResourceDTO());
 };
 
-/* -- Remotes -- */
-export const ResourceRemotes = Definitions.Create({
-	FetchResources: Definitions.ServerAsyncFunction<() => ResourceDTO>(),
-	ResourcesUpdated: Definitions.ServerToClientEvent<[ResourceDTO]>(),
-});
-
 export function calculateMaxResourceValue(level: number, attributeValue1: number, attributeValue2: number): number {
 	return level * attributeValue1 * 10 + attributeValue2 * 5;
 }

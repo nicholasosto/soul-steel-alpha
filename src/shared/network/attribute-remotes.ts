@@ -1,10 +1,11 @@
 import { Definitions } from "@rbxts/net";
 import { AttributeDTO, AttributeKey } from "shared/catalogs/attribute-catalog";
+import { SIGNAL_KEYS } from "shared/keys";
 
 export const AttributeRemotes = Definitions.Create({
 	// Attribute Management
 	/** Server pushes complete attribute state to clients */
-	AttributesUpdated: Definitions.ServerToClientEvent<[AttributeDTO]>(),
+	[SIGNAL_KEYS.ATTRIBUTES_UPDATED]: Definitions.ServerToClientEvent<[AttributeDTO]>(),
 
 	// Resource Fetching
 	/** Client requests current attribute state */

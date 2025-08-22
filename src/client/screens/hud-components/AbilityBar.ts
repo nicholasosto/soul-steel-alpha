@@ -15,6 +15,7 @@ export const AbilityBar = (keys: AbilityKey[]) => {
 		}),
 	);
 	const hStack = HStack({
+		Name: "AbilityBar",
 		Position: UDim2.fromScale(0.5, 1),
 		AnchorPoint: new Vector2(0.5, 1),
 		align: "center",

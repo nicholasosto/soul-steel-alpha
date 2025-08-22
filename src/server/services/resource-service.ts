@@ -31,23 +31,21 @@
 
 import { Players, RunService } from "@rbxts/services";
 import { SSEntity } from "shared/types";
-import {
-	makeDefaultResourceDTO,
-	ResourceDTO,
-	ResourceRemotes,
-	ResourceRegenConfig,
-} from "shared/catalogs/resources-catalog";
+import { makeDefaultResourceDTO, ResourceDTO, ResourceRegenConfig } from "shared/catalogs/resources-catalog";
 import { DataRemotes } from "shared/network/data-remotes";
 import { DataServiceInstance } from "./data-service";
 import { SignalServiceInstance } from "./signal-service";
 import { ServiceRegistryInstance } from "./service-registry";
 import { IResourcePlayerOperations } from "./service-interfaces";
+import { ResourceRemotes } from "shared/network/";
+import { SIGNAL_KEYS } from "shared";
 
 /**
  * Resource Service - Manages health, mana, stamina, and combat for all entities
  */
 
-const SendResourceUpdate = ResourceRemotes.Server.Get("ResourcesUpdated");
+const SendResourceUpdate = ResourceRemotes.Server.Get(SIGNAL_KEYS.RESOURCES_UPDATED);
+const FetchResources = ResourceRemotes.Server.Get(SIGNAL_KEYS.FETCH_RESOURCES);
 const PlayerDataUpdated = DataRemotes.Server.Get("PLAYER_DATA_UPDATED");
 export class ResourceService {
 	private static instance?: ResourceService;
@@ -166,7 +164,7 @@ export class ResourceService {
 		if (staminaConsumedConnection) this.signalConnections.push(staminaConsumedConnection);
 		if (staminaRestoredConnection) this.signalConnections.push(staminaRestoredConnection);
 
-		ResourceRemotes.Server.Get("FetchResources").SetCallback((player) => {
+		FetchResources.SetCallback((player) => {
 			const resources = this.entityResources.get(player) ?? makeDefaultResourceDTO();
 			return resources;
 		});

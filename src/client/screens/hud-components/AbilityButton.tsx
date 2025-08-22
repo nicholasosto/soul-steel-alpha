@@ -27,6 +27,7 @@ export function AbilityButton(props: AbilityButtonProps): Frame {
 	const barHeight = 10;
 
 	const IconButton = New("ImageButton")({
+		Name: `AbilityButton_${props.abilityKey}`,
 		Size: buttonSize,
 		BackgroundColor3: Computed(() => (canClick.get() ? Color3.fromRGB(60, 60, 60) : Color3.fromRGB(40, 40, 40))),
 		BackgroundTransparency: 0.1,

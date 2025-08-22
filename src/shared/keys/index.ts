@@ -38,7 +38,7 @@
  */
 
 export * from "./combat-keys";
-export * from "./event-keys";
+export * from "./signal-keys";
 export * from "./force-keys";
 export * from "./menu-keys";
 export * from "./zone-keys";

@@ -1,6 +1,7 @@
 /// <reference types="@rbxts/types" />
 
 import { Players } from "@rbxts/services";
+import CmdrBootstrap from "./cmdr/commander-service";
 import { AbilityKey } from "shared";
 import type { SSEntity } from "shared/types";
 
@@ -15,13 +16,20 @@ import {
 } from "./services";
 import { initializeExampleSpawnAreas } from "./services/npc-spawn-examples";
 import { CombatServiceInstance } from "./services/combat-service";
+import { initializeCombatDebugCommands } from "./demos/combat-debug-commands";
 
 // --- Server bootstrap (single entry point) ---
 print("Soul Steel Alpha server bootstrapping...");
 
+// Initialize Cmdr
+CmdrBootstrap.Initialize();
+
 // Initialize systems that expose Initialize() explicitly
 CombatServiceInstance.Initialize();
 UnifiedNPCServiceInstance.Initialize();
+
+// Optional debug chat commands (Studio by default)
+initializeCombatDebugCommands();
 
 // Initialize zones and NPC spawn areas deterministically (no arbitrary waits)
 ZoneServiceInstance.initializeWorldZones();

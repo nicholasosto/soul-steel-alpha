@@ -22,6 +22,7 @@ import { MessageType, MessageLibrary } from "shared/types";
 import { MessageRemotes } from "shared/network";
 import { ServiceRegistryInstance } from "./service-registry";
 import { IMessageOperations } from "./service-interfaces";
+import { SIGNAL_KEYS } from "shared";
 
 /// <reference types="@rbxts/types" />
 
@@ -29,7 +30,7 @@ import { IMessageOperations } from "./service-interfaces";
 const SERVICE_NAME = "MessageService";
 
 /*──── Signals ─────────────────────────────────────────────────────────*/
-const SendMessageToPlayerRemote = MessageRemotes.Server.Get("SendMessageToPlayer");
+const SendMessageToPlayerRemote = MessageRemotes.Server.Get(SIGNAL_KEYS.MESSAGE_SEND);
 
 /*──── Service Class ──────────────────────────────────────────────────*/
 export default class MessageService {
