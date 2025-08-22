@@ -1,5 +1,0 @@
-/**
- * DEPRECATED: implementation moved to `src/server/demos/combat-debug-commands.ts`.
- * Left as a no-op ModuleScript to prevent extra server entrypoints.
- */
-export {}; // no-op

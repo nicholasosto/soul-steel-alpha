@@ -7,7 +7,8 @@ import { RunService } from "@rbxts/services";
 const ClientCmdrBootstrap = {
 	Initialize() {
 		CmdrClient.SetEnabled(RunService.IsStudio());
-		CmdrClient.SetActivationKeys([Enum.KeyCode.Backquote]);
+		// Allow multiple keys to open Cmdr to avoid conflicts with UI bindings
+		CmdrClient.SetActivationKeys([Enum.KeyCode.Backquote, Enum.KeyCode.Semicolon, Enum.KeyCode.F1]);
 		CmdrClient.SetActivationUnlocksMouse(false);
 		CmdrClient.SetPlaceName("Soul Steel Alpha");
 	},

@@ -29,7 +29,7 @@ CombatServiceInstance.Initialize();
 UnifiedNPCServiceInstance.Initialize();
 
 // Optional debug chat commands (Studio by default)
-initializeCombatDebugCommands();
+//initializeCombatDebugCommands();
 
 // Initialize zones and NPC spawn areas deterministically (no arbitrary waits)
 ZoneServiceInstance.initializeWorldZones();
