@@ -8,7 +8,7 @@ export const AttributeRemotes = Definitions.Create({
 
 	// Resource Fetching
 	/** Client requests current attribute state */
-	FetchAttributes: Definitions.ServerAsyncFunction<() => AttributeDTO>(),
+	//FetchAttributes: Definitions.ServerAsyncFunction<() => AttributeDTO>(),
 
 	// Attribute Modification (for abilities, admin commands, etc.)
 	ModifyAttribute: Definitions.ServerAsyncFunction<(attributeType: AttributeKey, amount: number) => boolean>(),

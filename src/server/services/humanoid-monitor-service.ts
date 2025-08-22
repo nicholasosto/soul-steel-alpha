@@ -98,7 +98,7 @@ export class HumanoidMonitorService {
 	 */
 	private setupCharacterConnections(player: Player, character: Model): void {
 		const humanoid = character.FindFirstChildOfClass("Humanoid");
-		if (!humanoid) {
+		if (humanoid === undefined) {
 			warn(`HumanoidMonitorService: No Humanoid found for character of player ${player.Name}`);
 			return;
 		}

@@ -1,9 +1,14 @@
-import { Computed, Value } from "@rbxts/fusion";
+import { Computed, Observer, Value } from "@rbxts/fusion";
 import { Players } from "@rbxts/services";
 import { PersistentPlayerData, SSEntity } from "shared";
 
 /* Progression Imports */
-import { ProgressionDTO, ProgressionState, makeProgressionStateFromDTO } from "shared/catalogs/progression-catalog";
+import {
+	ProgressionDTO,
+	ProgressionState,
+	makeProgressionStateFromDTO,
+	makeDefaultProgressionState,
+} from "shared/catalogs/progression-catalog";
 /* Ability Imports */
 import { AbilitiesState, makeAbilityStateFromDTO, makeDefaultAbilitiesState } from "shared/catalogs/ability-catalog";
 /* Attribute Imports */
@@ -16,7 +21,6 @@ import {
 /* Resource Imports */
 import { ResourceStateMap, ResourceDTO, makeDefaultResourceState } from "shared/catalogs/resources-catalog";
 
-import { makeDefaultProgressionState } from "shared/catalogs/progression-catalog";
 /* Currency Imports */
 import {
 	CurrencyDTO,
@@ -26,14 +30,21 @@ import {
 } from "shared/catalogs/currency-catalog";
 
 /* Remote Imports*/
-import { ProgressionRemotes, DataRemotes, CurrencyRemotes, AttributeRemotes, ResourceRemotes } from "shared/network";
+import {
+	ProgressionRemotes,
+	DataRemotes,
+	CurrencyRemotes,
+	AttributeRemotes,
+	ResourceRemotes,
+	SpawnRemotes,
+} from "shared/network";
 
+/* Remotes */
+const RequestSpawn = SpawnRemotes.Client.Get("REQUEST_SPAWN");
 const fetchPersistantData = DataRemotes.Client.Get("GET_PLAYER_DATA");
 const PlayerDataUpdated = DataRemotes.Client.Get("PLAYER_DATA_UPDATED");
 const FetchResources = ResourceRemotes.Client.Get("FetchResources");
 const ResourcesUpdated = ResourceRemotes.Client.Get("ResourcesUpdated");
-
-// Progression remotes
 const ProgressionUpdated = ProgressionRemotes.Client.Get("PROGRESSION_UPDATED");
 const AttributesUpdated = AttributeRemotes.Client.Get("AttributesUpdated");
 const CurrencyUpdated = CurrencyRemotes.Client.Get("CurrencyUpdated");
@@ -41,6 +52,7 @@ const CurrencyUpdated = CurrencyRemotes.Client.Get("CurrencyUpdated");
 class PlayerState {
 	private static instance?: PlayerState;
 	private player: Player = Players.LocalPlayer;
+	private static PlayerStateReady = Value(false);
 
 	public Abilities: AbilitiesState = makeDefaultAbilitiesState();
 	public Attributes: AttributeState = makeDefaultAttributeState();
@@ -81,6 +93,7 @@ class PlayerState {
 				if (persistantPlayerData !== undefined) {
 					this.instance?.SetPersistentData(persistantPlayerData);
 					print("Player data initialized:", persistantPlayerData);
+					this.PlayerStateReady.set(true);
 				} else {
 					warn("No player data received.");
 				}
@@ -94,6 +107,13 @@ class PlayerState {
 			.catch((err) => {
 				warn("FetchResources failed:", err);
 			});
+
+		Observer(this.PlayerStateReady).onChange(() => {
+			if (this.PlayerStateReady.get()) {
+				print("Player state is ready");
+				//RequestSpawn.CallServerAsync();
+			}
+		});
 
 		return this.GetInstance();
 	}

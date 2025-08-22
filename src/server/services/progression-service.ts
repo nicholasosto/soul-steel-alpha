@@ -237,7 +237,7 @@ export class ProgressionService {
 
 		const progression = profile.Data.Progression;
 		const oldLevel = progression.Level;
-		const oldExperience = progression.Experience;
+		//const oldExperience = progression.Experience;
 
 		// Add experience
 		progression.Experience += amount;
