@@ -24,7 +24,6 @@ const oxCardTest = OxCard({
 });
 
 export const PlayerDataPanel = () => {
-
 	const isVisible = Value(true);
 
 	return PanelWindow({
