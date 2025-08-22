@@ -1,3 +1,3 @@
 //export * from "./CharacterInfoCard";
-export * from "./LoadingScreen";
-export * from "./GameMenu";
+export * from "../screens/LoadingScreen";
+export * from "../screens/GameMenu";
