@@ -234,29 +234,27 @@ class CombatService {
 		// Basic attack handler
 		CombatRemotes.Server.Get("ExecuteBasicAttack").Connect((player, target, weaponId) => {
 			if (!this.rateOk(this.lastBasicAttackAt, this.BASIC_ATTACK_WINDOW_SEC, player)) return;
+			print("CombatService: Executing basic attack");
 			this.handleBasicAttack(player, target, weaponId);
 		});
 
 		// Ability attack handler
 		CombatRemotes.Server.Get("ExecuteAbilityAttack").Connect((player, abilityKey, target) => {
 			if (!this.rateOk(this.lastAbilityAttackAt, this.ABILITY_ATTACK_WINDOW_SEC, player)) return;
+			print("CombatService: Executing ability attack");
 			this.handleAbilityAttack(player, abilityKey, target);
 		});
 
 		// Weapon equip handler
 		CombatRemotes.Server.Get("RequestWeaponEquip").Connect((player, weaponId) => {
+			print("CombatService: Requesting weapon equip");
 			if (!this.rateOk(this.lastEquipAt, this.EQUIP_WINDOW_SEC, player)) return;
 			this.handleWeaponEquip(player, weaponId);
 		});
 
-		// Demo/Testing - NPC spawn handler
-		CombatRemotes.Server.Get("SpawnTestNPCs").Connect((_player) => {
-			// For testing: spawn a small group near the first SpawnLocation
-			import("./unified-npc-service").then((m) => m.UnifiedNPCServiceInstance.Initialize());
-		});
-
 		// Combat state query handlers
 		CombatRemotes.Server.Get("GetCombatStats").SetCallback((player, entity) => {
+			print("CombatService: Querying combat stats");
 			return this.getCombatStats(entity);
 		});
 

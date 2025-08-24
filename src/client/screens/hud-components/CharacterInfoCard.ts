@@ -14,7 +14,7 @@ const resourceLabel = (key: ResourceKey) => {
 	const label = Computed(() => {
 		const current = PlayerStateInstance.Resources[key].current.get() ?? 0;
 		const max = PlayerStateInstance.Resources[key].max.get() ?? 0;
-		return `${attributeLabel}: ${current} / ${max}`;
+		return `${attributeLabel}: ${math.floor(current)} / ${math.floor(max)}`;
 	});
 	return label;
 };
