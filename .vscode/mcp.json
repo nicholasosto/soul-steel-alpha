@@ -5,7 +5,7 @@
       "command": "node",
       "args": ["mcp-build/mcp-server.js"]
     },
-        "roblox-ts-mcp": {
+     "roblox-ts-mcp": {
       "type": "stdio",
       "command": "roblox-ts-mcp"
     }
