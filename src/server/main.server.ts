@@ -11,7 +11,7 @@ import {
 	UnifiedNPCServiceInstance,
 	ZoneServiceInstance,
 	NPCSpawnManagerInstance,
-	RespawnServiceInstance,
+	
 } from "./services";
 import { CombatServiceInstance } from "./services/combat-service";
 

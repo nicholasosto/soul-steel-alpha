@@ -1,23 +1,18 @@
 export * from "./ability-service";
+export * from "./player-lifecycle/player-lifecycle-service";
 export * from "./animation-service";
 export * from "./attributes-service";
 export * from "./combat-service";
 export * from "./collection-service";
 export * from "./damage-service";
 export * from "./data/data-service";
-export * from "./humanoid-monitor-service";
 export * from "./message-service";
 export * from "./npc-spawn-manager";
 export * from "./progression-service";
 export * from "./unified-npc-service";
 export * from "./resource-service";
-export * from "./spawn-service";
-export * from "./respawn-service";
 export * from "./zone-service";
 export * from "./signal-service";
 export * from "./service-interfaces";
 export * from "./service-registry";
 export * from "./targeting-service";
-
-// Unified NPC Service (replaces all legacy NPC services)
-//export { UnifiedNPCServiceInstance } from "./unified-npc-service";
