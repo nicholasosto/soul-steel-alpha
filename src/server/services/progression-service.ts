@@ -30,7 +30,7 @@
 
 import { Players } from "@rbxts/services";
 import { ProgressionRemotes } from "shared/network/progression-remotes";
-import { DataServiceInstance } from "./data-service";
+import { DataServiceInstance } from "./data/data-service";
 import { SignalServiceInstance } from "./signal-service";
 import { NPC_MODEL_CATALOG, NPCModelKey } from "shared/catalogs/npc-model-catalog";
 import { SSEntity } from "shared/types";

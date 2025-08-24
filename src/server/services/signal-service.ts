@@ -22,6 +22,7 @@
 
 import Signal from "@rbxts/signal";
 import { ProgressionDTO } from "shared";
+import { AttributeDTO, AttributeKey } from "shared/catalogs/attribute-catalog";
 import { ZoneKey } from "shared/keys";
 import { SSEntity } from "shared/types";
 
@@ -47,6 +48,9 @@ export interface ServiceEvents {
 		oldValue: number;
 		newValue: number;
 	};
+
+	// Attribute events - Centralized attribute updates
+	AttributesUpdated: { player: Player; attributes: AttributeDTO; changed?: AttributeKey };
 	HealthDamageRequested: { player: Player; amount: number; source?: string };
 	HealthHealRequested: { player: Player; amount: number; source?: string };
 	ManaConsumed: { player: Player; amount: number; source?: string };
@@ -103,6 +107,7 @@ export class SignalService {
 			"AbilityActivated",
 			"NPCDefeated",
 			"ResourceChanged",
+			"AttributesUpdated",
 			"HealthDamageRequested",
 			"HealthHealRequested",
 			"ManaConsumed",

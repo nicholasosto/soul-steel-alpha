@@ -3,6 +3,9 @@ import { AbilityDTO, AbilityKey, ProgressionDTO } from "shared/catalogs";
 import { AttributeDTO } from "shared/catalogs/attribute-catalog";
 import { CurrencyDTO } from "shared/catalogs/currency-catalog";
 
+export const PLAYER_DATA_KEYS = ["Abilities", "Attributes", "Currency", "Progression", "Controls"] as const;
+export type PlayerDataKey = (typeof PLAYER_DATA_KEYS)[number];
+
 export interface PersistentPlayerData {
 	Abilities: AbilityDTO; // Player's abilities and their levels
 	Attributes: AttributeDTO; // Core attributes (Strength, Agility, etc.)

@@ -46,7 +46,7 @@ import { SSEntity } from "shared/types/ss-entity";
 import { MessageLibrary } from "shared/types";
 import { isSSEntity } from "shared/helpers/type-guards";
 import { AbilityCatalog, AbilityKey } from "shared/catalogs";
-import { DataServiceInstance } from "./data-service";
+import { DataServiceInstance } from "./data/data-service";
 import { MessageServiceInstance } from "./message-service";
 import { SignalServiceInstance } from "./signal-service";
 import { ServiceRegistryInstance } from "./service-registry";

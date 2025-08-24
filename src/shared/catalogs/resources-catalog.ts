@@ -1,5 +1,6 @@
 import { Computed, Value } from "@rbxts/fusion";
 import { Definitions } from "@rbxts/net";
+import { ImageConstants } from "shared/asset-ids";
 export const RESOURCE_KEYS = ["Health", "Mana", "Stamina"] as const;
 export type ResourceKey = (typeof RESOURCE_KEYS)[number];
 
@@ -35,19 +36,19 @@ export const ResourcesCatalog: Record<ResourceKey, ResourceMeta> = {
 	Health: {
 		displayName: "Health",
 		description: "The health of the player.",
-		icon: "rbxassetid://123456",
+		icon: ImageConstants.Attributes.Vitality,
 		color: Color3.fromRGB(220, 50, 50),
 	},
 	Mana: {
 		displayName: "Mana",
 		description: "The mana of the player.",
-		icon: "rbxassetid://123457",
+		icon: ImageConstants.Attributes.Intellect,
 		color: Color3.fromRGB(50, 50, 220),
 	},
 	Stamina: {
 		displayName: "Stamina",
 		description: "The stamina of the player.",
-		icon: "rbxassetid://123458",
+		icon: ImageConstants.Attributes.Agility,
 		color: Color3.fromRGB(220, 220, 50),
 	},
 } satisfies Record<ResourceKey, ResourceMeta>;

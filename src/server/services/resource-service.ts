@@ -17,6 +17,7 @@
  * - `StaminaConsumed` - Listens for stamina consumption from movement/ability systems
  * - `StaminaRestored` - Listens for stamina restoration from ability/item systems
  * - `ResourceChanged` - Emits when any resource value changes for analytics/UI updates
+ * - `AttributesChanged` - Emits when any attribute value changes for analytics/UI updates
  *
  * ## Client Events (Network Communication)
  * - `ResourcesUpdated` - Sends resource updates to clients for UI synchronization
@@ -31,9 +32,14 @@
 
 import { Players, RunService } from "@rbxts/services";
 import { SSEntity } from "shared/types";
-import { makeDefaultResourceDTO, ResourceDTO, ResourceRegenConfig } from "shared/catalogs/resources-catalog";
+import {
+	makeDefaultResourceDTO,
+	ResourceDTO,
+	ResourceRegenConfig,
+	calculateMaxResourceValue,
+} from "shared/catalogs/resources-catalog";
 import { DataRemotes } from "shared/network/data-remotes";
-import { DataServiceInstance } from "./data-service";
+import { DataServiceInstance } from "./data/data-service";
 import { SignalServiceInstance } from "./signal-service";
 import { ServiceRegistryInstance } from "./service-registry";
 import { IResourcePlayerOperations } from "./service-interfaces";
@@ -80,7 +86,12 @@ export class ResourceService {
 			const resources = makeDefaultResourceDTO();
 			this.entityResources.set(player, resources);
 			this.lastChangeTimestampMs.set(player, {});
-			SendResourceUpdate.SendToPlayer(player, resources);
+
+			// Compute initial max values from attributes/level and push; also sync humanoid if present
+			this.recomputeMaxesFromProfile(player, true);
+
+			// On character spawn, re-apply humanoid MaxHealth based on computed max
+			player.CharacterAdded.Connect(() => this.recomputeMaxesFromProfile(player, true));
 		});
 
 		// Handle player leaving
@@ -164,6 +175,13 @@ export class ResourceService {
 		if (staminaConsumedConnection) this.signalConnections.push(staminaConsumedConnection);
 		if (staminaRestoredConnection) this.signalConnections.push(staminaRestoredConnection);
 
+		// Recompute resource max values whenever attributes are updated
+		const attrsUpdatedConn = SignalServiceInstance.connect("AttributesUpdated", (data) => {
+			const { player } = data as { player: Player };
+			this.recomputeMaxesFromProfile(player, false);
+		});
+		if (attrsUpdatedConn) this.signalConnections.push(attrsUpdatedConn);
+
 		FetchResources.SetCallback((player) => {
 			const resources = this.entityResources.get(player) ?? makeDefaultResourceDTO();
 			return resources;
@@ -182,6 +200,91 @@ export class ResourceService {
 			setResourceValue: (player, resourceType, value) => this.SetResourceValue(player, resourceType, value),
 		};
 		ServiceRegistryInstance.registerService<IResourcePlayerOperations>("ResourcePlayerOperations", ops);
+	}
+
+	/**
+	 * Recompute resource max values from the player's saved attributes and level.
+	 * If setToFull is true, set current to new max on update (used on spawn/first load).
+	 */
+	private recomputeMaxesFromProfile(player: Player, setToFull: boolean): void {
+		const dto = this.entityResources.get(player);
+		if (dto === undefined) return;
+
+		const profile = DataServiceInstance.GetProfile(player);
+		if (profile === undefined) {
+			// No profile yet; still ensure client sees current dto
+			SendResourceUpdate.SendToPlayer(player, dto);
+			return;
+		}
+
+		const attrs = profile.Data.Attributes;
+		const progression = profile.Data.Progression;
+		if (attrs === undefined || progression === undefined) {
+			SendResourceUpdate.SendToPlayer(player, dto);
+			return;
+		}
+
+		const level = progression.Level;
+		// Calculate maxima from attributes
+		const newHealthMax = calculateMaxResourceValue(level, attrs.Vitality, attrs.Strength);
+		const newManaMax = calculateMaxResourceValue(level, attrs.Intelligence, attrs.Spirit);
+		const newStaminaMax = calculateMaxResourceValue(level, attrs.Agility, attrs.Vitality);
+
+		let changed = false;
+		// Update max values and optionally set current to full
+		if (dto.Health.max !== newHealthMax) {
+			dto.Health.max = newHealthMax;
+			changed = true;
+		}
+		if (dto.Mana.max !== newManaMax) {
+			dto.Mana.max = newManaMax;
+			changed = true;
+		}
+		if (dto.Stamina.max !== newStaminaMax) {
+			dto.Stamina.max = newStaminaMax;
+			changed = true;
+		}
+
+		// Adjust currents
+		if (setToFull) {
+			if (dto.Health.current !== dto.Health.max) {
+				dto.Health.current = dto.Health.max;
+				changed = true;
+			}
+			if (dto.Mana.current !== dto.Mana.max) {
+				dto.Mana.current = dto.Mana.max;
+				changed = true;
+			}
+			if (dto.Stamina.current !== dto.Stamina.max) {
+				dto.Stamina.current = dto.Stamina.max;
+				changed = true;
+			}
+		} else {
+			// Clamp down if new maxima are lower
+			const hBefore = dto.Health.current;
+			dto.Health.current = math.min(dto.Health.current, dto.Health.max);
+			changed = changed || dto.Health.current !== hBefore;
+
+			const mBefore = dto.Mana.current;
+			dto.Mana.current = math.min(dto.Mana.current, dto.Mana.max);
+			changed = changed || dto.Mana.current !== mBefore;
+
+			const sBefore = dto.Stamina.current;
+			dto.Stamina.current = math.min(dto.Stamina.current, dto.Stamina.max);
+			changed = changed || dto.Stamina.current !== sBefore;
+		}
+
+		// Sync Humanoid health caps to engine if available
+		const humanoid = player.Character?.FindFirstChildOfClass("Humanoid");
+		if (humanoid !== undefined) {
+			// Non-null assertion safe: humanoid retrieved and used synchronously without yields
+			if (humanoid.MaxHealth !== dto.Health.max) humanoid.MaxHealth = dto.Health.max;
+			if (humanoid.Health > humanoid.MaxHealth) humanoid.Health = humanoid.MaxHealth;
+		}
+
+		if (changed) {
+			SendResourceUpdate.SendToPlayer(player, dto);
+		}
 	}
 
 	/** Mark a resource as recently changed to pause regen until the configured delay passes */

@@ -33,10 +33,11 @@ import { DataRemotes } from "shared/network/data-remotes";
 import { ProfileRemotes } from "shared/network/profile-remotes";
 import { ControlsRemotes } from "shared/network/controls-remotes";
 //import type { ProfileSummaryDTO } from "shared/dtos/profile-dtos";
-import { ServiceRegistryInstance } from "./service-registry";
-import { IDataOperations } from "./service-interfaces";
+import { ServiceRegistryInstance } from "../service-registry";
+import { IDataOperations } from "../service-interfaces";
 import { ABILITY_KEYS } from "shared/catalogs/ability-catalog";
 import { makeDefaultCurrencyDTO } from "shared/catalogs/currency-catalog";
+import { sanitizeBindings } from "./data-helpers";
 
 /* Remotes */
 DataRemotes.Server.Get("GET_PLAYER_DATA").SetCallback((player) => {
@@ -95,7 +96,7 @@ class DataService {
 			const bindings = profile.Data.Controls?.bindings;
 			if (bindings === undefined) return undefined;
 			// Sanitize before returning to client
-			return this.sanitizeBindings(bindings, player);
+			return sanitizeBindings(bindings, player);
 		});
 
 		ControlsRemotes.Server.Get("HOTKEY_SAVE").SetCallback((player, incoming) => {
@@ -113,7 +114,7 @@ class DataService {
 			// Validate payload shape explicitly
 			if (incoming === undefined || incoming.abilities === undefined) return false;
 
-			const sanitized = this.sanitizeBindings(incoming, player);
+			const sanitized = sanitizeBindings(incoming, player);
 			// Save to profile
 			if (profile.Data.Controls === undefined) profile.Data.Controls = makeDefaultPlayerControls();
 			profile.Data.Controls.bindings = sanitized;
@@ -121,41 +122,6 @@ class DataService {
 			return true;
 		});
 	}
-
-	/** Replace unknown ability keys or invalid key names with defaults; log replacements */
-	private sanitizeBindings(incoming: { abilities: Record<string, AbilityKey | undefined> }, player?: Player) {
-		const validAbility = new Set<AbilityKey>(ABILITY_KEYS as readonly AbilityKey[]);
-		const result: Record<string, AbilityKey> = {};
-		let invalidCount = 0;
-		for (const [keyName, ability] of pairs(incoming.abilities)) {
-			if (typeOf(keyName) !== "string") continue;
-			if (ability !== undefined && validAbility.has(ability)) {
-				result[keyName] = ability;
-			} else if (ability !== undefined) {
-				invalidCount += 1;
-			}
-		}
-		// Fill defaults for missing core keys (Q,E,R)
-		let filledDefaults = 0;
-		if (result["Q"] === undefined) {
-			result["Q"] = "Melee";
-			filledDefaults += 1;
-		}
-		if (result["E"] === undefined) {
-			result["E"] = "Ice-Rain";
-			filledDefaults += 1;
-		}
-		if (result["R"] === undefined) {
-			result["R"] = "Earthquake";
-			filledDefaults += 1;
-		}
-		if (invalidCount > 0 || filledDefaults > 0) {
-			const who = player ? player.Name : "unknown";
-			warn(`HOTKEY_SANITIZE for ${who}: invalid=${invalidCount}, defaultsFilled=${filledDefaults}`);
-		}
-		return { abilities: result };
-	}
-
 	/**
 	 * Register DataService interface with ServiceRegistry for loose coupling
 	 */
@@ -234,7 +200,6 @@ class DataService {
 		warn(`No profile found for player ${player.Name}`);
 		return undefined;
 	}
-
 	public GetProgression(player: Player): PersistentPlayerData["Progression"] | undefined {
 		const profile = this.GetProfile(player);
 		if (profile) {
@@ -243,7 +208,6 @@ class DataService {
 		warn(`No profile found for player ${player.Name}`);
 		return undefined;
 	}
-
 	public UpdateProgression(player: Player, progressionData: Partial<PersistentPlayerData["Progression"]>): boolean {
 		const profile = this.GetProfile(player);
 		if (profile) {
