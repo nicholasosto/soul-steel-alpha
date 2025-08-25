@@ -42,10 +42,9 @@ import { DataRemotes } from "shared/network/data-remotes";
 import { DataServiceInstance } from "./data/data-service";
 import { SignalServiceInstance } from "./signal-service";
 import { ServiceRegistryInstance } from "./service-registry";
-import { IResourcePlayerOperations } from "./service-interfaces";
 import { ResourceRemotes } from "shared/network/";
 import { SIGNAL_KEYS } from "shared";
-
+import { IResourcePlayerOperations, IResourceSignalOperations } from "./service-interfaces";
 /**
  * Resource Service - Manages health, mana, stamina, and combat for all entities
  */
@@ -199,6 +198,28 @@ export class ResourceService {
 			},
 			setResourceValue: (player, resourceType, value) => this.SetResourceValue(player, resourceType, value),
 		};
+		// Register signal-centric operations
+		const signalOps: IResourceSignalOperations = {
+			requestHealthDamage(player, amount, source) {
+				SignalServiceInstance.emit("HealthDamageRequested", { player, amount, source });
+			},
+			requestHealthHeal(player, amount, source) {
+				SignalServiceInstance.emit("HealthHealRequested", { player, amount, source });
+			},
+			requestManaConsumption(player, amount, source) {
+				SignalServiceInstance.emit("ManaConsumed", { player, amount, source });
+			},
+			requestManaRestoration(player, amount, source) {
+				SignalServiceInstance.emit("ManaRestored", { player, amount, source });
+			},
+			requestStaminaConsumption(player, amount, source) {
+				SignalServiceInstance.emit("StaminaConsumed", { player, amount, source });
+			},
+			requestStaminaRestoration(player, amount, source) {
+				SignalServiceInstance.emit("StaminaRestored", { player, amount, source });
+			},
+		};
+		ServiceRegistryInstance.registerService<IResourceSignalOperations>("ResourceSignalOperations", signalOps);
 		ServiceRegistryInstance.registerService<IResourcePlayerOperations>("ResourcePlayerOperations", ops);
 	}
 
