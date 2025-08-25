@@ -29,7 +29,7 @@ import { Zone } from "@rbxts/zone-plus";
 import { ZoneKey } from "shared/keys";
 import { ZoneCatalog, getZoneConfig } from "shared/catalogs";
 import { ZoneMeta, IZone } from "shared/meta";
-import { SignalServiceInstance } from "./signal-service";
+import { SignalServiceInstance } from "../signal-service";
 
 interface ManagedZone {
 	zone: Zone;
