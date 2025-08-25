@@ -16,6 +16,7 @@ const SendAttributesUpdated = AttributeRemotes.Server.Get(SIGNAL_KEYS.ATTRIBUTES
 
 export class AttributesService {
 	private static instance?: AttributesService;
+	private lastSentAtMs = new Map<Player, number>();
 
 	public static getInstance(): AttributesService {
 		if (AttributesService.instance === undefined) {
@@ -59,6 +60,15 @@ export class AttributesService {
 		SignalServiceInstance.emit("AttributesUpdated", { player, attributes: attrs, changed: key });
 		SendAttributesUpdated.SendToPlayer(player, attrs);
 		return true;
+	}
+
+	private maybeSendAttributes(player: Player, dto: AttributeDTO) {
+		const now = os.clock() * 1000;
+		const last = this.lastSentAtMs.get(player) ?? 0;
+		if (now - last >= 100) {
+			this.lastSentAtMs.set(player, now);
+			AttributeRemotes.Server.Get("ATTRIBUTES_UPDATED").SendToPlayer(player, dto);
+		}
 	}
 }
 

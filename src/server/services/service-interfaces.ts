@@ -8,9 +8,15 @@
  * @since 1.0.0
  */
 
-import { AbilityKey } from "shared/catalogs";
+import { AbilityKey, AttributeKey, AttributeDTO } from "shared/catalogs";
 import { SSEntity } from "shared/types";
 import { ZoneKey } from "shared/keys";
+
+// src/server/services/service-interfaces.ts
+export interface IAttributesPlayerOperations {
+	getAttributes(player: Player): Readonly<AttributeDTO> | undefined;
+	applyDelta(player: Player, key: AttributeKey, delta: number): boolean;
+}
 
 /**
  * Interface for resource-related operations

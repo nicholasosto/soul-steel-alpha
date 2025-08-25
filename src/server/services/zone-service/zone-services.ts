@@ -24,10 +24,10 @@
  * - `zone.playerExited` - ZonePlus library event for player zone exit
  */
 
-import { Players, Workspace } from "@rbxts/services";
+import { Players, Workspace, CollectionService } from "@rbxts/services";
 import { Zone } from "@rbxts/zone-plus";
-import { ZoneKey } from "shared/keys";
-import { ZoneCatalog, getZoneConfig } from "shared/catalogs";
+import { ZoneKey, ZONE_KEYS } from "shared/keys";
+import { getZoneConfig } from "shared/catalogs";
 import { ZoneMeta, IZone } from "shared/meta";
 import { SignalServiceInstance } from "../signal-service";
 
@@ -383,26 +383,30 @@ export class ZoneService {
 	}
 
 	/**
-	 * Initialize zones from workspace containers
+	 * Initialize zones from tagged parts in workspace
 	 * Call this during server startup
 	 */
 	public initializeWorldZones(): void {
-		// Look for zone containers in workspace
-		const zoneContainers = Workspace.FindFirstChild("ZoneContainers") as Folder;
-		if (!zoneContainers) {
-			print("No ZoneContainers folder found in workspace");
-			return;
-		}
+		let zonesCreated = 0;
 
-		// Create zones for each container that matches a catalog entry
-		for (const child of zoneContainers.GetChildren()) {
-			const containerName = child.Name as ZoneKey;
-			if (ZoneCatalog[containerName]) {
-				this.createZone(containerName, child as Model | Folder);
+		// Iterate through all zone keys and look for tagged parts
+		for (const zoneKey of ZONE_KEYS) {
+			const taggedParts = CollectionService.GetTagged(zoneKey);
+
+			if (taggedParts.size() > 0) {
+				// Create zones from tagged parts
+				for (const part of taggedParts) {
+					if (part.IsA("BasePart")) {
+						const success = this.createZone(zoneKey, part);
+						if (success) {
+							zonesCreated++;
+						}
+					}
+				}
 			}
 		}
 
-		print(`Initialized ${this.zones.size()} world zones`);
+		print(`Initialized ${zonesCreated} world zones from tagged parts`);
 	}
 
 	/**
