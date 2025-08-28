@@ -145,7 +145,8 @@ export class PlayerLifecycleService {
 		const character = player.Character;
 		if (character === undefined) return false;
 		const humanoid = character.FindFirstChildOfClass("Humanoid") as Humanoid | undefined;
-		if (humanoid === undefined) return true; // be conservative as in legacy code
+		// Consider character active only if Humanoid exists and is alive
+		if (humanoid === undefined) return false;
 		return humanoid.Health > 0;
 	}
 

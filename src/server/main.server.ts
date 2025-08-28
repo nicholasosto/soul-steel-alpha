@@ -11,7 +11,7 @@ import {
 	UnifiedNPCServiceInstance,
 	ZoneServiceInstance,
 	NPCSpawnManagerInstance,
-	
+	PlayerLifecycleServiceInstance,
 } from "./services";
 import { CombatServiceInstance } from "./services/combat-service";
 
@@ -27,6 +27,9 @@ UnifiedNPCServiceInstance.Initialize();
 
 // Initialize zones and NPC spawn areas deterministically (no arbitrary waits)
 ZoneServiceInstance.initializeWorldZones();
+
+// Ensure player lifecycle service is instantiated for spawn/respawn wiring
+void PlayerLifecycleServiceInstance;
 
 // Centralized player lifecycle wiring
 Players.PlayerAdded.Connect((player) => {
