@@ -107,7 +107,16 @@ class PlayerState {
 	}
 
 	private _updateAttributes(attributesDTO: AttributeDTO): void {
-		this.Attributes = makeAttributeStateFromDTO(attributesDTO);
+		// Update individual attribute values to maintain reactivity
+		for (const key of ["Strength", "Agility", "Intelligence", "Vitality", "Spirit", "Luck"] as const) {
+			const attribute = this.Attributes[key];
+			const dtoValue = attributesDTO[key];
+
+			attribute.base.set(dtoValue.base);
+			attribute.equipment?.set(dtoValue.equipment ?? 0);
+			attribute.statusEffects?.set(dtoValue.statusEffects ?? 0);
+			attribute.temporary?.set(dtoValue.temporary ?? 0);
+		}
 	}
 
 	private _updateCurrency(currencyDTO: CurrencyDTO): void {

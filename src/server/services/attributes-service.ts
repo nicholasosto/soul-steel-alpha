@@ -33,6 +33,7 @@ export class AttributesService {
 		// On player join, push current attributes to client and emit AttributesUpdated fact
 		Players.PlayerAdded.Connect((player) => {
 			const profile = DataServiceInstance.GetProfile(player);
+			warn(`AttributeService: Player added - ${player.Name}`, profile);
 			if (profile === undefined) return;
 			const attributes: AttributeDTO = profile.Data.Attributes ?? makeDefaultAttributeDTO();
 			// Emit server-side fact for downstream consumers (e.g., ResourceService)
@@ -56,9 +57,9 @@ export class AttributesService {
 		// Optional clamping policy could live here; keeping open-ended for now
 		attrs[key].base = nextKey;
 
-		// Emit server fact and push to client
+		// Emit server fact and push to client (use rate-limited method)
 		SignalServiceInstance.emit("AttributesUpdated", { player, attributes: attrs, changed: key });
-		SendAttributesUpdated.SendToPlayer(player, attrs);
+		this.maybeSendAttributes(player, attrs);
 		return true;
 	}
 

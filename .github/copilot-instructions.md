@@ -1,3 +1,48 @@
+---
+doc_type: copilot-instructions
+doc_id: copilot-instructions
+version: 1.0.0
+status: approved
+last_updated: 2025-08-29
+
+owners:
+  - name: Trembus
+    github: nicholasosto
+
+applies_to:
+  repos: [nicholasosto/SoulSteel]
+  languages: [TypeScript, Roblox-TS]
+
+llm:
+  audience: "Code assistants (e.g., Copilot Chat) using this repo."
+  summary: "Authoritative guidance for answering questions about SoulSteel’s architecture, UI patterns, and data models."
+  dos:
+    - "Prefer Fusion v4 patterns and ForPairs/ForKeys."
+    - "Use UIBlox for UI elements when feasible."
+    - "Adhere to @rbxts conventions and keep player/NPC classes readable."
+  donts:
+    - "Don’t invent APIs that aren’t in the repo."
+    - "Don’t contradict constants in src/shared/constants.ts."
+
+  context_files:
+    - path: src/shared/constants.ts
+      reason: "Canonical constants."
+    - path: docs/architecture/overview.md
+      reason: "High-level structure."
+
+  knowledge_cutoff: 2025-08-01
+  retrieval:
+    embed: true
+    chunk_size: 900
+    keep_together:
+      - "^```[\\s\\S]*?```$"   # keep code fences intact
+      - "^## .*"              # keep sections together
+    exclude_globs:
+      - "node_modules/**"
+      - "art/**"
+tags: [soulsteel, instructions, llm]
+---
+
 # GitHub Copilot Instructions for Soul Steel Alpha
 
 ## Project Overview
