@@ -107,9 +107,7 @@ class PlayerState {
 	}
 
 	private _updateAttributes(attributesDTO: AttributeDTO): void {
-		this.Attributes.Strength.set(attributesDTO.Strength);
-		this.Attributes.Agility.set(attributesDTO.Agility);
-		this.Attributes.Intelligence.set(attributesDTO.Intelligence);
+		this.Attributes = makeAttributeStateFromDTO(attributesDTO);
 	}
 
 	private _updateCurrency(currencyDTO: CurrencyDTO): void {

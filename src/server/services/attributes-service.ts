@@ -51,10 +51,10 @@ export class AttributesService {
 		const attrs = profile.Data.Attributes;
 		if (attrs === undefined) return false;
 
-		const prev = attrs[key] as number; // All keys initialized in defaults
+		const prev = attrs[key].base as number; // All keys initialized in defaults
 		const nextKey = prev + delta;
 		// Optional clamping policy could live here; keeping open-ended for now
-		attrs[key] = nextKey;
+		attrs[key].base = nextKey;
 
 		// Emit server fact and push to client
 		SignalServiceInstance.emit("AttributesUpdated", { player, attributes: attrs, changed: key });

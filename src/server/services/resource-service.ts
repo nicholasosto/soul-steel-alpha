@@ -43,7 +43,12 @@ import { DataServiceInstance } from "./data/data-service";
 import { SignalServiceInstance } from "./signal-service";
 import { ServiceRegistryInstance } from "./service-registry";
 import { ResourceRemotes } from "shared/network/";
-import { SIGNAL_KEYS } from "shared";
+import {
+	computeAttributeHealthBonus,
+	computeAttributeManaBonus,
+	computeAttributeStaminaBonus,
+	SIGNAL_KEYS,
+} from "shared";
 import { IResourcePlayerOperations, IResourceSignalOperations } from "./service-interfaces";
 /**
  * Resource Service - Manages health, mana, stamina, and combat for all entities
@@ -247,9 +252,9 @@ export class ResourceService {
 
 		const level = progression.Level;
 		// Calculate maxima from attributes
-		const newHealthMax = calculateMaxResourceValue(level, attrs.Vitality, attrs.Strength);
-		const newManaMax = calculateMaxResourceValue(level, attrs.Intelligence, attrs.Spirit);
-		const newStaminaMax = calculateMaxResourceValue(level, attrs.Agility, attrs.Vitality);
+		const newHealthMax = computeAttributeHealthBonus(attrs) + level * 10;
+		const newManaMax = computeAttributeManaBonus(attrs) + level * 5;
+		const newStaminaMax = computeAttributeStaminaBonus(attrs) + level * 8;
 
 		let changed = false;
 		// Update max values and optionally set current to full
