@@ -1,9 +1,6 @@
 import { Children, New } from "@rbxts/fusion";
-import { CharacterCardInstance } from "./hud-components";
-import { AbilityBar } from "./hud-components/AbilityBar";
 import { PlayerDataPanel } from "./panels";
-import { CurrencyDisplay } from "./hud-components/CurrencyDisplay";
-import { AttributeDisplay } from "./hud-components/AttributeDisplay";
+import { CurrencyDisplay, CharacterCardInstance, AbilityBar } from "./hud-components";
 import { PlayerStateInstance } from "client/states";
 
 export function createPlayerHUD(parent: Instance): ScreenGui {
