@@ -13,6 +13,7 @@ import { DataServiceInstance } from "./data/data-service";
 import { SignalServiceInstance } from "./signal-service";
 
 const SendAttributesUpdated = AttributeRemotes.Server.Get(SIGNAL_KEYS.ATTRIBUTES_UPDATED);
+const PlayerSavedAttributes = AttributeRemotes.Server.Get("ClientSaveAttributes");
 
 export class AttributesService {
 	private static instance?: AttributesService;
@@ -40,6 +41,17 @@ export class AttributesService {
 			SignalServiceInstance.emit("AttributesUpdated", { player, attributes });
 			// Sync to client
 			SendAttributesUpdated.SendToPlayer(player, attributes);
+		});
+
+		PlayerSavedAttributes.SetCallback((player, attributes) => {
+			warn(`AttributeService: Player saved attributes - ${player.Name}`, attributes);
+			const profile = DataServiceInstance.GetProfile(player);
+			if (profile === undefined) return false;
+			warn("Updating player attributes:", profile.Data.Attributes);
+			profile.Data.Attributes = attributes;
+			SignalServiceInstance.emit("AttributesUpdated", { player, attributes });
+			SendAttributesUpdated.SendToPlayer(player, attributes);
+			return true;
 		});
 	}
 

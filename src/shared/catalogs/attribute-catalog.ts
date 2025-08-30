@@ -68,7 +68,7 @@ interface AttributeValues {
 /**
  * Reactive state values using Fusion for real-time UI updates
  */
-interface AttributeStateValue {
+export interface AttributeStateValue {
 	base: Value<number>;
 	equipment?: Value<number>;
 	statusEffects?: Value<number>;
@@ -253,6 +253,19 @@ export function resolveTotals(dto: AttributeDTO): AttributeTotals {
 		totals[key] = (v.base ?? 0) + (v.equipment ?? 0) + (v.statusEffects ?? 0) + (v.temporary ?? 0);
 	}
 	return totals;
+}
+
+export function attributeStateToDTO(state: AttributeState): AttributeDTO {
+	const dto: AttributeDTO = {} as AttributeDTO;
+	for (const key of ATTRIBUTE_KEYS) {
+		dto[key] = {
+			base: state[key].base.get(),
+			equipment: state[key].equipment?.get() ?? 0,
+			statusEffects: state[key].statusEffects?.get() ?? 0,
+			temporary: state[key].temporary?.get() ?? 0,
+		};
+	}
+	return dto;
 }
 
 /**

@@ -12,5 +12,6 @@ export const AttributeRemotes = Definitions.Create({
 	//FetchAttributes: Definitions.ServerAsyncFunction<() => AttributeDTO>(),
 
 	// Attribute Modification (for abilities, admin commands, etc.)
+	ClientSaveAttributes: Definitions.ServerAsyncFunction<(attributes: AttributeDTO) => boolean>(),
 	ModifyAttribute: Definitions.ServerAsyncFunction<(attributeType: AttributeKey, amount: number) => boolean>(),
 });
