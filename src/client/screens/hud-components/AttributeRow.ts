@@ -1,6 +1,7 @@
 import { Children, Computed, New, OnEvent, Value } from "@rbxts/fusion";
+import { StateLabel } from "client/components";
 import { AttributeCatalog, AttributeKey, AttributeStateValue } from "shared/catalogs/attribute-catalog";
-import { ImageConstants } from "shared";
+import { ImageConstants, makeCorner, makeLayout } from "shared";
 import { PlayerStateInstance } from "client/states";
 const RowConstants = {
 	Height: 60,
@@ -18,46 +19,46 @@ const LayoutOrders = {
 	Controls: 7,
 };
 
-interface StateLabelProps {
-	stateValue: Value<number | string>;
-	layoutOrder: number;
-	name: string;
-}
+// interface StateLabelProps {
+// 	stateValue: Value<number | string>;
+// 	layoutOrder: number;
+// 	name: string;
+// }
 
-function createStateLabel({ stateValue, layoutOrder, name }: StateLabelProps) {
-	const computedText = Computed(() => `${stateValue.get()}`);
-	return New("TextLabel")({
-		Name: name,
-		Size: new UDim2(0, 50, 1, 0),
-		BackgroundTransparency: 1,
-		Text: computedText,
-		TextColor3: Color3.fromRGB(255, 255, 255),
-		Font: Enum.Font.SourceSans,
-		TextSize: 18,
-		LayoutOrder: layoutOrder,
-	});
-}
+// function createStateLabel({ stateValue, layoutOrder, name }: StateLabelProps) {
+// 	const computedText = Computed(() => `${stateValue.get()}`);
+// 	return New("TextLabel")({
+// 		Name: name,
+// 		Size: new UDim2(0, 50, 1, 0),
+// 		BackgroundTransparency: 1,
+// 		Text: computedText,
+// 		TextColor3: Color3.fromRGB(255, 255, 255),
+// 		Font: Enum.Font.SourceSans,
+// 		TextSize: 18,
+// 		LayoutOrder: layoutOrder,
+// 	});
+// }
 
-const Layouts = {
-	Vertical: () => {
-		return New("UIListLayout")({
-			FillDirection: Enum.FillDirection.Vertical,
-			Padding: new UDim(0, 0),
-			VerticalAlignment: Enum.VerticalAlignment.Center,
-			HorizontalAlignment: Enum.HorizontalAlignment.Center,
-			SortOrder: Enum.SortOrder.LayoutOrder,
-		});
-	},
-	Horizontal: () => {
-		return New("UIListLayout")({
-			FillDirection: Enum.FillDirection.Horizontal,
-			Padding: new UDim(0, 0),
-			VerticalAlignment: Enum.VerticalAlignment.Center,
-			HorizontalAlignment: Enum.HorizontalAlignment.Center,
-			SortOrder: Enum.SortOrder.LayoutOrder,
-		});
-	},
-};
+// const Layouts = {
+// 	Vertical: () => {
+// 		return New("UIListLayout")({
+// 			FillDirection: Enum.FillDirection.Vertical,
+// 			Padding: new UDim(0, 0),
+// 			VerticalAlignment: Enum.VerticalAlignment.Center,
+// 			HorizontalAlignment: Enum.HorizontalAlignment.Center,
+// 			SortOrder: Enum.SortOrder.LayoutOrder,
+// 		});
+// 	},
+// 	Horizontal: () => {
+// 		return New("UIListLayout")({
+// 			FillDirection: Enum.FillDirection.Horizontal,
+// 			Padding: new UDim(0, 0),
+// 			VerticalAlignment: Enum.VerticalAlignment.Center,
+// 			HorizontalAlignment: Enum.HorizontalAlignment.Center,
+// 			SortOrder: Enum.SortOrder.LayoutOrder,
+// 		});
+// 	},
+// };
 export interface AttributeRowProps {
 	attributeKey: AttributeKey;
 	attributeState: AttributeStateValue;
@@ -70,10 +71,10 @@ export const AttributeRow = (props: AttributeRowProps) => {
 	const displayNameText = displayCatalog.displayName;
 	const iconId = displayCatalog.icon ?? ImageConstants.StatusIcon.Chill;
 
-	const displayName = createStateLabel({
+	const displayName = StateLabel({
 		stateValue: Value(displayNameText),
-		layoutOrder: LayoutOrders.DisplayName,
-		name: props.attributeKey + "_name",
+		LayoutOrder: LayoutOrders.DisplayName,
+		Name: props.attributeKey + "_name",
 	});
 
 	const attributeIcon = New("ImageLabel")({
@@ -84,22 +85,22 @@ export const AttributeRow = (props: AttributeRowProps) => {
 		LayoutOrder: LayoutOrders.Icon,
 	});
 
-	const baseValue = createStateLabel({
+	const baseValue = StateLabel({
 		stateValue: PlayerStateInstance.Attributes[props.attributeKey].base,
-		layoutOrder: LayoutOrders.Base,
-		name: props.attributeKey + "_base",
+		LayoutOrder: LayoutOrders.Base,
+		Name: props.attributeKey + "_base",
 	});
 
-	const equipmentValue = createStateLabel({
+	const equipmentValue = StateLabel({
 		stateValue: PlayerStateInstance.Attributes[props.attributeKey]?.equipment ?? Value(0),
-		layoutOrder: LayoutOrders.Equipment,
-		name: props.attributeKey + "_equipment",
+		LayoutOrder: LayoutOrders.Equipment,
+		Name: props.attributeKey + "_equipment",
 	});
 
-	const statusEffectsVal = createStateLabel({
+	const statusEffectsVal = StateLabel({
 		stateValue: PlayerStateInstance.Attributes[props.attributeKey]?.statusEffects ?? Value(0),
-		layoutOrder: LayoutOrders.StatusEffects,
-		name: props.attributeKey + "_statusEffects",
+		LayoutOrder: LayoutOrders.StatusEffects,
+		Name: props.attributeKey + "_statusEffects",
 	});
 
 	const incrementButton = New("ImageButton")({
@@ -128,7 +129,7 @@ export const AttributeRow = (props: AttributeRowProps) => {
 		Name: props.attributeKey + "_controls",
 		Size: new UDim2(0, RowConstants.Height, 0, RowConstants.Height),
 		BackgroundTransparency: 0.94,
-		[Children]: [Layouts.Vertical(), incrementButton, decrementButton],
+		[Children]: [makeLayout("vertical", true), incrementButton, decrementButton],
 		LayoutOrder: LayoutOrders.Controls,
 	});
 
@@ -140,7 +141,8 @@ export const AttributeRow = (props: AttributeRowProps) => {
 		BackgroundColor3: Color3.fromRGB(0, 0, 0),
 		ClipsDescendants: true,
 		[Children]: [
-			Layouts.Horizontal(),
+			makeLayout("horizontal", true),
+			makeCorner(8),
 			displayName,
 			attributeIcon,
 			baseValue,
