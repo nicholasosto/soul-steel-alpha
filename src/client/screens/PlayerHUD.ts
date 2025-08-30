@@ -3,7 +3,7 @@ import { PlayerDataPanel } from "./panels";
 import { CurrencyDisplay, CharacterCardInstance, AbilityBar } from "./hud-components";
 import { PlayerStateInstance } from "client/states";
 import { AttributeRow } from "./hud-components/AttributeRow";
-import { AttributeRemotes, attributeStateToDTO } from "shared";
+import { AttributeRemotes, attributeStateToDTO, ManagedImageAssets } from "shared";
 import { AttributesPanel } from "./panels/AttributesPanel";
 
 function onIncrement() {
@@ -35,7 +35,12 @@ export function createPlayerHUD(parent: Instance): ScreenGui {
 		DisplayOrder: 10,
 		[Children]: {
 			AbilityBar: abilityBar,
-			//CharacterCard: CharacterCardInstance,
+			IconTest: New("ImageLabel")({
+				Image: ManagedImageAssets.DomainIcons.Chaos,
+				Size: UDim2.fromOffset(64, 64),
+				Position: UDim2.fromScale(0.5, 0.5),
+				AnchorPoint: new Vector2(0.5, 0.5),
+			}),
 			CurrencyDisplay: currencyDisplay,
 			RowTest: AttributesPanel({
 				playerAttributesState: PlayerStateInstance.Attributes,

@@ -1,4 +1,6 @@
 import { Value } from "@rbxts/fusion";
+import { ImageConstants, ManagedImageAssets } from "shared/asset-ids";
+
 export const DomainKeys = ["fateless", "order", "chaos"] as const;
 
 export type DomainKey = (typeof DomainKeys)[number];
@@ -28,7 +30,7 @@ export const DomainCatalog: Record<DomainKey, DomainMeta> = {
 		displayName: "Fateless",
 		description: "The void of forgotten memory. Souls unbound by choice.",
 		color: Color3.fromRGB(100, 100, 120),
-		icon: "rbxassetid://fateless_icon",
+		icon: ManagedImageAssets.DomainIcons.Void,
 		tagline: "All beginnings are formless.",
 		strengths: [],
 		weaknesses: [], // Neutral — starting faction
@@ -37,7 +39,7 @@ export const DomainCatalog: Record<DomainKey, DomainMeta> = {
 		displayName: "Order",
 		description: "Structure, creation, and the eternal shaping of reality.",
 		color: Color3.fromRGB(80, 140, 220),
-		icon: "rbxassetid://order_icon",
+		icon: ManagedImageAssets.DomainIcons.Order,
 		tagline: "We build the world and bind it to law.",
 		strengths: ["chaos"],
 		weaknesses: ["fateless"],
@@ -46,9 +48,9 @@ export const DomainCatalog: Record<DomainKey, DomainMeta> = {
 		displayName: "Chaos",
 		description: "Entropy, corruption, and the unmaking of all things.",
 		color: Color3.fromRGB(180, 60, 60),
-		icon: "rbxassetid://chaos_icon",
+		icon: ManagedImageAssets.DomainIcons.Chaos,
 		tagline: "All things must fall to ruin.",
 		strengths: ["fateless"],
 		weaknesses: ["order"],
 	},
-};
+} as const satisfies Record<DomainKey, DomainMeta>;

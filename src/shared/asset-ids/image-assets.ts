@@ -110,3 +110,11 @@ export const ImageConstants = {
 		GameTitle: "rbxassetid://83079804672155",
 	},
 } as const;
+
+export const ManagedImageAssets = {
+	DomainIcons: {
+		Chaos: "rbxgameasset://Images/ui_icon_domain_chaos_icon_md_v01",
+		Order: "rbxgameasset://Images/ui_icon_domain_order_icon_md_v01",
+		Void: "rbxgameasset://Images/ui_icon_domain_void_icon_md_v01",
+	},
+} as const;
